@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TessArc — Plan workspace</title>
+<style>
+:root{
+  --c-ink:#000;--c-ink-2:#333;--c-ink-3:#6b6b6b;--c-ink-4:#949494;
+  --c-line:#d2d2d2;--c-line-2:#e7e7e7;--c-surface:#fff;--c-surface-2:#fafafa;--c-surface-3:#f2f2f2;
+  --f-ui:"Inter","Inter var",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --t-sm:12px;--t-body:14px;--t-sub:16px;--t-lg:20px;--t-xl:24px;
+  --r:3px;--top-h:52px;--nav-w:214px;--pad:24px;--maxw:1360px
+}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--f-ui);font-size:var(--t-body);line-height:1.45;color:#000;background:#fff;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:var(--nav-w) minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--c-line);background:var(--c-surface-2);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.side-brand{height:var(--top-h);display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--c-line)}.mark{width:16px;height:16px;border:1.5px solid #000;border-radius:2px;position:relative}.mark:after{content:"";position:absolute;inset:3px;background:#000}.side-brand b{font-size:16px}
+.side-nav{padding:10px 8px;display:flex;flex-direction:column;gap:1px;flex:1}.side-nav a{padding:7px 10px;border-radius:3px;color:#333;border:1px solid transparent}.side-nav a:hover{background:#f2f2f2}.side-nav a[aria-current=true]{background:#000;color:#fff}
+.side-sep{margin:12px 10px 6px;border-top:1px solid var(--c-line-2)}.side-lab{padding:0 10px 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#949494}
+.side-foot{padding:10px 14px;border-top:1px solid var(--c-line);font-size:12px;color:#949494}
+.main{min-width:0}.top{height:var(--top-h);border-bottom:1px solid var(--c-line);display:flex;align-items:center;padding:0 var(--pad);position:sticky;top:0;background:#fff;z-index:10}.crumb{font-family:var(--f-data);font-size:12px;color:#6b6b6b}.crumb b{color:#000;font-weight:600}.top-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.wrap{padding:var(--pad);max-width:var(--maxw);width:100%}h1{font-size:24px;letter-spacing:-.02em;font-weight:650;line-height:1.2}h2{font-size:16px;font-weight:650}h3{font-size:14px;font-weight:650}.sub{color:#6b6b6b;font-size:12px}.lab{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#6b6b6b;font-weight:600}.hint{font-size:12px;color:#6b6b6b;line-height:1.5}
+.vhead{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}.vhead-r{margin-left:auto;display:flex;gap:8px;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 13px;border:1px solid var(--c-line);background:#fff;border-radius:3px;font-size:12px;white-space:nowrap}.btn:hover{border-color:#6b6b6b;background:#fafafa}.btn-p{background:#000;color:#fff;border-color:#000}.btn-p:hover{background:#000}.btn:disabled{opacity:.4;cursor:not-allowed}.btn-sm{height:28px;padding:0 10px}.linkbtn{border:0;background:none;text-decoration:underline;text-underline-offset:2px;font-size:12px}
+.card{border:1px solid var(--c-line);border-radius:3px;background:#fff}.card-h{padding:11px 14px;border-bottom:1px solid var(--c-line-2);display:flex;align-items:center;gap:10px}.card-h .lab{margin-right:auto}.card-b{padding:14px}.cols{display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:14px;align-items:start}.rail{position:sticky;top:66px}.rows{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}.frow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}.inp{height:34px;border:1px solid var(--c-line);border-radius:3px;padding:0 9px;background:#fff;font-size:12px;min-width:0}.inp:focus{outline:none;border-color:#000}.grow{flex:1;min-width:180px}textarea.inp{height:72px;padding:8px 9px;resize:vertical;line-height:1.5}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px}.choice label{border:1px solid var(--c-line);padding:11px 12px;border-radius:3px;cursor:pointer}.choice label:hover{background:#fafafa}.choice label.sel{border-color:#000;background:#fafafa}.choice input{margin-right:8px;accent-color:#000}.choice b{font-size:12px}.choice small{display:block;color:#6b6b6b;font-size:12px;margin:4px 0 0 22px}
+.notice{border:1px solid var(--c-line);background:#fafafa;padding:10px 12px;font-size:12px;line-height:1.55}.notice strong{font-weight:650}.notice.dark{border-color:#000}.notice.warn{border-left:2px solid #000}
+.section{border-top:1px solid var(--c-line-2);padding-top:16px;margin-top:16px}.section:first-child{border-top:0;padding-top:0;margin-top:0}
+.actions{display:flex;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--c-line-2)}.actions-r{margin-left:auto;display:flex;gap:8px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--c-line-2);font-size:12px}.kv:last-child{border-bottom:0}.kv .k{color:#6b6b6b}.kv .v{font-family:var(--f-data);text-align:right}
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-data);font-size:12px}.dot{width:10px;height:10px;border:1px solid #000;border-radius:50%;display:inline-block}.dot.fill{background:#000}.dot.half{background:linear-gradient(90deg,#000 50%,#fff 50%)}.dot.warn{border-radius:2px;transform:rotate(45deg);width:9px;height:9px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}.pill{font-family:var(--f-data);font-size:11px;border:1px solid var(--c-line);border-radius:20px;padding:3px 8px}.pill.dark{border-color:#000;background:#000;color:#fff}
+.planbar{border:1px solid #000;padding:13px 14px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.planbar .meta{display:flex;gap:18px;flex-wrap:wrap}.meta-item{font-size:12px}.meta-item span{display:block;color:#6b6b6b;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.item{border:1px solid var(--c-line);border-radius:3px}.item:hover{border-color:#999}.item-main{padding:12px 13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.item-title{display:flex;gap:9px;align-items:center}.item-title b{font-family:var(--f-data);font-size:12px}.item-meta{display:flex;gap:12px;flex-wrap:wrap;color:#6b6b6b;font-size:12px;margin-top:5px}.item-actions{display:flex;gap:7px}.empty{border:1px dashed #aaa;padding:34px 20px;text-align:center}.empty b{display:block;margin-bottom:5px}
+.progress{height:7px;border:1px solid #000;margin-top:8px}.progress span{display:block;height:100%;background:#000}
+.review-row{display:grid;grid-template-columns:150px 1fr;padding:9px 0;border-bottom:1px solid var(--c-line-2);font-size:12px}.review-row:last-child{border-bottom:0}.review-row .k{color:#6b6b6b}
+.exec-grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:14px}.task{border:1px solid var(--c-line);border-radius:3px}.task-h{padding:10px 12px;border-bottom:1px solid var(--c-line-2);display:flex;gap:8px;align-items:center}.task-h b{margin-right:auto}.mile{padding:8px 12px;border-bottom:1px solid var(--c-line-2);display:flex;gap:9px;align-items:center;font-size:12px}.mile:last-child{border-bottom:0}.mile small{margin-left:auto;color:#6b6b6b;font-family:var(--f-data)}
+.exec-item{border:1px solid var(--c-line);padding:11px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.exec-item+.exec-item{border-top:0}.attention{border:2px solid #000}.count{font-family:var(--f-data);font-size:12px}.table{width:100%;border-collapse:collapse;font-size:12px}.table th{text-align:left;padding:10px 12px;border-bottom:1px solid #000;color:#6b6b6b;font-size:11px;text-transform:uppercase;letter-spacing:.05em}.table td{padding:10px 12px;border-bottom:1px solid var(--c-line-2)}.table tr:hover td{background:#fafafa}
+.toast{position:fixed;right:18px;bottom:18px;border:1px solid #000;background:#fff;padding:10px 13px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);z-index:50;display:none}.toast.show{display:block}
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.16);z-index:30;display:none}.drawer{position:absolute;right:0;top:0;height:100%;width:min(520px,100%);background:#fff;border-left:1px solid #000;display:flex;flex-direction:column}.drawer-h{padding:15px 18px;border-bottom:1px solid var(--c-line);display:flex;align-items:center}.drawer-h b{margin-right:auto}.drawer-b{padding:18px;overflow:auto}.drawer-f{margin-top:auto;padding:12px 18px;border-top:1px solid var(--c-line);display:flex;justify-content:flex-end;gap:8px}
+.stepper{display:flex;align-items:center;margin-bottom:18px}.stepper .s{display:flex;align-items:center;gap:7px;font-size:12px;color:#6b6b6b}.stepper .n{width:22px;height:22px;border:1px solid var(--c-line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-data);font-size:11px}.stepper .active{color:#000;font-weight:650}.stepper .active .n{border-color:#000}.stepper .done .n{background:#000;color:#fff;border-color:#000}.stepper .line{height:1px;background:var(--c-line);width:42px;margin:0 9px}
+@media(max-width:1000px){.app{grid-template-columns:64px 1fr}.side-brand b,.side-nav a span,.side-lab,.side-foot{display:none}.side-nav a{text-align:center}.cols{grid-template-columns:1fr}.rail{position:static}.exec-grid{grid-template-columns:1fr}.choice{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="side-brand"><span class="mark"></span><b>TessArc</b></div>
+  <nav class="side-nav">
+    <a href="#plans" data-nav="plans" aria-current="true"><span>Plans</span></a>
+    <a href="#inventory" data-nav="inventory"><span>Inventory</span></a>
+    <div class="side-sep"></div><div class="side-lab">Operations</div>
+    <a href="#quick" data-nav="quick"><span>Create item</span></a>
+  </nav>
+  <div class="side-foot">Network operations<br>TessArc prototype</div>
+</aside>
+<main class="main">
+  <header class="top"><div class="crumb" id="crumb">Plans</div><div class="top-r"><button class="btn btn-sm" data-action="new-plan">+ New plan</button><button class="btn btn-sm btn-p" id="topCreateItem">+ Create item</button></div></header>
+  <div id="appview"></div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<div class="drawer-bg" id="drawer-bg">
+  <div class="drawer" role="dialog" aria-modal="true">
+    <div class="drawer-h"><b id="drawer-title">Add item</b><button class="btn btn-sm" data-action="close-drawer">Close</button></div>
+    <div class="drawer-b" id="drawer-body"></div>
+    <div class="drawer-f"><button class="btn" data-action="close-drawer">Cancel</button><button class="btn btn-p" data-action="save-item">Add item</button></div>
+  </div>
+</div>
+<script>
+const devices=[
+ {name:"f5-prod-01",ip:"10.24.1.21",vendor:"F5",model:"i5800",version:"15.1.10",region:"EU-West",tenant:"app-prod",ha:"f5-prod-02",role:"active"},
+ {name:"f5-prod-02",ip:"10.24.1.22",vendor:"F5",model:"i5800",version:"15.1.10",region:"EU-West",tenant:"app-prod",ha:"f5-prod-01",role:"standby"},
+ {name:"f5-prod-03",ip:"10.24.2.31",vendor:"F5",model:"r10920",version:"16.1.5",region:"US-East",tenant:"payments",ha:"—",role:"none"},
+ {name:"f5-prod-04",ip:"10.24.2.32",vendor:"F5",model:"r10920",version:"16.1.5",region:"US-East",tenant:"payments",ha:"—",role:"none"},
+ {name:"f5-edge-01",ip:"10.24.4.11",vendor:"F5",model:"i5800",version:"15.1.10",region:"APAC",tenant:"edge",ha:"—",role:"none"}
+];
+const versions=["17.1.2","17.1.1","16.1.5"];
+let state={route:"plans",plans:[
+ {id:"PLN-1042",name:"September production upgrades",description:"Production F5 upgrade batch",op:"Software upgrade",change:"CHG004812",mode:"BYOC",start:"2026-09-07T22:00",end:"2026-09-07T23:30",status:"Draft",creator:true,items:[
+  {id:"ITM-01",device:"f5-prod-01",tenant:"app-prod",from:"15.1.10",to:"17.1.2",status:"Pending"},
+  {id:"ITM-02",device:"f5-prod-03",tenant:"payments",from:"16.1.5",to:"17.1.2",status:"Pending"}
+ ]},
+ {id:"PLN-1039",name:"Weekend upgrade batch",description:"",op:"Software upgrade",change:"CHG004790",mode:"BYOC",start:"2026-09-06T21:00",end:"2026-09-06T23:00",status:"Completed with Failures",creator:false,items:[
+  {id:"ITM-11",device:"f5-edge-01",tenant:"edge",from:"15.1.10",to:"17.1.1",status:"Succeeded"},
+  {id:"ITM-12",device:"f5-prod-04",tenant:"payments",from:"16.1.5",to:"17.1.1",status:"Failed"}
+ ]}
+],draft:null,drawerItem:null,drawerMode:"add"};
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function fmt(dt){return new Date(dt).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}
+function status(s){
+ const cls=s==="Succeeded"||s==="Completed"?"fill":s==="In Progress"||s==="Validating"||s==="Completing"?"half":s==="Action Required"||s==="Failed"||s==="Validation Failed"?"warn":"";
+ return `<span class="status"><i class="dot ${cls}"></i>${esc(s)}</span>`;
+}
+function setRoute(r){state.route=r;render()}
+function render(){
+ const v=document.getElementById("appview"), r=state.route;
+ document.querySelectorAll("[data-nav]").forEach(a=>a.setAttribute("aria-current",a.dataset.nav===r?"true":"false"));
+ document.getElementById("crumb").innerHTML=r==="plans"?"Plans":r==="inventory"?"Inventory":r==="quick"?"Quick submit":r==="new-plan"?"New plan":r==="plan"?"Plans / "+esc(state.draft?.name||"Plan"):"Plans";
+ if(r==="plans") v.innerHTML=plansView();
+ else if(r==="inventory") v.innerHTML=inventoryView();
+ else if(r==="quick") v.innerHTML=quickView();
+ else if(r==="new-plan") v.innerHTML=newPlanView();
+ else if(r==="plan") v.innerHTML=planWorkspace();
+ else if(r==="review") v.innerHTML=reviewView();
+ else if(r==="execution") v.innerHTML=executionView();
+ bind();
+}
+function plansView(){
+ return `<div class="wrap">
+ <div class="vhead"><div><h1>Plans</h1><div class="sub">Create, prepare and monitor grouped operations.</div></div><div class="vhead-r"><button class="btn btn-p" data-action="new-plan">+ New plan</button></div></div>
+ <div class="card"><div class="card-h"><span class="lab">All plans</span><span class="sub">${state.plans.length} plans</span></div>
+ <div style="overflow:auto"><table class="table"><thead><tr><th>Plan</th><th>Status</th><th>Operation</th><th>Change</th><th>Window</th><th>Items</th></tr></thead><tbody>
+ ${state.plans.map(p=>`<tr data-open-plan="${p.id}"><td><b>${esc(p.name)}</b><div class="sub mono">${p.id}</div></td><td>${status(p.status)}</td><td>${esc(p.op)}</td><td class="mono">${esc(p.change)}</td><td class="mono">${fmt(p.start)}–${new Date(p.end).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</td><td class="mono">${p.items.length}</td></tr>`).join("")}
+ </tbody></table></div></div></div>`;
+}
+function newPlanView(){
+ const d=state.draft||{name:"",description:"",op:"Software upgrade",mode:"BYOC",change:"",start:"2026-09-07T22:00",end:"2026-09-07T23:30"};
+ return `<div class="wrap"><div class="vhead"><div><h1>New plan</h1><div class="sub">Set the shared context once. Add and manage operations after the draft is created.</div></div></div>
+ <div class="stepper"><div class="s active"><span class="n">1</span>Plan setup</div><div class="line"></div><div class="s"><span class="n">2</span>Build plan</div><div class="line"></div><div class="s"><span class="n">3</span>Review</div></div>
+ <div class="cols"><div class="card"><div class="card-h"><span class="lab">Plan setup</span></div><div class="card-b">
+  <div class="rows">
+   <div class="frow"><div class="field grow"><label class="lab">Plan name <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input id="pn" class="inp" value="${esc(d.name)}" placeholder="e.g. September production upgrades"></div></div>
+   <div class="field"><label class="lab">Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><textarea id="pd" class="inp" placeholder="What is this plan for?">${esc(d.description)}</textarea></div>
+   <div class="section"><div class="lab" style="margin-bottom:8px">Operation</div><div class="notice"><strong>Software upgrade</strong><br><span class="hint">All items in a plan use the same operation type.</span></div></div>
+   <div class="section"><div class="lab" style="margin-bottom:8px">Change handling</div><div class="choice">
+    <label class="${d.mode==="BYOC"?"sel":""}"><input type="radio" name="mode" value="BYOC" ${d.mode==="BYOC"?"checked":""}> <b>I have a change ticket</b><small>Use an existing approved ticket. TessArc validates it but does not manage it.</small></label>
+    <label class="${d.mode==="System-Created"?"sel":""}"><input type="radio" name="mode" value="System-Created" ${d.mode==="System-Created"?"checked":""}> <b>Create a change ticket for me</b><small>TessArc creates, validates and closes the ticket.</small></label>
+   </div></div>
+   <div id="change-fields">${d.mode==="BYOC"?`<div class="frow"><div class="field grow"><label class="lab">Change ticket</label><input id="chg" class="inp" value="${esc(d.change)}" placeholder="e.g. CHG004812"></div></div><div class="hint" style="margin-top:6px">The ticket must exist, be approved and have a valid future maintenance window.</div>`:`<div class="frow"><div class="field"><label class="lab">Window start</label><input id="start" type="datetime-local" class="inp" value="${esc(d.start)}"></div><div class="field"><label class="lab">Window end</label><input id="end" type="datetime-local" class="inp" value="${esc(d.end)}"></div></div><div class="hint" style="margin-top:6px">The system will create the change ticket using this window.</div>`}</div>
+   <div class="notice dark"><strong>What happens next</strong><br>Your plan is saved as <b>Draft</b>. You can add, edit or remove items freely. Nothing executes until you submit.</div>
+  </div>
+  <div class="actions"><button class="btn" data-action="cancel-new">Cancel</button><div class="actions-r"><button class="btn btn-p" data-action="create-draft">Create draft</button></div></div>
+ </div></div>
+ <aside class="rail"><div class="card"><div class="card-h"><span class="lab">Plan context</span></div><div class="card-b"><div class="kv"><span class="k">Operation</span><span class="v">Software upgrade</span></div><div class="kv"><span class="k">Items</span><span class="v">0</span></div><div class="kv"><span class="k">State</span><span class="v">Draft after save</span></div><div class="railmsg">The change ticket and maintenance window are shared by every item.</div></div></div></aside>
+ </div></div>`;
+}
+function planWorkspace(){
+ const p=state.draft;
+ return `<div class="wrap"><div class="vhead"><div><h1>${esc(p.name||"Untitled plan")}</h1><div class="sub">${esc(p.description||"No description")} · ${status("Draft")}</div></div><div class="vhead-r"><button class="btn" data-action="edit-plan">Edit details</button><button class="btn btn-p" data-action="review">Review & submit</button></div></div>
+ <div class="planbar"><div><div class="meta"><div class="meta-item"><span>Operation</span>${esc(p.op)}</div><div class="meta-item"><span>Change</span><span class="mono" style="display:inline;color:#000;text-transform:none;letter-spacing:0">${esc(p.change||"System-created")}</span></div><div class="meta-item"><span>Window</span><span class="mono" style="display:inline;color:#000;text-transform:none;letter-spacing:0">${fmt(p.start)}–${new Date(p.end).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</span></div></div></div><div class="pills"><span class="pill dark">DRAFT</span><span class="pill">${p.items.length} item${p.items.length===1?"":"s"}</span></div></div>
+ <div class="cols" style="margin-top:14px"><div class="card"><div class="card-h"><span class="lab">Items</span><button class="btn btn-sm" data-action="add-item">+ Add item</button></div><div class="card-b">${p.items.length?p.items.map(itemCard).join(""):`<div class="empty"><b>No items yet</b><span class="hint">Add the first operation to this draft. Each item targets one device, with an optional tenant.</span><div style="margin-top:12px"><button class="btn btn-p" data-action="add-item">+ Add item</button></div></div>`}</div></div>
+ <aside class="rail"><div class="card"><div class="card-h"><span class="lab">Ready to submit</span></div><div class="card-b"><div class="kv"><span class="k">Items</span><span class="v">${p.items.length}</span></div><div class="kv"><span class="k">Change</span><span class="v">${esc(p.change||"System-created")}</span></div><div class="kv"><span class="k">Window</span><span class="v">${new Date(p.end).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})} end</span></div><div class="railmsg">${p.items.length?"Review the full plan before submission.":"Add at least one item before submission."}</div><button class="btn btn-p" style="width:100%;margin-top:12px" data-action="review" ${p.items.length?"":"disabled"}>Review & submit</button></div></div></aside></div></div>`;
+}
+function itemCard(it){
+ return `<div class="item"><div class="item-main"><div><div class="item-title">${status(it.status)}<b>${esc(it.device)}</b></div><div class="item-meta"><span>Tenant: ${esc(it.tenant||"—")}</span><span>${esc(it.from)} → ${esc(it.to)}</span><span>${esc(devices.find(d=>d.name===it.device)?.region||"—")}</span></div></div><div class="item-actions"><button class="btn btn-sm" data-action="edit-item" data-id="${it.id}">Edit</button><button class="btn btn-sm" data-action="remove-item" data-id="${it.id}">Remove</button></div></div></div>`;
+}
+function reviewView(){
+ const p=state.draft;
+ return `<div class="wrap"><div class="vhead"><div><h1>Review plan</h1><div class="sub">Confirm everything before you commit the plan.</div></div></div>
+ <div class="cols"><div class="card"><div class="card-h"><span class="lab">Submission summary</span></div><div class="card-b">
+ <div class="review-row"><div class="k">Plan</div><div><b>${esc(p.name||"Untitled plan")}</b>${p.description?`<div class="sub">${esc(p.description)}</div>`:""}</div></div>
+ <div class="review-row"><div class="k">Operation</div><div>${esc(p.op)}</div></div>
+ <div class="review-row"><div class="k">Change</div><div class="mono">${esc(p.change||"System-created")}</div></div>
+ <div class="review-row"><div class="k">Window</div><div class="mono">${fmt(p.start)} – ${fmt(p.end)}</div></div>
+ <div class="section"><div class="lab" style="margin-bottom:8px">Items (${p.items.length})</div>${p.items.map(itemCard).join("")}</div>
+ <div class="notice dark" style="margin-top:16px"><strong>Submission is the commitment point.</strong><br>Submission starts validation. If validation passes, execution begins and the items can no longer be edited.</div>
+ <div class="actions"><button class="btn" data-action="back-plan">Back to plan</button><div class="actions-r"><button class="btn btn-p" data-action="submit-plan">Submit plan</button></div></div>
+ </div></div><aside class="rail"><div class="card"><div class="card-h"><span class="lab">Before you submit</span></div><div class="card-b"><div class="kv"><span class="k">Items</span><span class="v">${p.items.length}</span></div><div class="kv"><span class="k">Operation</span><span class="v">Same for all</span></div><div class="kv"><span class="k">Change</span><span class="v">${p.mode}</span></div><div class="railmsg">Validation checks device/tenant, version, conflicts and change-ticket rules.</div></div></div></aside></div></div>`;
+}
+function executionView(){
+ const p=state.draft; const action= p.items.find(i=>i.status==="Action Required");
+ const done=p.items.filter(i=>["Succeeded","Failed","Cancelled","Rolled Back","Rollback Failed","Skipped"].includes(i.status)).length;
+ return `<div class="wrap"><div class="vhead"><div><h1>${esc(p.name)}</h1><div class="sub">${status(p.status)} · ${esc(p.op)}</div></div><div class="vhead-r"><button class="btn" data-action="plans">Back to plans</button></div></div>
+ <div class="planbar"><div class="meta"><div class="meta-item"><span>Change</span><span class="mono" style="display:inline">${esc(p.change||"System-created")}</span></div><div class="meta-item"><span>Window</span><span class="mono" style="display:inline">${fmt(p.start)}–${fmt(p.end)}</span></div><div class="meta-item"><span>Progress</span><span class="mono" style="display:inline">${done}/${p.items.length} terminal</span></div></div><div class="pill dark">EXECUTING</div></div>
+ ${action?`<div class="notice dark" style="margin-top:14px"><strong>Action required: ${esc(action.device)}</strong><br>${esc(action.failedTask||"Execute Operation")} failed at ${esc(action.failedMilestone||"milestone")} — ${esc(action.error||"Operation step failed")}. The maintenance window continues. If you do nothing, this item will fail when the window expires.<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-p" data-action="retry" data-id="${action.id}">Retry</button><button class="btn" data-action="rollback" data-id="${action.id}">Rollback</button><button class="btn" data-action="cancel-item" data-id="${action.id}">Cancel</button></div></div>`:""}
+ <div class="cols" style="margin-top:14px"><div class="card"><div class="card-h"><span class="lab">Items</span><span class="sub">${p.items.length} independent operations</span></div><div class="card-b" style="padding:0">${p.items.map(execItem).join("")}</div></div><aside class="rail"><div class="card"><div class="card-h"><span class="lab">Plan-level tasks</span></div><div class="card-b"><div class="task"><div class="task-h">${status("Succeeded")}<b>${p.mode==="System-Created"?"Create change ticket":"Validate change ticket"}</b></div><div class="mile">${status("Succeeded")}<span>Change ticket ready</span><small>14s</small></div></div><div style="height:8px"></div><div class="task"><div class="task-h">${status(p.status==="Executing"?"In Progress":"Succeeded")}<b>Validate change</b></div><div class="mile">${status(p.status==="Executing"?"In Progress":"Succeeded")}<span>Validate maintenance window</span><small>now</small></div></div></div></div></aside></div>
+ </div>`;
+}
+function execItem(it){
+ const active=it.status==="In Progress", ar=it.status==="Action Required";
+ return `<div class="exec-item ${ar?"attention":""}"><div><div class="item-title">${status(it.status)}<b>${esc(it.device)}</b></div><div class="item-meta"><span>Tenant: ${esc(it.tenant||"—")}</span><span>${esc(it.from)} → ${esc(it.to)}</span></div>${active?`<div class="progress"><span style="width:62%"></span></div>`:""}</div><div><button class="btn btn-sm" data-action="item-detail" data-id="${it.id}">View execution</button></div></div>`;
+}
+function inventoryView(){
+ return `<div class="wrap"><div class="vhead"><div><h1>Inventory</h1><div class="sub">Browse devices and inspect tenant/HA context before planning work.</div></div></div>
+ <div class="card"><div class="card-h"><span class="lab">Devices</span><input id="invq" class="inp" style="margin-left:auto;width:240px" placeholder="Search device, IP, region"></div><div style="overflow:auto"><table class="table"><thead><tr><th>Device</th><th>Type / model</th><th>Version</th><th>Region</th><th>Tenant</th><th>HA</th></tr></thead><tbody id="invbody">${inventoryRows(devices)}</tbody></table></div></div></div>`;
+}
+function inventoryRows(arr){return arr.map(d=>`<tr><td><b class="mono">${d.name}</b><div class="sub mono">${d.ip}</div></td><td>${d.vendor} · ${d.model}</td><td class="mono">${d.version}</td><td>${d.region}</td><td>${d.tenant}</td><td class="mono">${d.role} · ${d.ha}</td></tr>`).join("")}
+function quickView(){
+ return `<div class="wrap"><div class="vhead"><div><h1>Create item</h1><div class="sub">Create one operation without asking the user to manage a plan.</div></div></div>
+ <div class="cols"><div class="card"><div class="card-h"><span class="lab">Single item</span></div><div class="card-b"><div class="rows">
+ <div class="notice"><strong>Software upgrade</strong><br><span class="hint">A lightweight plan is created behind the scenes. You only need to complete the operation request.</span></div>
+ <div class="field"><label class="lab">Device</label><select id="qdev" class="inp"><option value="">Select device</option>${devices.map(d=>`<option>${d.name}</option>`).join("")}</select></div>
+ <div class="field"><label class="lab">Tenant</label><input id="qtenant" class="inp" placeholder="Tenant name (if applicable)"></div>
+ <div class="field"><label class="lab">Target version</label><select id="qver" class="inp"><option value="">Select compatible version</option>${versions.map(v=>`<option>${v}</option>`).join("")}</select></div>
+ <div class="field"><label class="lab">Change ticket</label><input id="qchg" class="inp" placeholder="e.g. CHG004812"></div>
+ <div class="notice">Impact check is optional in Quick Submit. It is informational only; you decide whether to proceed.</div>
+ </div><div class="actions"><span></span><button class="btn btn-p" data-action="quick-submit">Submit operation</button></div></div></div>
+ <aside class="rail"><div class="card"><div class="card-h"><span class="lab">Required</span></div><div class="card-b"><div class="kv"><span class="k">Device</span><span class="v">Required</span></div><div class="kv"><span class="k">Version</span><span class="v">No downgrade</span></div><div class="kv"><span class="k">Change</span><span class="v">Approved</span></div></div></div></aside></div></div>`;
+}
+function openDrawer(id){
+ state.drawerMode=id?"edit":"add";state.drawerItem=id?state.draft.items.find(x=>x.id===id):null;
+ const it=state.drawerItem||{device:"",tenant:"",to:""};
+ document.getElementById("drawer-title").textContent=id?"Edit item":"Add item";
+ document.getElementById("drawer-body").innerHTML=`<div class="rows">
+ <div class="notice"><strong>Software upgrade</strong><br><span class="hint">This plan's operation type is fixed. Select the target device and operation parameters.</span></div>
+ <div class="field"><label class="lab">Device</label><input id="idev" class="inp" list="devs" value="${esc(it.device)}" placeholder="Search hostname or IP"><datalist id="devs">${devices.map(d=>`<option value="${d.name}">${d.ip} · ${d.region}</option>`).join("")}</datalist></div>
+ <div id="device-context"></div>
+ <div class="field"><label class="lab">Tenant <span style="font-weight:400;text-transform:none;letter-spacing:0">(if applicable)</span></label><select id="itenant" class="inp"><option value="">No tenant / host operation</option></select></div>
+ <div class="field"><label class="lab">Target version</label><select id="iver" class="inp"><option value="">Select target version</option>${versions.map(v=>`<option ${it.to===v?"selected":""}>${v}</option>`).join("")}</select><div id="version-hint" class="hint">Select a device to see compatible-version context.</div></div>
+ <div id="ha-warning"></div>
+ </div>`;
+ document.getElementById("drawer-bg").style.display="block"; refreshDrawer();
+}
+function refreshDrawer(){
+ const d=devices.find(x=>x.name===document.getElementById("idev")?.value);
+ const ctx=document.getElementById("device-context"), ts=document.getElementById("itenant"), vh=document.getElementById("version-hint"), hw=document.getElementById("ha-warning");
+ if(!ctx||!ts)return;
+ if(!d){ctx.innerHTML="";ts.innerHTML='<option value="">No tenant / host operation</option>';vh.textContent="Select a device to see compatible-version context.";hw.innerHTML="";return}
+ ctx.innerHTML=`<div class="notice" style="margin-bottom:10px"><b class="mono">${d.name}</b> · ${d.vendor} ${d.model}<br><span class="hint">${d.ip} · ${d.region} · current ${d.version}</span></div>`;
+ ts.innerHTML=`<option value="">No tenant / host operation</option><option ${state.drawerItem?.tenant===d.tenant?"selected":""}>${d.tenant}</option>`;
+ vh.textContent=`Current ${d.version}. Target must be newer; ${d.role!=="none"?`HA ${d.role} · partner ${d.ha}.`:"No HA partner."}`;
+ const current=document.getElementById("iver")?.value;
+ const target=current?parseFloat(current):0, cur=parseFloat(d.version);
+ hw.innerHTML=(target&&target<=cur)?`<div class="notice warn">Target version must be newer than the current version. Downgrades are not permitted.</div>`:(d.ha!=="—"&&state.draft?.items.some(x=>x.device===d.ha&&x.id!==state.drawerItem?.id))?`<div class="notice warn"><strong>HA conflict</strong><br>${d.ha} is already in this plan. Both HA partners cannot be operated on simultaneously.</div>`:"";
+}
+function closeDrawer(){document.getElementById("drawer-bg").style.display="none";state.drawerItem=null}
+function createDraft(){
+ const mode=document.querySelector('input[name="mode"]:checked')?.value||"BYOC";
+ const name=document.getElementById("pn").value.trim(); const desc=document.getElementById("pd").value.trim();
+ const change=mode==="BYOC"?document.getElementById("chg")?.value.trim():"SYS-PENDING";
+ const start=mode==="BYOC"?"2026-09-07T22:00":document.getElementById("start").value;
+ const end=mode==="BYOC"?"2026-09-07T23:30":document.getElementById("end").value;
+ if(mode==="BYOC"&&!change){toast("Enter the approved change ticket reference.");return}
+ if(mode==="System-Created"&&(!start||!end||new Date(end)<=new Date(start))){toast("Set a valid maintenance window.");return}
+ state.draft={id:"PLN-"+Math.floor(1100+Math.random()*800),name:name||"Untitled plan",description:desc,op:"Software upgrade",change,mode,start,end,status:"Draft",creator:true,items:[]};
+ state.route="plan";render();toast("Draft created. Add your first item.");
+}
+function saveItem(){
+ const dev=document.getElementById("idev").value.trim(), d=devices.find(x=>x.name===dev), tenant=document.getElementById("itenant").value, to=document.getElementById("iver").value;
+ if(!d){toast("Select a device from inventory.");return} if(!to){toast("Select a target version.");return}
+ if(parseFloat(to)<=parseFloat(d.version)){toast("Downgrades are not permitted.");return}
+ const conflict=d.ha!=="—"&&state.draft.items.some(x=>x.device===d.ha&&x.id!==state.drawerItem?.id); if(conflict){toast("HA conflict: the partner is already in this plan.");return}
+ if(state.drawerMode==="edit"){Object.assign(state.drawerItem,{device:d.name,tenant,from:d.version,to,status:"Pending"});toast("Item updated.");}
+ else state.draft.items.push({id:"ITM-"+Math.floor(10+Math.random()*89),device:d.name,tenant,from:d.version,to,status:"Pending"});
+ closeDrawer();render();
+}
+function submitPlan(){
+ const p=state.draft;
+ if(!p.items.length){toast("A plan needs at least one item.");return}
+ p.status="Validating";state.route="execution";render();
+ setTimeout(()=>{
+   const bad=p.items.find(i=>parseFloat(i.to)<=parseFloat(i.from));
+   if(bad){p.status="Validation Failed";state.route="plan";toast("Validation failed. Fix the item errors and resubmit.");return}
+   p.status="Executing";p.items.forEach((i,n)=>i.status=n===0?"In Progress":"Queued");render();toast("Validation passed. Execution started.");
+   setTimeout(()=>{if(p.items[0]){p.items[0].status="Action Required";p.items[0].failedTask="Execute Operation";p.items[0].failedMilestone="Install image";p.items[0].error="Image upload failed";render()}},1600);
+ },1200);
+}
+function editPlan(){state.route="new-plan";render()}
+function itemAction(id,action){
+ const it=state.draft.items.find(x=>x.id===id); if(!it)return;
+ if(action==="retry"){it.status="In Progress";render();setTimeout(()=>{it.status="Succeeded";maybeFinish();render();},1000)}
+ if(action==="rollback"){it.status="Rolling Back";render();setTimeout(()=>{it.status="Rolled Back";maybeFinish();render();},900)}
+ if(action==="cancel"){it.status="Cancelled";maybeFinish();render()}
+}
+function maybeFinish(){
+ const terminal=state.draft.items.every(i=>["Succeeded","Failed","Cancelled","Rolled Back","Rollback Failed","Skipped"].includes(i.status));
+ if(terminal){const ok=state.draft.items.filter(i=>i.status==="Succeeded").length;state.draft.status=ok===state.draft.items.length?"Completed":ok?"Completed with Failures":"Failed"}
+}
+function toast(t){const x=document.getElementById("toast");x.textContent=t;x.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.classList.remove("show"),2600)}
+function bind(){
+ document.querySelectorAll("[data-action]").forEach(b=>{b.onclick=()=>{
+  const a=b.dataset.action;
+  if(a==="new-plan"){state.draft=null;state.route="new-plan";render()}
+   else if(a==="quick-item"){state.route="quick";render()}
+  else if(a==="cancel-new"||a==="plans"){state.route="plans";render()}
+  else if(a==="create-draft")createDraft();
+  else if(a==="add-item")openDrawer();
+  else if(a==="edit-item")openDrawer(b.dataset.id);
+  else if(a==="remove-item"){state.draft.items=state.draft.items.filter(i=>i.id!==b.dataset.id);render();toast("Item removed.")}
+  else if(a==="close-drawer")closeDrawer();
+  else if(a==="save-item")saveItem();
+  else if(a==="review"){if(state.draft.items.length)state.route="review";render()}
+  else if(a==="back-plan") {state.route="plan";render()}
+  else if(a==="submit-plan")submitPlan();
+  else if(a==="edit-plan")editPlan();
+  else if(a==="retry"||a==="rollback"||a==="cancel-item")itemAction(b.dataset.id,a==="cancel-item"?"cancel":a);
+  else if(a==="item-detail"){const it=state.draft.items.find(x=>x.id===b.dataset.id);toast(`${it.device}: ${it.status}. Task detail is shown in the execution view.`)}
+  }});
+ document.querySelectorAll("[data-open-plan]").forEach(r=>r.onclick=()=>{const p=state.plans.find(x=>x.id===r.dataset.openPlan);state.draft=JSON.parse(JSON.stringify(p));state.route=p.status==="Draft"||p.status==="Validation Failed"?"plan":"execution";render()});
+ document.querySelectorAll('input[name="mode"]').forEach(x=>x.onchange=()=>{state.draft={...(state.draft||{}),mode:x.value};render()});
+ const idev=document.getElementById("idev"); if(idev)idev.oninput=refreshDrawer;
+ const iver=document.getElementById("iver"); if(iver)iver.onchange=refreshDrawer;
+ const inv=document.getElementById("invq"); if(inv)inv.oninput=()=>{const q=inv.value.toLowerCase();document.getElementById("invbody").innerHTML=inventoryRows(devices.filter(d=>(d.name+" "+d.ip+" "+d.region).toLowerCase().includes(q)))};
+ const qsub=document.querySelector('[data-action="quick-submit"]'); if(qsub)qsub.onclick=()=>{if(!document.getElementById("qdev").value||!document.getElementById("qver").value||!document.getElementById("qchg").value){toast("Device, target version and approved change are required.");return}toast("Operation submitted. A lightweight execution has been created.");};
+}
+document.getElementById("topCreateItem").onclick=()=>{state.route="quick";render()};
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(["plans","inventory","quick"].includes(h))setRoute(h)});
+document.addEventListener("click",e=>{const nav=e.target.closest("[data-nav]");if(nav){e.preventDefault();setRoute(nav.dataset.nav)}});
+render();
+</script>
+</body>
+</html>
