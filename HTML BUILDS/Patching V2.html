@@ -1,0 +1,3016 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model-X — Patching</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+
+:root{
+  --ink:#000;--ink2:#333;--ink3:#6b6b6b;--ink4:#929292;
+  --line:#d3d3d3;--line2:#e8e8e8;--surface:#fff;--surface2:#fafafa;--surface3:#f3f3f3;
+  --ui:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--ui);font-size:14px;line-height:20px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid #000;outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-columns:214px minmax(0,1fr)}
+.side{border-right:1px solid var(--line);background:#fafafa;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}
+.brand{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 16px}
+.mark{width:16px;height:16px;border:1.5px solid #000;border-radius:2px;position:relative}.mark:after{content:"";position:absolute;inset:3px;background:#000}
+.brand b{font-size:16px}.nav{padding:12px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.nav button{border:1px solid transparent;background:none;text-align:left;padding:8px 12px;border-radius:3px;font-size:14px}.nav button:hover{background:#f1f1f1}.nav button.active{background:#000;color:#fff}
+.nav-count{float:right;border:1px solid currentColor;border-radius:12px;padding:0 8px;font:12px var(--data);opacity:.85}
+.sep{border-top:1px solid var(--line2);margin:12px 12px 8px}.label{padding:0 12px 8px;color:var(--ink4);font-size:12px;letter-spacing:.09em;text-transform:uppercase}
+.foot{border-top:1px solid var(--line);padding:12px 16px;color:var(--ink4);font-size:12px}
+.main{min-width:0}.top{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;background:#fff;z-index:10}
+.crumb{font-size:12px;color:var(--ink3)}.crumb b{color:#000}.crumb span{color:var(--ink4);padding:0 8px}
+.crumb-link{background:none;border:0;padding:0;font:inherit;color:var(--ink3);cursor:pointer;text-decoration:none}
+.crumb-link:hover{color:#000;text-decoration:underline}
+.crumb-link:focus-visible{outline:2px solid #000;outline-offset:2px}
+.wrap{padding:28px 32px 72px;max-width:1420px}
+.page-head{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px}.page-head .right{margin-left:auto;display:flex;gap:8px}
+h1{font-size:26px;letter-spacing:-.035em;line-height:1.2;margin:0;font-weight:700}.sub{font-size:12px;color:var(--ink3)}
+.btn{height:32px;border:1px solid var(--line);background:#fff;border-radius:3px;padding:0 12px;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn:hover{background:#f7f7f7;border-color:#999}.btn.primary{background:#000;color:#fff;border-color:#000}.btn.small{height:28px;padding:0 12px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:0}.tabs button{border:0;background:none;padding:12px 16px 8px;font-size:12px;border-bottom:2px solid transparent}.tabs button.active{border-bottom-color:#000;font-weight:700}
+.attention{border:2px solid #000;padding:12px 12px;margin:0 0 12px;font-size:12px}.attention b{font-weight:700}
+.list-shell{border:1px solid var(--line);background:#fff}
+.table-head,.plan-row,.item-row{display:grid;grid-template-columns:minmax(360px,2.2fr) 130px 135px 160px 155px 120px;align-items:center}
+.table-head{min-height:38px;background:#fafafa;border-bottom:1px solid var(--line);padding:0 16px;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:650}
+.plan-row{min-height:66px;padding:0 16px;border-bottom:1px solid var(--line2);gap:12px}
+.plan-row:last-child{border-bottom:0}
+.plan-main{display:flex;align-items:flex-start;gap:8px;min-width:0}.expand{width:19px;height:19px;min-width:19px;padding:0;border:1px solid var(--line);background:#fff;border-radius:2px;line-height:15px;font-family:var(--data);font-size:12px}.expand:hover{border-color:#000}
+.plan-name{font-weight:700;font-size:13px}.plan-id{font:12px var(--data);color:var(--ink3);margin-top:4px}.desc{font-size:12px;color:var(--ink3);font-weight:400}
+.cell{min-width:0;font-size:12px}.mono{font-family:var(--data)}.state{display:inline-flex;align-items:center;gap:8px;font-size:12px}.dot{width:8px;height:8px;border:1px solid #000;border-radius:50%;display:inline-block}.dot.fill{background:#000}.dot.half{background:linear-gradient(90deg,#000 50%,#fff 50%)}.dot.fail{border-radius:2px;transform:rotate(45deg)}
+.open-link{font-size:12px;text-decoration:underline;cursor:pointer;background:none;border:0;padding:0}
+.plan-expanded{display:none;border-bottom:1px solid var(--line);background:#fcfcfc;padding:0 16px 8px 44px}.plan-expanded.open{display:block}
+.item-row{grid-template-columns:minmax(300px,2.2fr) 130px 175px 150px 120px;padding:0 0;min-height:58px;border-top:1px solid var(--line2)}
+.item-target{font-size:12px}.item-kind{font-size:12px;color:var(--ink3);margin-top:4px}.item-stage{font-size:12px;color:var(--ink2)}.item-state{font-size:12px}
+.plan-summary{display:flex;gap:20px;align-items:center;padding:8px 0 4px;color:var(--ink3);font-size:12px}.plan-summary strong{color:#000}
+.progress{height:4px;background:#e9e9e9;margin-top:4px;max-width:210px}.progress span{display:block;height:100%;background:#000}
+.detail-header{border:1px solid #000;padding:16px 16px;margin-bottom:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px}
+.detail-title-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.detail-title-row h1{font-size:23px}.chip{border:1px solid var(--line);padding:4px 8px;border-radius:12px;font-size:12px}
+.version{font:12px var(--data);margin-top:4px}.detail-status{padding-top:0px}.pill{border:1px solid var(--line);border-radius:18px;padding:4px 8px;font:12px var(--data)}.pill.dark{background:#000;color:#fff;border-color:#000}
+.context{grid-column:1/-1;border-top:1px solid var(--line2);padding-top:12px;display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}.meta{display:flex;gap:28px;flex-wrap:wrap}.meta label,.window-head label{display:block;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}.meta b{font:12px var(--data);font-weight:500}.window{margin-left:auto;min-width:330px}.window-head{display:flex;justify-content:space-between;gap:12px}.window-head b{font:12px var(--data);font-weight:500}.track{height:5px;border:1px solid #000;background:#fff;margin-top:8px}.track span{display:block;height:100%;background:#000}
+.item-workspace{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}.item-nav{border:1px solid var(--line);background:#fff;position:sticky;top:66px;max-height:calc(100vh - 90px);overflow:auto}.item-nav-head{padding:12px 12px;border-bottom:1px solid var(--line2);display:flex;align-items:center}.item-nav-head b{font-size:12px}.item-nav-head span{margin-left:auto;font:12px var(--data);color:var(--ink3)}.item-nav-section{padding:8px 8px 4px;color:var(--ink4);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}.item-nav-btn{display:block;width:100%;border:0;border-left:3px solid transparent;background:#fff;text-align:left;padding:8px 12px 8px 8px}.item-nav-btn:hover{background:#fafafa}.item-nav-btn.selected{background:#f3f3f3;border-left-color:#000}.item-nav-name{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:650}.item-nav-meta{padding-left:16px;margin-top:4px;color:var(--ink3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-nav-state{padding-left:16px;margin-top:4px;font:12px var(--data);color:var(--ink3)}.item-nav-state.attn{color:#000;font-weight:700}.item-main{min-width:0}.item-switch{display:flex;align-items:center;gap:8px;margin-bottom:8px}.item-switch .position{font:12px var(--data);color:var(--ink3);margin-left:auto}.item-switch .btn[disabled]{opacity:.35;cursor:default}.item-plan-context{border:1px solid var(--line);background:#fafafa;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:16px;font-size:12px}.item-plan-context b{font-weight:650}.item-plan-context .mono{font-size:12px}.item-plan-context .context-spacer{margin-left:auto;color:var(--ink3)}
+.plan-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px}.panel{border:1px solid var(--line);background:#fff}.panel-head{padding:12px 16px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:12px}.section-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:700}.muted{margin-left:auto;color:var(--ink3);font-size:12px}
+.plan-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line2)}.stat{padding:12px 12px;border-right:1px solid var(--line2)}.stat:last-child{border-right:0}.stat label{display:block;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.06em}.stat b{display:block;font:16px var(--data);margin-top:4px;font-weight:500}
+.exec-table{width:100%;border-collapse:collapse}.exec-table th{text-align:left;padding:8px 12px;border-bottom:1px solid #000;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.06em}.exec-table td{padding:12px 12px;border-bottom:1px solid var(--line2);font-size:12px;vertical-align:middle}.exec-table tr:last-child td{border-bottom:0}.exec-table tr:hover td{background:#fafafa}
+.stagebar{display:flex;gap:4px;min-width:150px}.stage-seg{height:5px;flex:1;background:#e8e8e8}.stage-seg.done{background:#000}.stage-seg.active{border:1px solid #000;background:#fff}.stage-seg.fail{background:#fff;border:1px solid #000;position:relative}.stage-seg.fail:after{content:"";position:absolute;left:1px;right:1px;top:1px;bottom:1px;background:#000;clip-path:polygon(0 0,100% 100%,0 100%,100% 0)}
+.attention-tag{border:1px solid #000;padding:4px 8px;font:12px var(--data);display:inline-block}.item-link{background:none;border:0;padding:0;text-align:left;text-decoration:underline;font-weight:650;font-size:12px}
+.side-summary{padding:16px}.side-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}.side-row:last-child{border-bottom:0}.side-row span:first-child{color:var(--ink3)}
+.side-note{margin:12px 0 0;padding:12px;border-left:2px solid #000;background:#fafafa;font-size:12px}
+.flow-card{border:1px solid var(--line);background:#fff}.flow-head{padding:12px 16px;border-bottom:1px solid var(--line2);display:flex;align-items:center}.flow-summary{padding:12px 16px;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--line2)}
+.flow{padding:12px 16px 16px}.stage{border:1px solid var(--line);margin-bottom:8px}.stage:last-child{margin-bottom:0}.stage.current,.stage.failed{border-color:#000}.stage-head{min-height:62px;padding:12px 12px;display:grid;grid-template-columns:34px minmax(0,1fr) auto 20px;gap:12px;align-items:center;background:#fff;border:0;width:100%;text-align:left}.stage.current .stage-head,.stage.failed .stage-head{background:#fafafa}.stage-icon{width:27px;height:27px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font:12px var(--data)}.stage.done .stage-icon{background:#000;color:#fff;border-color:#000}.stage.current .stage-icon,.stage.failed .stage-icon{border:2px solid #000}.stage-title{font-size:13px;font-weight:700}.stage-meta{font-size:12px;color:var(--ink3);margin-top:4px}.stage-state{font:12px var(--data);border:1px solid var(--line);padding:4px 8px;border-radius:12px}.stage-state.dark{background:#000;color:#fff;border-color:#000}.chev{font-size:13px;color:var(--ink3);transition:.15s transform}.stage.open .chev{transform:rotate(180deg)}.stage-body{display:none;border-top:1px solid var(--line2);padding:8px 12px 12px}.stage.open .stage-body{display:block}
+.milestone{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:44px;padding:8px 4px;border-bottom:1px solid var(--line2);font-size:12px;cursor:pointer}.milestone:last-child{border-bottom:0}.milestone:hover{background:#fafafa}.mini{width:9px;height:9px;border:1px solid #000;border-radius:50%}.mini.done{background:#000}.mini.fail{border-radius:2px;transform:rotate(45deg)}.mini.active{border:2px solid #000}.milestone-name{font-weight:550}.milestone-desc{font-size:12px;color:var(--ink3);margin-top:0px}.milestone-time{font:12px var(--data);color:var(--ink3)}
+/* the recovery bar inside a stopped stage — not the same thing as a button
+   group in a panel header, which is what .actions means everywhere else */
+.stage-actions{margin:8px 0 4px 28px;padding:12px 0 4px;border-top:1px solid #000;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.action-copy{margin-right:auto}.action-title{font-size:12px;font-weight:700}.action-copy .sub{font-size:12px}
+.activity{width:100%;border-collapse:collapse;font-size:12px}.activity th{text-align:left;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid #000}.activity td{padding:8px 12px;border-bottom:1px solid var(--line2)}.activity tr:last-child td{border-bottom:0}
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:40;display:none}.drawer{position:absolute;right:0;top:0;height:100%;width:min(500px,100%);background:#fff;border-left:1px solid #000;display:flex;flex-direction:column}.drawer-head{height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px}.drawer-head b{margin-right:auto}.drawer-body{padding:16px;overflow:auto}.drawer-foot{border-top:1px solid var(--line);padding:12px 16px;display:flex;justify-content:flex-end}.drawer-kv{display:grid;grid-template-columns:110px 1fr;border-top:1px solid var(--line2)}.drawer-kv div{padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}.drawer-kv div:nth-child(odd){color:var(--ink3)}
+.toast{position:fixed;right:22px;bottom:22px;background:#000;color:#fff;padding:12px 16px;font-size:12px;display:none;z-index:60}
+@media(max-width:1050px){.table-head,.plan-row{grid-template-columns:minmax(300px,2fr) 100px 110px 130px 120px 95px}.plan-detail-grid{grid-template-columns:1fr}.side-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:0 20px}.window{margin-left:0;width:100%}}
+@media(max-width:780px){.app{grid-template-columns:64px 1fr}.brand b,.nav button:not(.active) span,.label,.foot{display:none}.nav button{padding:8px 8px}.wrap{padding:20px 16px}.top{padding:0 16px}.page-head{display:block}.page-head .right{margin-top:12px}.table-head{display:none}.plan-row{grid-template-columns:1fr auto;gap:8px;padding:12px}.plan-row>.cell:not(:first-of-type){display:none}.plan-expanded{padding:0 12px 8px}.item-row{grid-template-columns:1fr auto;gap:4px;padding:8px 0}.item-row>.cell:nth-child(n+3){display:none}.detail-header{grid-template-columns:1fr}.detail-status{grid-column:1}.context{display:block}.window{margin-top:12px;min-width:0}.plan-stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}}
+
+.lifecycle-note{border-top:1px solid var(--line2);padding:12px 16px;font-size:12px;color:var(--ink3)}
+.lifecycle-note b{color:#000}
+.attention-inline{display:inline-flex;align-items:center;gap:8px;font:12px var(--data);border:1px solid #000;padding:4px 8px}
+@media(max-width:1050px){.item-workspace{grid-template-columns:220px minmax(0,1fr)}.item-plan-context .context-spacer{display:none}}
+@media(max-width:780px){.app{grid-template-columns:1fr}.side{display:none}.wrap{padding:20px 16px 52px}.item-workspace{grid-template-columns:1fr}.item-nav{max-height:none}.item-nav-section{display:none}.item-nav-btn{display:none}.item-nav-btn.selected{display:block}.item-nav-head{border-bottom:0}.item-nav:has(.selected){min-height:44px}.item-nav:has(.selected) .item-nav-head{display:flex}.item-main{min-width:0}.item-plan-context{flex-wrap:wrap}.detail-header{grid-template-columns:1fr}.window{margin-left:0;min-width:0;width:100%}}
+
+.impact-tbl{table-layout:fixed}
+.impact-tbl th,.impact-tbl td{text-align:left;padding:10px 14px}
+.impact-tbl th:first-child,.impact-tbl td:first-child{width:26%}
+.impact-tbl th:nth-child(2),.impact-tbl td:nth-child(2){width:24%}
+.tbl.vcheck th,.tbl.vcheck td{text-align:left;vertical-align:top}
+.tbl.vcheck td:first-child{font-family:var(--data);white-space:nowrap;padding-right:18px}
+.tbl.vcheck td:nth-child(2){width:150px}
+
+.v2controls{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin:0 0 10px}
+.v2facets{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:0;flex:0 0 auto}
+.v2facet{display:flex;align-items:center;gap:6px;font:11px var(--data);
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink4)}
+.v2facet select{font:12px var(--data);padding:5px 8px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);text-transform:none;letter-spacing:0}
+.v2facet select:focus-visible{outline:2px solid #000;outline-offset:1px}
+
+.exec-table tr.row-fail td{background:#fcfafa}
+.fail-state{display:block;font-size:13px}
+.checks-row td{padding:0 14px 12px 14px;background:#fcfafa;border-top:0}
+ul.checks{margin:0;padding:0;list-style:none}
+ul.checks li{font-size:12px;line-height:1.6;color:var(--ink3);padding-left:18px;position:relative}
+ul.checks li.bad{color:var(--ink)}
+ul.checks li.bad b{font-weight:600}
+ul.checks li.bad:before{content:"\2715";position:absolute;left:0}
+ul.checks li.good:before{content:"\2713";position:absolute;left:0;color:var(--ink4)}
+
+.dev-row[role="button"]{cursor:pointer}
+.dev-row:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.tbl.devprops td{vertical-align:top;padding:10px 14px}
+.tenants-tbl{table-layout:fixed}
+.tenants-tbl th,.tenants-tbl td{text-align:left;padding:10px 14px}
+.tenants-tbl th:first-child,.tenants-tbl td:first-child{width:34%}
+.tenants-tbl th:nth-child(2),.tenants-tbl td:nth-child(2){width:26%}
+.tbl.devprops td.pk{width:220px;font:12px var(--data);color:var(--ink3);white-space:nowrap}
+.tbl.devprops td.pv b{font-size:13px}
+.unheld{font-size:13px;color:var(--ink4)}
+.pd{display:block;font-size:11px;color:var(--ink4);margin-top:2px}
+.home-needs{margin-bottom:16px}
+.home-list{display:flex;flex-direction:column}
+.home-row{display:grid;grid-template-columns:26px minmax(160px,1fr) minmax(180px,1fr);
+  gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;
+  border-bottom:1px solid var(--line2);padding:12px 16px;cursor:pointer;font:inherit}
+.home-row:last-child{border-bottom:0}
+.home-row:hover{background:#fafafa}
+.home-row:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.home-row b{display:block;font-size:13px;font-weight:600}
+.home-main,.home-state{min-width:0;display:flex;flex-direction:column}
+.home-act{grid-template-columns:110px minmax(200px,1fr) 90px}
+.home-clear{padding:16px;font-size:13px;color:var(--ink3)}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.home-facts{display:flex;gap:32px;padding:16px;flex-wrap:wrap}
+.home-facts label{display:block;font:11px var(--data);letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink4);margin-bottom:4px}
+.home-facts b{font-size:20px;font-weight:600}
+.home-next{padding:0 16px 16px;border-top:1px solid var(--line2);padding-top:14px;margin-top:2px}
+.home-next label{display:block;font:11px var(--data);letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink4);margin-bottom:4px}
+@media(max-width:900px){.home-grid{grid-template-columns:1fr}
+  .home-row{grid-template-columns:22px 1fr}
+  .home-row>span:nth-child(3){display:none}}
+
+.act-head,.act-row{display:grid;
+  grid-template-columns:110px minmax(140px,1fr) 130px minmax(200px,1.6fr) 150px 70px;
+  gap:14px;align-items:center;padding:10px 14px}
+.act-head{font:11px var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);
+  border-bottom:1px solid var(--line);background:#fafafa}
+.act-row{border-bottom:1px solid var(--line2);font-size:13px}
+.act-row:last-child{border-bottom:0}
+.act-row:hover{background:#fafafa}
+.act-row>span{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.act-when{color:var(--ink3);font-size:12px}
+.act-row b{font-size:13px;font-weight:600}
+@media(max-width:900px){.act-head{display:none}
+  .act-row{grid-template-columns:1fr auto;gap:6px}
+  .act-row>span:nth-child(n+3):nth-child(-n+5){display:none}}
+
+.dev-head,.dev-row{display:grid;
+  grid-template-columns:minmax(150px,1.1fr) 126px 74px 80px minmax(168px,1fr) 70px minmax(150px,1fr);
+  gap:14px;align-items:start;padding:13px 14px}
+/* every cell starts at the top, so the first line of each column sits on one
+   line whether or not the cell has a second line beneath it */
+.dev-row>span{display:flex;flex-direction:column;justify-content:flex-start;min-width:0}
+.dev-row{min-height:58px;line-height:1.35}
+.dev-v{display:block;line-height:18px;font-size:13px}
+.dev-row .mono .dev-v{font-size:12.5px}
+.dev-name{font-weight:600}
+.dev-head span,.dev-sort{white-space:nowrap}
+.dev-head{padding:0}
+.dev-sort{display:flex;align-items:center;gap:4px;width:100%;background:none;border:0;
+  padding:11px 0;font:11px var(--data);letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink4);cursor:pointer;text-align:left}
+.dev-sort:hover{color:var(--ink)}
+.dev-sort.on{color:#000;font-weight:600}
+.dev-sort:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.dev-arrow{font-size:10px}
+.comp{display:block;font-size:12.5px;font-weight:600}
+.comp.bad{color:#000}
+.comp.ok{color:var(--ink2);font-weight:500}
+.dev-head{font:11px var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);
+  border-bottom:1px solid var(--line);background:#fafafa}
+.dev-row{border-bottom:1px solid var(--line2);font-size:13px}
+.dev-row:last-child{border-bottom:0}
+.dev-row:hover{background:#fafafa}
+.dev-name{font-weight:600}
+.dev-row .v2sub{margin-top:2px;line-height:15px}
+@media(max-width:900px){.dev-head{display:none}
+  .dev-row{grid-template-columns:1fr auto;gap:6px}
+  .dev-row>span:nth-child(n+3){display:none}}
+
+/* ---- item workspace: every item in the plan stays visible ---- */
+.item-workspace{display:grid;grid-template-columns:264px minmax(0,1fr);gap:16px;align-items:start}
+.rail-main{min-width:0}
+.rail{border:1px solid var(--line);background:#fff;position:sticky;top:66px;
+  max-height:calc(100vh - 90px);overflow:auto}
+.rail-head{display:block;width:100%;text-align:left;background:none;border:0;
+  border-bottom:1px solid var(--line2);padding:12px;cursor:pointer;font:inherit}
+.rail-head b{display:block;font-size:12.5px}
+.rail-head span{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
+.rail-head:hover{background:#fafafa}
+.rail-group{padding:10px 12px 4px;color:var(--ink4);font:11px var(--data);
+  letter-spacing:.08em;text-transform:uppercase}
+.rail-item{display:flex;gap:8px;width:100%;text-align:left;background:none;
+  border:0;border-left:3px solid transparent;padding:8px 12px 8px 9px;cursor:pointer;font:inherit}
+.rail-item:hover{background:#fafafa}
+.rail-item.on{background:#f3f3f3;border-left-color:#000}
+.rail-item:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.rail-dot{width:7px;height:7px;border:1px solid var(--ink3);border-radius:50%;margin-top:5px;flex:0 0 auto}
+.rail-dot.ran{background:var(--ink3)}
+.rail-body{min-width:0}
+.rail-body b{display:block;font-size:12.5px}
+.rail-meta,.rail-state{display:block;font-size:11px;color:var(--ink3);margin-top:1px}
+.rail-item.on .rail-state{color:var(--ink2)}
+@media(max-width:900px){
+  .item-workspace{grid-template-columns:1fr}
+  .rail{position:static;max-height:220px}
+}
+
+/* ---- workflow execution ---- */
+.wf{padding:14px 16px 16px}
+.wf-phase{margin-bottom:18px}
+.wf-phase:last-child{margin-bottom:0}
+.wf-phase-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:0 0 8px;border-bottom:1px solid var(--line2);margin-bottom:8px}
+.wf-phase-head b{font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.wf-phase-head span{font-size:11px;color:var(--ink4)}
+.wf-task{border:1px solid var(--line);margin-bottom:6px}
+.wf-task:last-child{margin-bottom:0}
+.wf-task.current{border-color:#000}
+.wf-task.failed{border-color:#000;border-width:2px}
+.wf-task.halted .wf-state{color:var(--ink2)}.wf-task.halted .wf-name{color:var(--ink2)}
+.wf-task.failed .wf-state{color:#000;font-weight:600}
+.wf-fail{margin-top:10px;font-size:12.5px;color:var(--ink)}
+.wf-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.wf-head{display:grid;grid-template-columns:44px 1fr auto 18px;gap:12px;align-items:center;
+  width:100%;padding:10px 12px;background:none;border:0;text-align:left;cursor:pointer;font:inherit}
+.wf-head:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.wf-n{font-size:11px;color:var(--ink4)}
+.wf-name{font-size:13px;font-weight:600}
+.wf-task.todo .wf-name{font-weight:400;color:var(--ink3)}
+.wf-state{font-size:10px;letter-spacing:.08em;color:var(--ink4)}
+.wf-task.done .wf-state{color:var(--ink2)}
+.wf-task.current .wf-state{color:#000}
+.wf-task .chev{font-size:12px;color:var(--ink4);transition:transform .12s}
+.wf-task.open .chev{transform:rotate(180deg)}
+.wf-body{display:none;padding:0 12px 12px 68px;border-top:1px solid var(--line2)}
+.wf-task.open .wf-body{display:block}
+.ms-list{margin:10px 0 0;padding:0;list-style:none;position:relative}
+.ms-list:before{content:"";position:absolute;left:7px;top:12px;bottom:12px;
+  width:1px;background:var(--line)}
+.ms{display:grid;grid-template-columns:16px 1fr auto;gap:10px;align-items:baseline;
+  padding:5px 0;position:relative}
+.ms-mark{width:15px;height:15px;border:1px solid var(--line2);border-radius:50%;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:9px;line-height:1;color:var(--ink3);position:relative;z-index:1;align-self:center}
+.ms.succeeded .ms-mark{border-color:var(--ink3);color:var(--ink2)}
+.ms.running .ms-mark{border-color:#000;color:#000;border-width:2px}
+.ms.failed .ms-mark{border-color:#000;background:#000;color:#fff;border-width:1px}
+.ms-name{font-size:12.5px;line-height:1.5;color:var(--ink2)}
+.ms.running .ms-name,.ms.failed .ms-name{color:var(--ink);font-weight:600}
+.ms.not-started .ms-name{color:var(--ink4)}
+.ms.cancelled .ms-mark{border-color:var(--ink3);color:var(--ink3)}
+.ms-state{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);white-space:nowrap}
+.ms.running .ms-state,.ms.failed .ms-state{color:#000;font-weight:600}
+.wf-none{margin-top:10px;font-size:12px;color:var(--ink4)}
+.wf-pb{margin-top:10px;font-size:11px;color:var(--ink4)}
+@media(prefers-reduced-motion:reduce){.wf-task .chev{transition:none}}
+
+/* ---- listing ---- */
+.v2search{display:flex;gap:8px;margin:0;flex:1 1 300px;min-width:220px}
+.v2search input{flex:1;font:12px var(--data);padding:9px 12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.v2search input:focus{outline:2px solid #000;outline-offset:-1px}
+.v2segs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.v2seg-btn{font:12px var(--data);padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--ink3);cursor:pointer}
+.v2seg-btn .mono{color:var(--ink4);margin-left:4px}
+.v2seg-btn.on{background:#000;color:#fff;border-color:#000}
+.v2seg-btn.on .mono{color:#fff}
+.v2seg-btn:focus-visible{outline:2px solid #000;outline-offset:2px}
+.v2live{font:11px var(--data);color:var(--ink3);min-height:16px;margin-bottom:6px}
+.v2table{border:1px solid var(--line)}
+.v2head,.v2row{display:grid;grid-template-columns:26px minmax(180px,2fr) 76px 92px 150px 104px minmax(150px,1.3fr);
+  gap:14px;align-items:center;padding:11px 14px}
+.v2head{font:11px var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);
+  border-bottom:1px solid var(--line);background:#fafafa}
+.v2row{border-bottom:1px solid var(--line2);text-decoration:none;color:var(--ink)}
+.v2row:last-child{border-bottom:0}
+.v2row:hover{background:#fafafa}
+.v2row:focus-visible{outline:2px solid #000;outline-offset:-2px}
+.v2dispo{font-size:13px;line-height:1;text-align:center}
+.v2dispo.needs{color:#000}.v2dispo.running{color:#555}.v2dispo.waiting{color:#888}.v2dispo.done{color:#999}
+.v2dispo.good{color:var(--ink3)}
+.v2dispo.partial{color:#000}
+.v2dispo.bad{color:#000;font-weight:700}
+.v2dispo.none{color:var(--ink4)}
+.v2name b,.v2state b{display:block;font-size:13px;font-weight:600}
+.v2row.is-qs .v2name b{font-family:var(--data);font-weight:500;font-size:12.5px}
+.qs-tag{display:inline-block;font:9px var(--data);letter-spacing:.09em;line-height:14px;
+  text-transform:uppercase;border:1px solid var(--line2);color:var(--ink3);
+  padding:0 4px;margin-right:6px;vertical-align:1px}
+.v2sub{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
+.v2sub.demand{color:var(--ink);font-weight:600}
+.v2op,.v2chg,.v2win{font-size:12px;color:var(--ink2)}
+.v2bar{display:flex;gap:2px}
+.v2seg{height:4px;width:14px;background:var(--line);display:block}
+.v2seg.on{background:#000}
+@media(max-width:900px){.v2head{display:none}
+  .v2row{grid-template-columns:22px 1fr auto;gap:8px}
+  .v2row>.v2op,.v2row>.v2chg,.v2row>.v2win,.v2row>.v2prog{display:none}}
+
+/* ---- authoring, on this file's tokens ---- */
+.notice{border-left:3px solid #111;background:#fafafa;padding:12px 16px;font-size:12px;line-height:18px;margin-bottom:16px}
+.item-table{width:100%;border-collapse:collapse}
+.item-table th,.item-table td{padding:12px 16px;border-bottom:1px solid var(--line2);text-align:left;font-size:12px;line-height:16px}
+.item-table th{color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.item-table tr:last-child td{border-bottom:0}
+.choice{display:flex;gap:12px;border:1px solid var(--line);padding:16px;margin-bottom:8px;border-radius:3px}
+/* The change-record options lost their descriptions, so the padding that was
+   sized for two lines now wraps one. This tightens that card only — the same
+   boxes elsewhere still carry subtext and still need the room. */
+.section.tight .section-head{padding:12px 16px}
+.section.tight .section-body{padding:14px 16px 16px}
+.section.tight .choice{padding:9px 14px;margin-bottom:6px;align-items:center}
+.section.tight .choice strong{line-height:20px}
+.section.tight .field{margin-top:14px}
+/* Two short, mutually exclusive options sit better beside each other than
+   stacked — the labels are the subject of the heading above them, so they do
+   not need to repeat it. Falls back to stacking when there is no room. */
+.choice-row{display:flex;gap:8px;flex-wrap:wrap}
+.choice-row .choice{flex:1 1 200px;margin-bottom:0}
+.impact{border:1px solid var(--line);border-collapse:collapse;width:100%;margin-top:16px}
+/* ---- version switch ---- */
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary:disabled{background:var(--ink);border-color:var(--ink)}
+
+/* ---- the Quick submit popup ---- */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:60;padding:40px 20px;overflow:auto}
+.modal-bg.open{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:#fff;border:1px solid var(--ink);border-radius:4px;width:min(680px,100%);
+  max-height:calc(100vh - 80px);display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.modal-head{display:flex;gap:12px;align-items:flex-start;padding:18px 22px;border-bottom:1px solid var(--line)}
+.modal-head h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.modal-head .sub{margin-top:3px}
+.modal-head .btn{margin-left:auto}
+.modal-body{padding:20px 22px;overflow:auto;flex:1}
+.modal-body .section{margin-bottom:12px}
+.modal-body .section:last-child{margin-bottom:0}
+.modal-foot{display:flex;gap:8px;align-items:center;padding:14px 22px;border-top:1px solid var(--line);background:var(--surface2)}
+.modal-foot .msg{margin-right:auto;font-size:12px;color:var(--ink3)}
+@media(max-width:760px){.modal-bg{padding:16px 10px}}
+
+/* ---- authoring screens ---- */
+.head{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px}
+.head h1{font-size:28px;line-height:32px;letter-spacing:-.035em;margin:0 0 4px}
+.head .actions{margin-left:auto;display:flex;gap:8px}
+.link{border:0;background:transparent;text-decoration:underline;padding:0;font-size:12px;text-align:left}
+.panel-body{padding:16px}
+.plan-head{border:1px solid var(--line);padding:20px;margin-bottom:16px}
+.plan-head.facts-only .plan-facts{margin-top:0;border-top:0;padding-top:0}
+.plan-title-line{display:flex;align-items:center;gap:12px}
+.plan-title-line h1{font-size:26px;line-height:32px;margin:0}
+.tag{border:1px solid #bbb;border-radius:12px;padding:3px 8px;font:12px/16px var(--data)}
+.meta-line{margin-top:4px;font-size:12px;color:#777}
+.plan-facts{display:grid;grid-template-columns:1fr 1fr 1.5fr 80px;margin-top:20px;border-top:1px solid var(--line2);padding-top:16px}
+.fact label{display:block;color:#777;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.fact b{display:block;font:12px/16px var(--data);margin-top:4px}
+.items-panel .panel-head{display:flex;align-items:center}
+.items-panel .panel-head .actions{margin-left:auto}
+.empty{margin:16px;border:1px dashed #ccc;min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center}
+.empty h3{font-size:16px;margin:0 0 8px}
+.empty .btn{margin-top:16px}
+.ready-note{padding:0 16px 16px;font-size:12px;color:#777}
+.ready-note b{color:#111}
+.item-actions{white-space:nowrap}
+.section{border:1px solid var(--line);margin-bottom:16px}
+.section-head{padding:16px;border-bottom:1px solid var(--line2)}
+.section-head h3{font-size:16px;line-height:20px;margin:0 0 4px}
+.section-body{padding:16px}
+.field{margin-bottom:20px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;color:#666;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:6px}
+.field input,.field select{width:100%;height:40px;border:1px solid #aaa;border-radius:3px;background:#fff;padding:0 12px;font-size:14px}
+.help{font-size:12px;line-height:18px;color:#777;margin-top:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.callout{border-left:2px solid #111;background:#fafafa;padding:12px 16px;font-size:12px;line-height:18px}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px}
+.summary .row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.summary .row:last-child{border-bottom:0}
+.summary dt{font-size:12px;color:#777}
+.summary dd{font:12px/16px var(--data);margin:0;text-align:right}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;border-top:1px solid var(--line2)}
+
+
+
+
+
+
+/* ---- authoring: forms, drawer, plan workspace ---- */
+.page{max-width:1420px}
+.form-sec{border:1px solid var(--line);border-radius:3px;margin-bottom:14px;background:#fff}
+.form-sec-h{padding:14px 16px 0}
+.form-sec-h h3{margin:0;font-size:14px}
+.form-sec-d{padding:4px 16px 12px;font-size:12px;color:var(--ink3);border-bottom:1px solid var(--line2)}
+.form-sec-b{padding:16px}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld > span{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.fld input,.fld select{height:36px;border:1px solid var(--line);border-radius:3px;padding:0 10px;background:#fff;font-size:13px;width:100%}
+.fld input:focus,.fld select:focus{border-color:var(--ink);outline:none}
+.frow{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.grow{flex:1;min-width:180px}
+.resolved{border-left:3px solid var(--ink);background:var(--surface2);padding:12px 14px}
+.resolved .big{font:600 19px/1.1 var(--data)}
+.rail{border:1px solid var(--line);border-radius:3px;background:#fff;position:sticky;top:70px}
+.rail-h{padding:12px 16px;border-bottom:1px solid var(--line2);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.rail-b{padding:14px 16px}
+.rail-kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:12px}
+.rail-kv:last-of-type{border-bottom:0}
+.rail-kv b{font-family:var(--data);font-weight:500}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media(max-width:1080px){.cols{grid-template-columns:minmax(0,1fr)}}
+.drawer-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.30);z-index:50}
+.drawer-bg.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(580px,96vw);background:#fff;border-left:1px solid var(--ink);z-index:51;display:flex;flex-direction:column}
+.drawer-head{display:flex;gap:12px;align-items:flex-start;padding:16px 20px;border-bottom:1px solid var(--line)}
+.drawer-head h2{margin:0;font-size:18px}
+.drawer-head .sub{margin-top:3px}
+.drawer-body{flex:1;overflow:auto;padding:20px}
+.drawer-foot{display:flex;gap:8px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface2)}
+.drawer-foot .msg{margin-right:auto;font-size:12px;color:var(--ink3)}
+.dw-g{border:1px solid var(--line);border-radius:3px;padding:14px 16px}
+.dw-g + .dw-g{margin-top:12px}
+.dw-g > .lab{display:block;margin-bottom:10px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.emptybox{border:1px dashed var(--line);border-radius:3px;padding:34px 20px;text-align:center;margin:16px}
+.emptybox h3{margin:0 0 6px;font-size:14px}
+.emptybox p{margin:0 auto 16px;font-size:12px;color:var(--ink3);max-width:56ch}
+.toast{display:none;position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:3px;font-size:12px;z-index:80}
+.saved{font:10px var(--data);border:1px solid var(--line);border-radius:2px;padding:1px 6px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+.backl{width:28px;height:28px;border:1px solid var(--line);border-radius:3px;background:#fff;display:inline-flex;align-items:center;justify-content:center;font:14px var(--data);flex:0 0 auto}
+.backl:hover{border-color:var(--ink)}
+
+
+/* Restored: these came out of the creation build's media queries and had been
+   flattened into unconditional rules by the merge — which is why the page head
+   stacked, the plan facts sat 2x2 and the paired fields never went side by
+   side at full width. */
+@media(max-width:1050px){
+  .form-grid,.item-exec-layout{grid-template-columns:1fr}
+  .item-nav{position:static}
+  .plan-facts{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .page{padding:20px 16px 48px}
+  .head{display:block}
+  .head .actions{margin-top:12px}
+  .plan-facts{grid-template-columns:1fr 1fr;gap:16px}
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><i class="mark"></i><b>Model-X</b></div>
+    <nav class="nav">
+      <button data-nav="home">Home</button>
+      <button data-nav="plans">Plans and items <span class="nav-count">14</span></button>
+      <button data-nav="devices">Devices <span class="nav-count">69</span></button>
+      <button data-nav="activity">Activity <span class="nav-count">0</span></button>
+    </nav>
+    <div class="foot">Sample data.</div>
+  </aside>
+  <section class="main">
+    <div class="top">
+      <div class="crumb" id="crumb"></div>
+    </div>
+    <div class="wrap"><main id="app"></main></div>
+  </section>
+</div>
+
+<div id="drawerBg" class="drawer-bg" aria-hidden="true">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-head">
+      <div><h2 id="drawerTitle">Add an item</h2><div id="drawerSub" class="sub"></div></div>
+      <button class="btn" onclick="closeDrawer()" aria-label="Close">✕</button>
+    </div>
+    <div id="drawerBody" class="drawer-body"></div>
+    <div id="drawerFoot" class="drawer-foot"></div>
+  </aside>
+</div>
+
+<div id="modalBg" class="modal-bg" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head"><div><h2 id="modalTitle">Quick submit</h2><div class="sub">One operation, submitted on its own.</div></div><button class="btn" onclick="closeQuickModal()" aria-label="Close">✕</button></div>
+    <div id="modalBody" class="modal-body"></div>
+    <div id="modalFoot" class="modal-foot"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const plans=[
+ {id:"PL-0033",name:"Ardent access switches, one wave",desc:"Access layer, Ardent site",operation:"TMOS",change:"CR-7880",window:"17 Oct, 22:00",state:"Running",attention:"needs you",
+  items:[{id:"IT-1041",name:"ardent-access-01",kind:"Virtual tenant",device:"ardent-access-01",tenant:"access",operation:"FortiOS",from:"7.2.8",to:"7.4.5",stage:"Install image",state:"Waiting for action",}]},
+ {id:"PL-0012",name:"Q3 perimeter remediation",desc:"Three items",operation:"TMOS",change:"CR-7112",window:"15 Oct, 22:00",state:"Running",attention:"needs you",
+  items:[
+   {id:"IT-1018",name:"q3-edge-01",kind:"HA pair",device:"q3-edge-01/02",tenant:"perimeter",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Activate image",state:"Running"},
+   {id:"IT-1019",name:"q3-edge-03",kind:"Virtual tenant",device:"q3-edge-03",tenant:"perimeter-api",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Install image",state:"Running"},
+   {id:"IT-1020",name:"q3-edge-04",kind:"Virtual tenant",device:"q3-edge-04",tenant:"vpn",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Backup",state:"Completed"}
+ ]},
+ {id:"PL-0040",name:"Cinder tenant refresh",desc:"Approved version rollout for the Cinder estate",operation:"TMOS",change:"CR-7412",window:"2 Oct, 22:00",state:"Validating",
+  items:[
+   {id:"IT-1101",name:"cinder-payments-01",kind:"HA pair",device:"rseries-cin-01/02",tenant:"tnt-payments-01",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Validating"},
+   {id:"IT-1102",name:"cinder-orders-01",kind:"Virtual tenant",device:"rseries-cin-03",tenant:"tnt-orders-01",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Validating"}
+ ]},
+ {id:"PL-0035",name:"Access switch fleet, four regions",desc:"Regional access fleet",operation:"TMOS",change:"CR-7770",window:"5 Oct, 22:00",state:"Running",
+  items:[{id:"IT-1060",name:"access-fleet-wave",kind:"R-series device",device:"access-01…12",tenant:"shared",operation:"FortiOS",from:"7.2.7",to:"7.4.5",stage:"Activate image",state:"Running"}]},
+ {id:"PL-0034",name:"Core switches, activate and commit",desc:"Core layer, activate and commit",operation:"TMOS",change:"CR-7812",window:"2 Oct, 22:00",state:"Running",
+  items:[{id:"IT-1054",name:"core-switch-01",kind:"Virtual tenant",device:"core-switch-01",tenant:"core",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Post-checks",state:"Running"}]},
+ {id:"PL-0031",name:"Cinder perimeter routers",desc:"Perimeter routing, Cinder",operation:"TMOS",change:"CR-7906",window:"8 Sept, 22:00",state:"Validating",
+  items:[{id:"IT-1088",name:"cinder-router-01",kind:"Virtual tenant",device:"cinder-router-01",tenant:"perimeter",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Validation",state:"Validating"}]},
+ {id:"PL-0024",name:"Bramble edge, September",desc:"Edge estate, September window",operation:"TMOS",change:"CR-7501",window:"7 Oct, 22:00",state:"Validating",
+  items:[
+   {id:"IT-1047",name:"fgt-bra-dmz-01/02",kind:"HA pair",device:"fgt-bra-dmz-01/02",tenant:"dmz",operation:"FortiOS",from:"7.2.8",to:"7.4.5",stage:"Pre-checks",state:"Queued"},
+   {id:"IT-1048",name:"isr-bra-wan-01",kind:"Virtual tenant",device:"isr-bra-wan-01",tenant:"wan",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Pre-checks",state:"Queued"}
+ ]},
+ {id:"PL-0018",name:"Ardent F5 platform refresh",desc:"Platform refresh, Ardent",operation:"TMOS",change:"CR-7330",window:"17 Oct, 22:00",state:"Running",
+  items:[
+   {id:"IT-1031",name:"f5-prod-04",kind:"R-series device",device:"f5-prod-04",tenant:"payments",operation:"TMOS",from:"16.1.5",to:"17.1.1",stage:"Install image",state:"Waiting for action",},
+   {id:"IT-1032",name:"f5-prod-05",kind:"R-series device",device:"f5-prod-05",tenant:"orders",operation:"TMOS",from:"16.1.5",to:"17.1.1",stage:"Activate image",state:"Running"}
+ ]},
+ {id:"PL-0051",name:"Cinder virtual tenant wave",desc:"Virtual tenants, Cinder",operation:"TMOS",change:"CR-7921",window:"19 Oct, 23:00",state:"Draft",
+  items:[{id:"IT-1120",name:"virtual-tenant-billing",kind:"Virtual tenant",device:"—",tenant:"billing-vt",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Not started",state:"Draft"}]}
+];
+
+// Expanded demo plan so the persistent navigator can be evaluated at a realistic 15-item scale.
+plans.find(p=>p.id==="PL-0012").desc="Perimeter estate, Q3 remediation cycle";
+plans.find(p=>p.id==="PL-0012").items=[
+  {id:"IT-1018",name:"q3-edge-01",kind:"HA pair",device:"q3-edge-01/02",tenant:"perimeter",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Activate image",state:"Running"},
+  {id:"IT-1019",name:"q3-edge-03",kind:"Virtual tenant",device:"q3-edge-03",tenant:"perimeter-api",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Install image",state:"Running"},
+  {id:"IT-1020",name:"q3-edge-04",kind:"Virtual tenant",device:"q3-edge-04",tenant:"vpn",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Post-checks",state:"Completed"},
+  {id:"IT-1021",name:"q3-edge-05",kind:"HA pair",device:"q3-edge-05/06",tenant:"admin",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Backup",state:"Running"},
+  {id:"IT-1022",name:"q3-edge-07",kind:"Virtual tenant",device:"q3-edge-07",tenant:"internal",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Install image",state:"Waiting for action"},
+  {id:"IT-1023",name:"q3-edge-08",kind:"Virtual tenant",device:"q3-edge-08",tenant:"api",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Activate image",state:"Running"},
+  {id:"IT-1024",name:"q3-edge-09",kind:"HA pair",device:"q3-edge-09/10",tenant:"payments",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Running"},
+  {id:"IT-1025",name:"q3-edge-11",kind:"Virtual tenant",device:"q3-edge-11",tenant:"orders",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Backup",state:"Running"},
+  {id:"IT-1026",name:"q3-edge-12",kind:"Virtual tenant",device:"q3-edge-12",tenant:"reporting",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Post-checks",state:"Running"},
+  {id:"IT-1027",name:"q3-edge-13",kind:"HA pair",device:"q3-edge-13/14",tenant:"identity",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Queued"},
+  {id:"IT-1028",name:"q3-edge-15",kind:"Virtual tenant",device:"q3-edge-15",tenant:"monitoring",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Queued"},
+  {id:"IT-1029",name:"q3-edge-16",kind:"Virtual tenant",device:"q3-edge-16",tenant:"analytics",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Queued"},
+  {id:"IT-1030",name:"q3-edge-17",kind:"HA pair",device:"q3-edge-17/18",tenant:"web",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Backup",state:"Completed"},
+  {id:"IT-1033",name:"q3-edge-19",kind:"Virtual tenant",device:"q3-edge-19",tenant:"search",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Post-checks",state:"Completed"},
+  {id:"IT-1034",name:"q3-edge-20",kind:"Virtual tenant",device:"q3-edge-20",tenant:"gateway",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Queued"}
+];
+
+
+/* ============================================================================
+   MERGED BUILD — authoring and execution in one file.
+
+   Two prototypes were merged here. The authoring flow (list → new plan →
+   workspace → add item → submit, plus quick submit) came from one; the
+   execution surface (plan execution with per-item stage bars, and the item
+   view with its persistent navigator) came from the other. They had separate
+   plans lists, separate data and separate CSS tokens; there is now one of
+   each.
+
+   The join is the plans list. A Plan opens to whichever view its state calls
+   for — the workspace while it is a Draft, the execution view once it is not.
+   ============================================================================ */
+
+/* every plan carries a window as a pair, so the execution view can show a
+   range and the authoring form can edit both ends */
+function normalisePlan(p){
+  if(!p.windowStart){ p.windowStart = p.window || ""; }
+  /* the execution views read p.window; the authoring form writes the pair.
+     Keep the single field in step with the pair rather than having two. */
+  Object.defineProperty(p, "window", {
+    get(){ return this.windowStart || ""; },
+    set(v){ this.windowStart = v; },
+    configurable:true
+  });
+  if(!p.windowEnd){
+    const m = /^(\d+)\s+(\w+),\s*(\d+):(\d+)$/.exec(p.windowStart||"");
+    p.windowEnd = m ? (Number(m[1])+1)+" "+m[2]+", 02:00" : "";
+  }
+  if(!p.mode) p.mode = p.change && p.change!=="—" ? "byoc" : "create";
+  p.items.forEach(i=>{
+    if(!i.journey) i.journey = i.kind==="Virtual tenant" ? "virtual" : "rseries";
+  });
+}
+plans.forEach(normalisePlan);
+
+let view="home", selectedPlan=null, selectedItem=null, tab="execution";
+let expanded=new Set(["PL-0024"]);
+let openStage=2, simMode="action", simTimer=null;
+let listTab="all";
+/* authoring state */
+let newChange="create", newOp="TMOS", quickJourney="rseries", quickChange="byoc";
+let itemJourney="rseries", itemDraft={device:"",tenant:"",version:"17.1.1",impact:false};
+
+const TABS=[
+  ["all","All",     null],
+  ["drafts","Drafts",  p=>p.state==="Draft"],
+  ["active","Active",  p=>["Validating","Running","Executing","Action required"].includes(p.state)],
+  ["history","History",p=>["Completed","Completed with failures","Failed","Cancelled"].includes(p.state)]
+];
+const tabPlans=k=>{const f=(TABS.find(t=>t[0]===k)||TABS[0])[2];return f?plans.filter(f):plans;};
+
+/* The sidebar carries an .active style that nothing ever set. Every view here
+   lives under Plans and items, so it is the current section throughout. */
+function setNav(){
+  const section = view==="home" ? "home" : view==="devices" ? "devices"
+                : view==="activity" ? "activity" : "plans";
+  document.querySelectorAll("[data-nav]").forEach(b=>{
+    const on = b.dataset.nav===section;
+    b.classList.toggle("active",on);
+    if(on) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current");
+  });
+  const c=document.querySelector('[data-nav="plans"] .nav-count');
+  if(c) c.textContent=DB().length;
+  const d=document.querySelector('[data-nav="devices"] .nav-count');
+  if(d) d.textContent=inventory().length;
+  const a=document.querySelector('[data-nav="activity"] .nav-count');
+  if(a && typeof activityLog==="function") a.textContent=activityLog().length;
+}
+
+function render(){
+  setNav();
+  if(view==="home") return renderHome();
+  if(view==="activity") return renderActivity();
+  if(view==="devices") return devSelected?renderDeviceDetail():renderDevices();
+  if(view==="list") return renderListV2();
+  if(view==="newplan") return renderNewPlan();
+  if(view==="item") return renderItemV2();
+  const p=getPlan(selectedPlan);
+  if(editing===selectedPlan && p && canEdit(p)) return renderWorkspace();
+  return (p && p.state===PLAN_STATE.DRAFT) ? renderWorkspace() : renderPlanV2();
+}
+function goList(){ go({v:"list"}); }
+function openNewPlan(){ go({v:"newplan"}); }
+
+
+/* A Plan opens to the view its state calls for. */
+function openPlan(id){ go({v:"plan",p:id}); }
+
+
+function closeDrawer(){
+  const bg=document.getElementById("drawerBg");
+  bg.classList.remove("open"); bg.setAttribute("aria-hidden","true");
+}
+function showDrawer(){
+  const bg=document.getElementById("drawerBg");
+  bg.classList.add("open"); bg.setAttribute("aria-hidden","false");
+}
+
+
+/* ---------- execution surface ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+function dotClass(s){
+ if(s==="Running"||s==="Running")return "half";
+ if(s==="Completed"||s==="Succeeded")return "fill";
+ if(s==="Waiting for action"||s==="Failed")return "fail";
+ return "";
+}
+
+function stateHTML(s){
+ return `<span class="state"><i class="dot ${dotClass(s)}"></i>${esc(s)}</span>`;
+}
+
+const DB=()=>plansV2;   /* plans[] survives only as the seed buildV2Data derives from */
+function getPlan(id){return DB().find(p=>p.id===id);}
+
+function getItem(pid,iid){const p=getPlan(pid);return p?.items.find(i=>i.id===iid);}
+
+function counts(p){
+ return countsV2(p);
+ const c={total:p.items.length,completed:0,running:0,waiting:0,queued:0,validating:0};
+ p.items.forEach(i=>{
+  if(i.state==="Completed")c.completed++;
+  else if(i.state==="Running")c.running++;
+  else if(i.state==="Waiting for action")c.waiting++;
+  else if(i.state==="Validating")c.validating++;
+  else c.queued++;
+ });
+ return c;
+}
+
+
+
+
+
+
+
+
+
+function openItem(pid,iid){ go({v:"item",p:pid,i:iid}); }
+function openDevice(name){ go({v:"device",d:name}); }
+
+
+
+
+
+
+
+
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(showToast.t);showToast.t=setTimeout(()=>t.style.display="none",2400);}
+
+/* ---------- authoring ---------- */
+/* ============================================================================
+   ITEM CREATION ENGINE
+
+   The form is defined by data, not by hard-coded OS layouts. Adding an
+   operation type means adding an entry to OPERATIONS, not editing a renderer.
+
+   Fields declare what they depend on. Changing an upstream answer clears
+   everything downstream rather than leaving a stale value silently selected.
+
+   One engine serves Quick Submit and Add Item. The only difference is plan
+   context: an item added to a plan inherits the operation type and the change
+   window and is never asked for them again.
+
+   The impact check is mandatory and is invalidated by any change to the
+   selections it was calculated from.
+   ============================================================================ */
+
+/* ---- sample reference data ---- */
+const F5OS_VERSIONS=[
+  {v:"1.8.0", approved:true,  latest:true},
+  {v:"1.7.0", approved:true,  latest:false},
+  {v:"1.6.2", approved:false, latest:false}
+];
+const isTarget=v=>v.target!==false;
+const RSERIES_DEVICES=[
+  {id:"rseries-ard-01", label:"rseries-ard-01 — 1.6.2", pair:"rseries-ard-02", region:"EMEA"},
+  {id:"rseries-ard-02", label:"rseries-ard-02 — 1.6.2", pair:"rseries-ard-01", region:"EMEA"},
+  {id:"rseries-cin-01", label:"rseries-cin-01 — 1.8.0", pair:"rseries-cin-02", region:"AMER"},
+  {id:"rseries-cin-02", label:"rseries-cin-02 — 1.8.0", pair:"rseries-cin-01", region:"AMER"},
+  {id:"rseries-bra-01", label:"rseries-bra-01 — 1.7.0", pair:"rseries-bra-02", region:"APAC"},
+  {id:"rseries-bra-02", label:"rseries-bra-02 — 1.7.0", pair:"rseries-bra-01", region:"APAC"}
+];
+const TENANTS_BY_DEVICE={
+  "rseries-ard-01":[{id:"tnt-payments-01",v:"16.1.4",pair:"tnt-payments-02"},{id:"tnt-web-01",v:"16.1.4",pair:"tnt-web-02"},
+                    {id:"tnt-cards-01",v:"16.1.4",pair:"tnt-cards-02"},{id:"tnt-auth-01",v:"16.1.6",pair:"tnt-auth-02"}],
+  "rseries-ard-02":[{id:"tnt-payments-02",v:"16.1.4",pair:"tnt-payments-01"},{id:"tnt-web-02",v:"16.1.4",pair:"tnt-web-01"},
+                    {id:"tnt-cards-02",v:"16.1.4",pair:"tnt-cards-01"},{id:"tnt-auth-02",v:"16.1.6",pair:"tnt-auth-01"}],
+  "rseries-cin-01":[{id:"tnt-api-01",v:"17.1.1",pair:"tnt-api-02"},{id:"tnt-intl-01",v:"17.1.1",pair:"tnt-intl-02"},
+                    {id:"tnt-clearing-01",v:"16.1.4",pair:"tnt-clearing-02"},{id:"tnt-fx-01",v:"17.0.3",pair:"tnt-fx-02"}],
+  "rseries-cin-02":[{id:"tnt-api-02",v:"17.1.1",pair:"tnt-api-01"},{id:"tnt-intl-02",v:"17.1.1",pair:"tnt-intl-01"},
+                    {id:"tnt-clearing-02",v:"16.1.4",pair:"tnt-clearing-01"},{id:"tnt-fx-02",v:"17.0.3",pair:"tnt-fx-01"}],
+  "rseries-bra-01":[{id:"tnt-retail-01",v:"16.1.4",pair:"tnt-retail-02"},{id:"tnt-mobile-01",v:"17.0.3",pair:"tnt-mobile-02"}],
+  "rseries-bra-02":[{id:"tnt-retail-02",v:"16.1.4",pair:"tnt-retail-01"},{id:"tnt-mobile-02",v:"17.0.3",pair:"tnt-mobile-01"}]
+};
+const VIRTUAL_TENANTS=[
+  {id:"vtn-clearing-01",v:"16.1.4",pair:"vtn-clearing-02",region:"EMEA"},
+  {id:"vtn-settle-01",  v:"16.1.4",pair:"vtn-settle-02",region:"AMER"},
+  {id:"vtn-recon-01",   v:"16.1.6",pair:"vtn-recon-02",region:"APAC"},
+  {id:"vtn-report-01",  v:"17.0.3",pair:"vtn-report-02",region:"EMEA"}
+];
+/* The partners are resolvable but never selectable — a partner is derived from
+   the tenant you chose, not picked . Without them the impact analysis
+   silently dropped the paired side. */
+const VIRTUAL_PARTNERS=[
+  {id:"vtn-clearing-02",v:"16.1.4",pair:"vtn-clearing-01",region:"EMEA"},
+  {id:"vtn-settle-02",  v:"16.1.4",pair:"vtn-settle-01",region:"AMER"},
+  {id:"vtn-recon-02",   v:"16.1.6",pair:"vtn-recon-01",region:"APAC"},
+  {id:"vtn-report-02",  v:"17.0.3",pair:"vtn-report-01",region:"EMEA"}
+];
+const TMOS_VERSIONS=[
+  {v:"17.1.1", approved:true,  latest:true },
+  {v:"17.0.3", approved:true,  latest:false},
+  {v:"16.1.6", approved:false, latest:false},
+  /* known builds still running in the estate, no longer offered as targets */
+  {v:"16.1.4", approved:false, latest:false, target:false}
+];
+const deviceById=id=>RSERIES_DEVICES.find(d=>d.id===id)||null;
+const tenantById=id=>[...Object.values(TENANTS_BY_DEVICE).flat(),...VIRTUAL_TENANTS,...VIRTUAL_PARTNERS].find(t=>t.id===id)||null;
+
+/* ---- the schema ---- */
+const OPERATIONS={
+  TMOS:{
+    label:"TMOS", rollback:true,
+    fields:[
+      {key:"deviceType", label:"Device type", placeholder:"Select one",
+       options:()=>[{v:"rseries",t:"R-Series device"},{v:"virtual",t:"Virtual device"}]},
+      /* the device step only exists where it applies */
+      {key:"device", label:"Device", placeholder:"Select a device",
+       when:d=>d.deviceType==="rseries",
+       options:()=>RSERIES_DEVICES.map(x=>({v:x.id,t:x.label}))},
+      /* tenants respect the device or the virtual environment */
+      {key:"tenant", label:d=>d.deviceType==="rseries"?"Tenant on that device":"Tenant",
+       placeholder:"Select a tenant",
+       when:d=>d.deviceType==="virtual"||(d.deviceType==="rseries"&&!!d.device),
+       options:d=>(d.deviceType==="rseries"?(TENANTS_BY_DEVICE[d.device]||[]):VIRTUAL_TENANTS)
+                   .map(t=>({v:t.id,t:t.id+" — "+t.v}))},
+      {key:"version", label:"Target version", placeholder:"Select a version",
+       when:d=>!!d.tenant, kind:"version",
+       options:()=>TMOS_VERSIONS.filter(isTarget).map(x=>({v:x.v,
+         t:x.v+(x.approved&&x.latest?"  ·  recommended (approved, latest)":x.approved?"  ·  approved":"  ·  not approved")}))}
+    ]
+  },
+  /* Rollback is a property of the operation type, not the device. Types that
+     cannot be rolled back declare rollback:false and the action is never
+     offered for them — adding such a type is a data entry, nothing more. */
+  F5OS:{
+    label:"F5OS", rollback:true,
+    fields:[
+      {key:"peer1", label:"Peer 1", placeholder:"Select a host",
+       options:()=>RSERIES_DEVICES.map(x=>({v:x.id,t:x.label}))},
+      {key:"peer2", label:"Peer 2", placeholder:"Select a host",
+       when:d=>!!d.peer1,
+       options:d=>RSERIES_DEVICES.filter(x=>x.id!==d.peer1).map(x=>({v:x.id,t:x.label}))},
+      {key:"version", label:"Target version", placeholder:"Select a version",
+       when:d=>!!d.peer2, kind:"version",
+       options:()=>F5OS_VERSIONS.filter(isTarget).map(x=>({v:x.v,
+         t:x.v+(x.approved?"":"  ·  not approved")+(x.latest?"  ·  latest":"")}))}
+    ]
+  }
+};
+const opFields=op=>(OPERATIONS[op]||{}).fields||[];
+const recommendedVersion=(op)=>((op==="F5OS"?F5OS_VERSIONS:TMOS_VERSIONS).find(v=>v.approved&&v.latest)||{}).v||"";
+
+/* which fields are visible for the answers so far */
+function visibleFields(draft){
+  return opFields(draft.op).filter(f=>!f.when||f.when(draft));
+}
+/* an upstream change clears everything downstream, and any impact result */
+function setField(draft,key,value){
+  const fs=opFields(draft.op), i=fs.findIndex(f=>f.key===key);
+  draft[key]=value;
+  fs.slice(i+1).forEach(f=>{ draft[f.key]=""; });
+  draft.impact=null;
+}
+function setOperation(draft,op){
+  draft.op=op;
+  opFields(op).forEach(f=>{ draft[f.key]=""; });
+  Object.keys(draft).forEach(k=>{ if(!["op","impact","change","crno","winStart","winEnd"].includes(k)
+     && !opFields(op).some(f=>f.key===k)) delete draft[k]; });
+  draft.impact=null;
+}
+
+/* impact includes the pair and the tenants it carries, with reasons */
+function computeImpact(draft){
+  if(draft.op==="F5OS"){
+    const rows=[];
+    [draft.peer1,draft.peer2].filter(Boolean).forEach((h,n)=>{
+      rows.push({device:h, tenant:"—", why:"Host selected as Peer "+(n+1)+" — reboots"});
+      (TENANTS_BY_DEVICE[h]||[]).forEach(t=>
+        rows.push({device:h, tenant:t.id, why:"Runs on this host — downtime during reboot"}));
+    });
+    return rows;
+  }
+  const rows=[], t=tenantById(draft.tenant);
+  if(!t) return rows;
+  if(draft.deviceType==="rseries"){
+    const dev=deviceById(draft.device), pairDev=dev?deviceById(dev.pair):null;
+    rows.push({device:dev?dev.id:"—", tenant:t.id, why:"Selected"});
+    const pt=tenantById(t.pair);
+    if(pairDev&&pt) rows.push({device:pairDev.id, tenant:pt.id, why:"Impacted through the paired device"});
+  }else{
+    rows.push({device:"—", tenant:t.id, why:"Selected"});
+    const pt=tenantById(t.pair);
+    if(pt) rows.push({device:"—", tenant:pt.id, why:"Impacted through the HA partner"});
+  }
+  return rows;
+}
+
+/* submit only when everything required is satisfied */
+function validateItem(draft,needsChange){
+  const opDef=OPERATIONS[draft.op];
+  if(!draft.op)            return "Select an operation type.";
+  if(opDef&&opDef.unspecified) return draft.op+" is not specified yet.";
+  const missing=visibleFields(draft).find(f=>!draft[f.key]);
+  if(missing)              return "Select "+(typeof missing.label==="function"?missing.label(draft):missing.label).toLowerCase()+".";
+  if(!draft.impact)        return "Check impacted CIs before submitting.";
+  if(needsChange){
+    if(draft.change==="byoc" && !(draft.crno||"").trim()) return "Enter the change number.";
+    if(draft.change!=="byoc" && !(draft.winStart||"").trim()) return "Set the requested window.";
+  }
+  return null;
+}
+
+/* ---- rendering ---- */
+function fieldHTML(f,draft,handler){
+  const label=typeof f.label==="function"?f.label(draft):f.label;
+  const opts=f.options(draft)||[];
+  const val=draft[f.key]||"";
+  const hint=(f.kind==="version"&&!val)
+    ? `<span class="help" style="display:block">Recommended: <b>${esc(recommendedVersion(draft.op))}</b> — approved and latest.</span>`
+    : (f.kind==="version"&&val&&val!==recommendedVersion(draft.op))
+      ? `<span class="help" style="display:block">Not the recommended version (${esc(recommendedVersion(draft.op))}).</span>` : "";
+  return `<div class="field"><label>${esc(label)}</label>
+    <select onchange="${handler}('${f.key}',this.value)">
+      <option value="">${esc(f.placeholder||"Select one")}</option>
+      ${opts.map(o=>`<option value="${esc(o.v)}" ${val===o.v?"selected":""}>${esc(o.t)}</option>`).join("")}
+    </select>${hint}</div>`;
+}
+
+/* the OS-specific configuration block, shared by both entry points  */
+function opTypeHTML(draft,opHandler){
+  return `<div class="field"><label>Operation type</label>
+      <select onchange="${opHandler}(this.value)">
+        <option value="">Select one</option>
+        ${Object.keys(OPERATIONS).map(k=>`<option value="${k}" ${draft.op===k?"selected":""}>${esc(OPERATIONS[k].label)}</option>`).join("")}
+      </select></div>`;
+}
+
+function targetFieldsHTML(draft,handler){
+  if(!draft.op) return `<div class="notice">Select an operation type first.</div>`;
+  if(OPERATIONS[draft.op].unspecified)
+    return `<div class="notice">The ${esc(draft.op)} workflow has not been specified yet.</div>`;
+  return visibleFields(draft).map(f=>fieldHTML(f,draft,handler)).join("");
+}
+
+function itemConfigHTML(draft,handler,opHandler,showOpType){
+  return (showOpType?opTypeHTML(draft,opHandler):"")+targetFieldsHTML(draft,handler);
+}
+
+function impactReady(d){ return d.op==="F5OS" ? !!(d.peer1&&d.peer2) : !!d.tenant; }
+function impactHTML(draft){
+  const ready = draft.op==="F5OS" ? !!(draft.peer1&&draft.peer2) : !!draft.tenant;
+  if(!ready) return `<div class="notice">Select a target first.</div>`;
+  if(!draft.impact) return `<div class="notice">Not checked yet.</div>`;
+  return `<table class="impact"><thead><tr><th>Device</th><th>Tenant</th><th>Why</th></tr></thead><tbody>
+    ${draft.impact.map(r=>`<tr><td class="mono">${esc(r.device)}</td><td class="mono">${esc(r.tenant)}</td><td>${esc(r.why)}</td></tr>`).join("")}
+  </tbody></table>`;
+}
+
+/* ============================ QUICK SUBMIT  ======================
+   No user-created plan exists, so this entry point carries its own change
+   window. On submit the item is filed under a system-generated virtual plan
+    that the operator never has to configure. */
+let quickDraft={op:"",impact:null,change:"byoc",crno:"CR-7412",winStart:"10 Oct 2026 · 22:00",winEnd:"11 Oct 2026 · 02:00"};
+
+function qsOp(v){ setOperation(quickDraft,v); renderQuickBody(); }
+function qsSet(k,v){ setField(quickDraft,k,v); renderQuickBody(); }
+function qsCheck(){ quickDraft.impact=computeImpact(quickDraft); renderQuickBody(); }
+function qsChange(m){ quickDraft.change=m; renderQuickBody(); }
+
+function quickForm(){
+  const d=quickDraft;
+  const blocked=validateItem(d,true);
+  const step1=`<section class="section tight"><div class="section-head"><h3>1 · Operation type</h3>
+      </div>
+    <div class="section-body">${opTypeHTML(d,"qsOp")}</div></section>`;
+  const step2=`<section class="section tight"><div class="section-head"><h3>2 · Target</h3>
+      </div>
+    <div class="section-body">${targetFieldsHTML(d,"qsSet")}</div></section>`;
+  const step3=`<section class="section tight"><div class="section-head"><h3>3 · Check impacted CIs</h3>
+      </div>
+    <div class="section-body">
+      <button class="btn" ${impactReady(d)?"":"disabled"} onclick="qsCheck()">${d.impact?"Check again":"Check impacted CIs"}</button>
+      <div style="margin-top:12px">${impactHTML(d)}</div>
+    </div></section>`;
+  const step4=`<section class="section tight"><div class="section-head"><h3>4 · Change record</h3>
+      </div>
+    <div class="section-body">
+      <div class="choice-row">
+        <div class="choice ${d.change==="byoc"?"selected":""}" onclick="qsChange('byoc')">
+          <input type="radio" ${d.change==="byoc"?"checked":""}><div><strong>I have one</strong></div></div>
+        <div class="choice ${d.change==="create"?"selected":""}" onclick="qsChange('create')">
+          <input type="radio" ${d.change==="create"?"checked":""}><div><strong>Request one</strong></div></div>
+      </div>
+      ${d.change==="byoc"
+        ? `<div class="field" style="margin-top:14px"><label>Change number</label><input value="${esc(d.crno)}" oninput="quickDraft.crno=this.value;renderQuickBody()"></div>`
+        : `<div class="two" style="margin-top:14px"><div class="field"><label>Window start</label><input value="${esc(d.winStart)}" oninput="quickDraft.winStart=this.value;renderQuickBody()"></div><div class="field"><label>Window end</label><input value="${esc(d.winEnd)}" oninput="quickDraft.winEnd=this.value;renderQuickBody()"></div></div>`}
+    </div></section>`;
+  return {html:step1+step2+step3+step4, blocked};
+}
+
+function quickSummary(){
+  const d=quickDraft, blocked=validateItem(d,true);
+  const row=(k,v)=>`<div class="rail-kv"><span>${k}</span><b>${esc(v||"—")}</b></div>`;
+  return `<div class="rail-h">This operation</div><div class="rail-b">
+    ${row("Operation",d.op)}
+    ${row("Device type",d.deviceType==="rseries"?"R-Series":d.deviceType==="virtual"?"Virtual":"")}
+    ${row("Target",d.tenant)}
+    ${row("Version",d.version)}
+    ${row("Impact",d.impact?d.impact.length+" affected":"")}
+    ${row("Change",d.change==="byoc"?d.crno:"to be raised")}
+    <p class="sub" style="margin-top:12px">${blocked?esc(blocked):"Ready to submit."}</p>
+  </div>`;
+}
+
+function renderQuick(){
+  setCrumb(PLANS_TRAIL.concat(["Quick submit"]));
+  const {html,blocked}=quickForm();
+  document.getElementById("app").innerHTML=`<div class="page">
+    <div class="head"><div><h1>Quick submit</h1>
+      <div class="sub">One operation, submitted on its own.</div></div>
+      <div class="actions"><button class="btn" onclick="goList()">Cancel</button></div></div>
+    <div class="form-grid"><div id="quickBody">${html}
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="goList()">Cancel</button>
+        <button class="btn primary" ${blocked?"disabled":""} onclick="submitQuick()">Submit</button>
+      </div></div>
+      <aside class="rail">${quickSummary()}</aside></div></div>`;
+}
+function openQuickModal(){
+  document.getElementById("modalBg").classList.add("open");
+  document.getElementById("modalBg").setAttribute("aria-hidden","false");
+  renderQuickBody();
+}
+function closeQuickModal(){
+  const bg=document.getElementById("modalBg");
+  bg.classList.remove("open"); bg.setAttribute("aria-hidden","true");
+}
+function renderQuickBody(){
+  if(!document.getElementById("modalBg").classList.contains("open")){ renderQuick(); return; }
+  const {html,blocked}=quickForm();
+  document.getElementById("modalBody").innerHTML=html;
+  document.getElementById("modalFoot").innerHTML=
+    `<span class="msg">${blocked?esc(blocked):"Ready to submit."}</span>
+     <button class="btn" onclick="closeQuickModal()">Cancel</button>
+     <button class="btn primary" ${blocked?"disabled":""} onclick="submitQuick()">Submit</button>`;
+}
+function quickReset(){
+  quickDraft={op:"",impact:null,change:"byoc",crno:"CR-7412",winStart:"10 Oct 2026 · 22:00",winEnd:"11 Oct 2026 · 02:00"};
+}
+function submitQuick(){
+  const d=quickDraft;
+  if(validateItem(d,true)) return;
+  /* the virtual plan the operator never configures */
+  const id="PL-"+Math.floor(1000+Math.random()*8999);
+  const f5=d.op==="F5OS";
+  DB().unshift({id,name:(f5?d.peer1+" / "+d.peer2:d.tenant)+" → "+d.version,desc:"Quick submit",operation:d.op,
+    change:d.change==="byoc"?d.crno:"requested",windowStart:d.winStart,windowEnd:d.winEnd,
+    state:"Validating",virtual:true,
+    items:[{id:"IT-"+Math.floor(1000+Math.random()*8999),
+      name: f5 ? d.peer1+" / "+d.peer2 : d.tenant,
+      kind: f5 ? "Host pair" : (d.deviceType==="rseries"?"R-series device":"Virtual tenant"),
+      journey: f5 ? "hostpair" : d.deviceType,
+      device: f5 ? d.peer1+" / "+d.peer2 : (d.device||"—"),
+      peer1:d.peer1||null, peer2:d.peer2||null,
+      tenant: f5 ? "—" : d.tenant,
+      operation:d.op, impactCount:(d.impact||[]).length,
+      from: f5 ? (deviceById(d.peer1)||{}).label?.split("— ")[1]||"—" : ((tenantById(d.tenant)||{}).v||"—"),
+      to:d.version, stage:"Pre-checks", state:"Queued"}]});
+  normalisePlan(DB()[0]);
+  quickReset(); closeQuickModal(); goList();
+  showToast("Submitted. Filed under "+id+", a plan the system created.");
+}
+function startQuick(){
+  quickReset();
+  openQuickModal();
+}
+
+/* ======================= ADD ITEM TO AN EXISTING PLAN =====================
+    — the operation type and the change window come from the plan and
+   are never asked for again. Everything else is the same engine. */
+let addDraft={op:"",impact:null};
+function aiSet(k,v){ setField(addDraft,k,v); renderAddItem(); }
+function aiCheck(){ addDraft.impact=computeImpact(addDraft); renderAddItem(); }
+
+function openAddItem(){
+  const p=getPlan(selectedPlan);
+  addDraft={op:p.operation&&OPERATIONS[p.operation]?p.operation:"TMOS",impact:null};
+  setOperation(addDraft,addDraft.op);
+  document.getElementById("drawerTitle").textContent="Add an item";
+  document.getElementById("drawerSub").textContent=
+    `${p.id} · ${addDraft.op} · ${p.change} · ${p.window}`;
+  renderAddItem(); showDrawer();
+}
+function renderAddItem(){
+  const blocked=validateItem(addDraft,false);
+  document.getElementById("drawerBody").innerHTML=
+    `<div class="dw-g"><span class="lab">Target</span>${itemConfigHTML(addDraft,"aiSet","aiSet",false)}</div>
+     <div class="dw-g"><span class="lab">Impacted CIs</span>
+       <button class="btn" ${impactReady(addDraft)?"":"disabled"} onclick="aiCheck()">${addDraft.impact?"Check again":"Check impacted CIs"}</button>
+       <div style="margin-top:12px">${impactHTML(addDraft)}</div></div>`;
+  document.getElementById("drawerFoot").innerHTML=
+    `<span class="msg">${blocked?esc(blocked):"Ready to add."}</span>
+     <button class="btn" onclick="closeDrawer()">Cancel</button>
+     <button class="btn primary" ${blocked?"disabled":""} onclick="saveItem()">Save item</button>`;
+}
+function saveItem(){
+  const d=addDraft, p=getPlan(selectedPlan);
+  if(validateItem(d,false)) return;
+  const f5=d.op==="F5OS";
+  p.items.push({id:"IT-"+Math.floor(1000+Math.random()*8999),
+    name: f5 ? d.peer1+" / "+d.peer2 : d.tenant,
+    peer1:d.peer1||null, peer2:d.peer2||null,
+    impactCount:(d.impact||[]).length,
+    kind: f5 ? "Host pair" : (d.deviceType==="rseries"?"R-series device":"Virtual tenant"),
+    journey: f5 ? "hostpair" : d.deviceType,
+    device: f5 ? d.peer1+" / "+d.peer2 : (d.device||"—"),
+    tenant: f5 ? "—" : d.tenant,
+    operation:d.op,
+    from: f5 ? ((deviceById(d.peer1)||{}).label||"").split("— ")[1]||"—" : ((tenantById(d.tenant)||{}).v||"—"),
+    to:d.version, stage:"Pre-checks", state:"Queued"});
+  closeDrawer(); renderWorkspace(); showToast("Item added to the Plan.");
+}
+
+
+
+
+
+
+/* ============================================================================
+   QUICK SUBMIT — one operation, submitted on its own.
+
+   The form opens in a popup over the plans list, so the operator never
+   loses their place for a single operation.
+
+   Nothing is pre-selected. Each field appears once the one above it has been
+   answered — an operation type decides which journeys exist, a journey decides
+   whether there is a device to pick, and so on. A form that arrives already
+   filled in invites someone to submit choices they never made.
+   ============================================================================ */
+/* Only the operation type starts unset — it is the one choice that has no
+   sensible default, because it decides what the rest of the form means.
+   Everything below it is prefilled with a working value. */
+
+
+
+
+
+
+
+
+
+
+
+/* --- the page --- */
+
+
+/* --- the popup --- */
+
+
+/* one redraw for whichever container is on screen */
+
+
+
+
+
+/* Breadcrumbs navigate. Each entry is a label, or [label, destination, arg];
+   the last entry is where you are, so it is never a link. */
+/* ============================================================================
+   NAVIGATION
+
+   Two jobs, kept apart. The breadcrumb answers "where am I" and is the only
+   way up. The URL is the only history, so the browser's own Back, swipe-back,
+   refresh and a pasted link all work on the same mechanism.
+
+   Everything routes through go(). Nothing else writes history, which is what
+   keeps Back meaning "the previous screen" rather than "undo my last
+   keystroke" — filtering, searching and sorting re-render freely.
+   ============================================================================ */
+
+const NAV_FRAME={home:{v:"home"},plans:{v:"list"},devices:{v:"devices"},activity:{v:"activity"}};
+
+function frameToHash(f){
+  switch(f.v){
+    case "list":     return "#/plans";
+    case "newplan":  return "#/plans/new";
+    case "plan":     return "#/plans/"+encodeURIComponent(f.p);
+    case "item":     return "#/plans/"+encodeURIComponent(f.p)+"/items/"+encodeURIComponent(f.i);
+    case "devices":  return "#/devices";
+    case "device":   return "#/devices/"+encodeURIComponent(f.d);
+    case "activity": return "#/activity";
+    default:         return "#/";
+  }
+}
+
+function hashToFrame(h){
+  const g=(h||"").replace(/^#\/?/,"").split("/").filter(Boolean).map(decodeURIComponent);
+  if(!g.length) return {v:"home"};
+  if(g[0]==="plans"){
+    if(!g[1])        return {v:"list"};
+    if(g[1]==="new") return {v:"newplan"};
+    if(g[2]==="items" && g[3]) return {v:"item",p:g[1],i:g[3]};
+    return {v:"plan",p:g[1]};
+  }
+  if(g[0]==="devices")  return g[1] ? {v:"device",d:g[1]} : {v:"devices"};
+  if(g[0]==="activity") return {v:"activity"};
+  return {v:"home"};
+}
+
+/* A pasted or bookmarked link can name something that no longer exists.
+   Fall back to its parent rather than rendering an empty page. */
+function resolveFrame(f){
+  if(f.v==="plan" && !getPlan(f.p))   return {v:"list"};
+  if(f.v==="item"){
+    if(!getPlan(f.p))                 return {v:"list"};
+    if(!getItem(f.p,f.i))             return {v:"plan",p:f.p};
+  }
+  if(f.v==="device" && !deviceRecord(f.d)) return {v:"devices"};
+  return f;
+}
+
+/* The only place view state is set. */
+function applyFrame(f){
+  stopEditing();
+  devSelected=null; 
+  if(f.v==="device" || f.v==="devices"){ view="devices"; devSelected=f.v==="device"?f.d:null; }
+  else if(f.v==="item"){ selectedPlan=f.p; selectedItem=f.i; view="item"; }
+  else if(f.v==="plan"){ selectedPlan=f.p; selectedItem=null; tab="execution"; view="plan"; }
+  else { view=f.v==="list"?"list":f.v; }
+  render();
+}
+
+/* pushState throws inside a sandboxed frame. The breadcrumb does not depend on
+   it, so degrade to in-memory navigation rather than failing the click. */
+function histWrite(f,h,replace){
+  try{ replace ? history.replaceState({f},"",h) : history.pushState({f},"",h); }
+  catch(e){}
+}
+
+function go(f,replace){
+  f=resolveFrame(f);
+  const h=frameToHash(f);
+  if(!replace && location.hash===h){ applyFrame(f); return; }   /* already here */
+  histWrite(f,h,replace);
+  applyFrame(f);
+}
+
+window.addEventListener("popstate",e=>{
+  const f=resolveFrame((e.state&&e.state.f) || hashToFrame(location.hash));
+  /* A frame that resolved down to its parent must correct the URL too, or the
+     address bar goes on naming something that is not on screen. */
+  if(frameToHash(f)!==location.hash) histWrite(f,frameToHash(f),true);
+  applyFrame(f);
+});
+
+const CRUMB_TO={
+  home:   ()=>go({v:"home"}),
+  plans:  ()=>go({v:"list"}),
+  devices:()=>go({v:"devices"}),
+  device: name=>go({v:"device",d:name}),
+  plan:   id=>go({v:"plan",p:id})
+};
+function setCrumb(a){
+  document.getElementById("crumb").innerHTML=a.map((x,i)=>{
+    const [label,to,arg]=Array.isArray(x)?x:[x];
+    if(i===a.length-1) return `<b>${esc(label)}</b>`;
+    if(!to)            return esc(label);
+    return `<button class="crumb-link" data-crumb="${esc(to)}" data-arg="${esc(arg||"")}">${esc(label)}</button>`;
+  }).join(" <span>›</span> ");
+  document.querySelectorAll("[data-crumb]").forEach(b=>b.addEventListener("click",()=>{
+    const f=CRUMB_TO[b.dataset.crumb]; if(f) f(b.dataset.arg);
+  }));
+}
+/* One segment per real level. "Model-X" is the product, not a level — it lives
+   in the rail — and "Patching" is the application itself. */
+const C_HOME=["Home","home"], C_PLANS=["Plans and items","plans"], C_DEVICES=["Devices","devices"];
+const TRAIL=[C_HOME];
+const PLANS_TRAIL=[C_HOME,C_PLANS];
+
+function renderWorkspace(){
+ const p=getPlan(selectedPlan); if(!p) return goList();
+ const c=counts(p);setCrumb(PLANS_TRAIL.concat([p.id]));
+ const v2=true;
+ const chg = (p.mode==="create"&&(!p.change||p.change==="requested")) ? "To be requested" : (p.change||"—");
+ document.getElementById("app").innerHTML=`<div class="page">
+ <div class="head"><div>${v2
+   ? `<div class="plan-title-line"><h1>${esc(p.name)}</h1><span class="tag">${esc(p.state.toUpperCase())}</span></div><div class="sub"><span class="mono">${esc(p.id)}</span>${p.desc?" · "+esc(p.desc):""}</div>`
+   : `<h1>${esc(p.name)}</h1><div class="sub">${esc(p.desc)} · <span class="mono">${esc(p.id)}</span> · ${esc(p.state)}</div>`}</div><div class="actions"><button class="btn" onclick="openPlanEdit('${p.id}')">Edit plan</button>${
+      activityLog().some(r=>r.plan===p.id&&r.evidence)
+        ? `<button class="btn" onclick="openPlanExport('${p.id}')">Export report</button>` : ""}${p.items.length?`<button class="btn primary" onclick="submitPlan()">Submit plan</button>`:"<button class='btn' disabled>Submit plan</button>"}</div></div>
+ <section class="plan-head ${v2?"facts-only":""}">${v2?"":`<div class="plan-title-line"><h1>${esc(p.name)}</h1><span class="tag">${esc(p.state.toUpperCase())}</span></div><div class="meta-line">${esc(p.operation)} · <span class="mono">${esc(p.change)}</span></div>`}
+ <div class="plan-facts"><div class="fact"><label>Operation type</label><b>${esc(p.operation)}</b></div><div class="fact"><label>Change number</label><b>${esc(v2?chg:p.change)}</b></div><div class="fact"><label>Window</label><b>${esc(p.windowStart)}–${esc(p.windowEnd)}</b></div><div class="fact"><label>Items</label><b>${c.total}</b></div></div></section>
+ <section class="panel items-panel"><div class="panel-head"><div><h3>Items</h3></div><div class="actions">${(!v2||c.total)?`<button class="btn" onclick="openAddItem()">+ Add item</button>`:""}</div></div>
+ ${c.total?`<table class="item-table"><thead><tr><th>Target</th><th>Type</th><th>Upgrade</th><th>Impact</th><th>Actions</th></tr></thead><tbody>${p.items.map(i=>`<tr><td><button class="link" onclick="openItem('${p.id}','${i.id}')">${esc(i.name)}</button><div class="sub">${esc(i.device)} · ${esc(i.tenant)}</div></td><td>${esc(i.kind)}</td><td class="mono">${esc(i.from)} → ${esc(i.to)}</td><td>${i.impactCount?esc(i.impactCount+" affected"):"—"}</td><td class="item-actions"><button class="link" onclick="openItem('${p.id}','${i.id}')">Edit</button>&nbsp;&nbsp;<button class="link" onclick="removeItem('${i.id}')">Remove</button></td></tr>`).join("")}</tbody></table><div class="ready-note">${p.items.length?`<b>Ready to submit.</b>`:""}</div>`:`<div class="empty"><div><h3>No items yet</h3><div class="sub">Add the first operation to this Plan.</div><button class="btn primary" onclick="openAddItem()">+ Add item</button></div></div><div class="ready-note"><b>Not ready to submit.</b> Add at least one Item.</div>`}
+ </section>
+ </div>`;
+}
+
+function resetDrawerChrome(){
+  const sub=document.getElementById("drawerSub"), ft=document.getElementById("drawerFoot");
+  if(sub) sub.textContent=""; if(ft) ft.innerHTML="";
+}
+
+function renderNewPlan(){setCrumb(PLANS_TRAIL.concat(["New plan"]));document.getElementById("app").innerHTML=`<div class="page"><div class="head"><div><h1>New plan</h1></div><div class="actions"><button class="btn" onclick="goList()">Cancel</button></div></div>
+<div class="form-grid"><div>
+<section class="section"><div class="section-head"><h3>1 · Plan details</h3></div><div class="section-body"><div class="two"><div class="field"><label>Plan name</label><input id="npName" value="Cinder tenant refresh, Q4"></div><div class="field"><label>Description (optional)</label><input id="npDesc" value="Upgrade selected tenants during the approved window"></div></div></div></section>
+<section class="section"><div class="section-head"><h3>2 · Operation type</h3></div><div class="section-body"><div class="field"><label>Operation type</label><select id="npOp" onchange="newOp=this.value;renderNewPlan()">${Object.keys(OPERATIONS).map(k=>`<option ${newOp===k?"selected":""}>${esc(k)}</option>`).join("")}</select></div></div></section>
+<section class="section"><div class="section-head"><h3>3 · Change record</h3></div><div class="section-body">
+<div class="choice-row">
+<div class="choice ${newChange==="byoc"?"selected":""}" onclick="newChange='byoc';renderNewPlan()"><input type="radio" ${newChange==="byoc"?"checked":""}><div><strong>I have one</strong></div></div>
+<div class="choice ${newChange==="create"?"selected":""}" onclick="newChange='create';renderNewPlan()"><input type="radio" ${newChange==="create"?"checked":""}><div><strong>Request one</strong></div></div>
+</div>
+${newChange==="create"?`<div class="two" style="margin-top:20px"><div class="field"><label>Requested window start</label><input id="npWinStart" value="10 Oct 2026 · 22:00"></div><div class="field"><label>Requested window end</label><input id="npWinEnd" value="11 Oct 2026 · 02:00"></div></div>`:`<div class="field" style="margin-top:20px"><label>Change number</label><input id="npChange" value="CH28292"></div>`}
+<div class="form-actions"><button class="btn" onclick="goList()">Cancel</button><button class="btn primary" onclick="createPlan()">Create plan</button></div>
+</div></section></div>
+<aside class="panel summary"><div class="panel-head"><h3>This plan</h3></div><div class="panel-body"><dl><div class="row"><dt>Operation</dt><dd id="sumOp">${esc(newOp||"TMOS")}</dd></div><div class="row"><dt>Change</dt><dd id="sumChange">${newChange==="create"?"To be requested":"CH28292"}</dd></div><div class="row"><dt>Window</dt><dd>${newChange==="create"?"22:00–02:00":"from change"}</dd></div><div class="row"><dt>Items</dt><dd>0</dd></div></dl></div></aside></div></div>`}
+
+function createPlan(){
+  const name=document.getElementById("npName").value.trim()||"Untitled plan",
+        desc=document.getElementById("npDesc").value.trim(),
+        op=document.getElementById("npOp").value;
+  const chgEl=document.getElementById("npChange"),
+        wsEl=document.getElementById("npWinStart"), weEl=document.getElementById("npWinEnd");
+  const id="PL-"+Math.floor(1000+Math.random()*8999);
+  const plan={id,name,desc,operation:op,
+    change: newChange==="create" ? "requested" : (chgEl?chgEl.value.trim():"") ,
+    windowStart: newChange==="create" ? (wsEl?wsEl.value.trim():"") : "10 Oct, 22:00",
+    windowEnd:   newChange==="create" ? (weEl?weEl.value.trim():"") : "11 Oct, 02:00",
+    mode: newChange==="create" ? "create" : "byoc",
+    state:"Draft", items:[]};
+  DB().unshift(plan);
+  normalisePlan(DB()[0]);
+  showToast("Plan created. Add items from the plan workspace.");
+  go({v:"plan",p:id});
+}
+
+
+
+
+
+
+function removeItem(iid){const p=getPlan(selectedPlan);p.items=p.items.filter(i=>i.id!==iid);renderWorkspace();showToast("Item removed.")}
+
+function submitPlan(){let p=getPlan(selectedPlan);p.state="Running";p.items.forEach(i=>{if(i.state==="Queued")i.state="Running"});view="plan";render()}
+
+
+/* ===================================================================
+   THE APPLICATION — dataset, lifecycle, listing and submit pipeline.
+   =================================================================== */
+
+/* ---- change-request lead time. Calendar days. ---- */
+const plural=(n,w)=>n+" "+w+(n===1?"":"s");
+const POLICY={ minChangeLeadDays:5 };   /* number unconfirmed — 4 or 5 */
+
+/* ---- the reconciled state model ---- */
+const PLAN_STATE={
+  DRAFT:"Draft", VALIDATING:"Validating", VFAILED:"Validation failed",
+  AWAITING:"Awaiting approval", SCHEDULED:"Scheduled", EXECUTING:"Executing",
+  ACTION:"Action required", COMPLETING:"Completing",
+  COMPLETED:"Completed", PARTIAL:"Completed with failures", FAILED:"Failed",
+  NOTAPPROVED:"Not approved", CANCELLING:"Cancelling", CANCELLED:"Cancelled",
+  EXPIRED:"Expired"
+};
+const ITEM_STATE={
+  DRAFT:"Draft", QUEUED:"Queued", INPROGRESS:"In progress", ACTION:"Action required",
+  ROLLINGBACK:"Rolling back", SUCCEEDED:"Succeeded", FAILED:"Failed",
+  ROLLEDBACK:"Rolled back", ROLLBACKFAILED:"Rollback failed",
+  CANCELLED:"Cancelled", SKIPPED:"Skipped",
+  /* Cancelled reads as "somebody cancelled this". When the change request was
+     rejected nobody did — the item simply never became eligible to run. */
+  NOTAPPROVED:"Not approved"
+};
+
+/* Disposition — who holds the baton. Closed set of four, exhaustive and
+   disjoint, so the listing survives any future state being added. */
+const DISPOSITION={
+  [PLAN_STATE.DRAFT]:"needs", [PLAN_STATE.VFAILED]:"needs", [PLAN_STATE.ACTION]:"needs",
+  [PLAN_STATE.VALIDATING]:"running", [PLAN_STATE.EXECUTING]:"running",
+  [PLAN_STATE.COMPLETING]:"running", [PLAN_STATE.CANCELLING]:"running",
+  [PLAN_STATE.AWAITING]:"waiting", [PLAN_STATE.SCHEDULED]:"waiting",
+  [PLAN_STATE.COMPLETED]:"done", [PLAN_STATE.PARTIAL]:"done", [PLAN_STATE.FAILED]:"done",
+  [PLAN_STATE.NOTAPPROVED]:"done", [PLAN_STATE.CANCELLED]:"done", [PLAN_STATE.EXPIRED]:"done"
+};
+const SEGMENTS=[["needs","Needs action"],["running","Running"],["waiting","Waiting"],["done","Closed"]];
+const TERMINAL=new Set([PLAN_STATE.COMPLETED,PLAN_STATE.PARTIAL,PLAN_STATE.FAILED,
+  PLAN_STATE.NOTAPPROVED,PLAN_STATE.CANCELLED,PLAN_STATE.EXPIRED]);
+
+function disposition(p){
+  if(!TERMINAL.has(p.state) && p.items.some(i=>i.state===ITEM_STATE.ACTION)) return "needs";
+  return DISPOSITION[p.state] || "needs";
+}
+function attentionItem(p){ return p.items.find(i=>i.state===ITEM_STATE.ACTION) || null; }
+
+/* An item can only hold an execution state if its plan actually reached
+   execution. Everything before that — awaiting approval, scheduled, rejected,
+   failed validation — means nothing was ever dispatched. */
+const PLAN_RAN=new Set([PLAN_STATE.EXECUTING,PLAN_STATE.COMPLETING,PLAN_STATE.CANCELLING,
+  PLAN_STATE.COMPLETED,PLAN_STATE.PARTIAL,PLAN_STATE.FAILED]);
+const ITEM_RAN=new Set([ITEM_STATE.INPROGRESS,ITEM_STATE.ACTION,ITEM_STATE.ROLLINGBACK,
+  ITEM_STATE.SUCCEEDED,ITEM_STATE.FAILED,ITEM_STATE.ROLLEDBACK,ITEM_STATE.ROLLBACKFAILED]);
+function planHasRun(p){ return PLAN_RAN.has(p.state); }
+function itemHasRun(i){ return ITEM_RAN.has(i.state); }
+
+/* ---- counts, with explicit buckets. No catch-all. ---- */
+function countsV2(p){
+  const c={total:p.items.length,draft:0,queued:0,running:0,action:0,
+           succeeded:0,failed:0,skipped:0,cancelled:0,rolledback:0};
+  p.items.forEach(i=>{
+    if(i.state===ITEM_STATE.DRAFT)            c.draft++;
+    else if(i.state===ITEM_STATE.QUEUED)      c.queued++;
+    else if(i.state===ITEM_STATE.INPROGRESS||i.state===ITEM_STATE.ROLLINGBACK) c.running++;
+    else if(i.state===ITEM_STATE.ACTION)      c.action++;
+    else if(i.state===ITEM_STATE.SUCCEEDED)   c.succeeded++;
+    else if(i.state===ITEM_STATE.SKIPPED)     c.skipped++;
+    else if(i.state===ITEM_STATE.CANCELLED)   c.cancelled++;
+    else if(i.state===ITEM_STATE.NOTAPPROVED) {}
+    else if(i.state===ITEM_STATE.ROLLEDBACK)  c.rolledback++;
+    else                                      c.failed++;
+  });
+  /* Progress is work that actually ran. Items that never started — skipped on
+     an expired window, cancelled, or never approved — are terminal but are not
+     progress, and counting them would show a plan as complete that never ran. */
+  c.notapproved=p.items.filter(i=>i.state===ITEM_STATE.NOTAPPROVED).length;
+  c.done=c.succeeded+c.failed+c.rolledback;
+  c.settled=c.done+c.skipped+c.cancelled+c.notapproved;
+  return c;
+}
+
+/* a qualifier must carry a datum. No datum, no qualifier. */
+function qualifier(p){
+  const c=countsV2(p);
+  switch(p.state){
+    case PLAN_STATE.DRAFT:
+      return c.total? c.total+(c.total===1?" item":" items")+(p.change?"":" · no change") : "no items";
+    case PLAN_STATE.VALIDATING:
+      return (p.checksDone||0)+" of "+(p.checksTotal||11)+" checks";
+    case PLAN_STATE.VFAILED:
+      return plural((p.errors||[]).length,"item")+" · "+plural((p.errors||[]).reduce((a,e)=>a+e.fails.length,0),"check");
+    case PLAN_STATE.AWAITING:
+      return p.change+" · raised "+(p.raisedOn||"—");
+    case PLAN_STATE.SCHEDULED:
+      return "opens "+p.window;
+    case PLAN_STATE.EXECUTING: {
+      const a=attentionItem(p);
+      if(a) return plural(p.items.filter(x=>x.state===ITEM_STATE.ACTION).length,"item")+
+                   " failed · "+(failedTaskName(a)||"awaiting your decision");
+      return c.done+" of "+c.total+(p.startedAt?" · since "+p.startedAt:"");
+    }
+    case PLAN_STATE.ACTION:
+      return p.planTaskFailed || "plan task failed";
+    case PLAN_STATE.COMPLETING:
+      return "closing "+p.change;
+    case PLAN_STATE.PARTIAL:
+      return c.succeeded+" of "+c.total+(p.endedAt?" · ended "+p.endedAt:"");
+    case PLAN_STATE.COMPLETED:
+      return c.total+(c.total===1?" item":" items")+(p.endedAt?" · ended "+p.endedAt:"");
+    case PLAN_STATE.FAILED:
+      return plural(c.failed,"item")+" failed";
+    case PLAN_STATE.NOTAPPROVED:
+      return p.change+" rejected";
+    case PLAN_STATE.EXPIRED:
+      return "window closed "+p.window;
+    case PLAN_STATE.CANCELLED:
+      return p.cancelledBy? "by "+p.cancelledBy : c.total+" items";
+    case PLAN_STATE.CANCELLING:
+      return c.running+" items settling";
+    default: return "";
+  }
+}
+
+/* ---- lead time ---- */
+const MONTHS={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Sept:8,Oct:9,Nov:10,Dec:11};
+function parseWindow(s){
+  const m=/(\d{1,2})\s+([A-Za-z]{3,4})\s*(\d{4})?/.exec(s||"");
+  if(!m) return null;
+  const mo=MONTHS[m[2]]; if(mo===undefined) return null;
+  return new Date(m[3]?+m[3]:2026, mo, +m[1]);
+}
+const TODAY=new Date(2026,8,9);              /* the prototype's "now" */
+function leadDays(win){
+  const d=parseWindow(win); if(!d) return null;
+  return Math.round((d-TODAY)/86400000);
+}
+/* Returns null when fine, else the refusal sentence. */
+function leadTimeError(win){
+  const n=leadDays(win);
+  if(n===null) return null;
+  if(n<POLICY.minChangeLeadDays)
+    return "A new change approval needs "+POLICY.minChangeLeadDays+
+           " calendar days. That window is "+(n<0?"in the past":n+(n===1?" day":" days")+" away")+".";
+  return null;
+}
+
+/* ---- rollback is a property of the operation type ---- */
+function canRollback(p){
+  const op=OPERATIONS[p.operation];
+  return !op || op.rollback!==false;
+}
+
+/* ---- validation. Extensible: one rule per check. ---- */
+const CHECKS=[
+  {k:"device",  label:"Device",         run:i=>i.journey==="virtual"?null:
+      (i.device&&i.device!=="—"?null:"Device is unavailable.")},
+  {k:"tenant",  label:"Tenant",         run:i=>i.tenant?null:"Tenant is not set."},
+  {k:"version", label:"Target version", run:i=>i.to&&i.to!==i.from?null:
+      "Selected version is already running on this tenant."},
+  {k:"op",      label:"Operation type", run:(i,p)=>i.operation===p.operation?null:
+      "Item operation type does not match the plan."}
+];
+function runValidation(p){
+  const errors=[];
+  p.items.forEach(i=>{
+    const fails=CHECKS.map(c=>({label:c.label,msg:c.run(i,p)})).filter(x=>x.msg);
+    if(fails.length) errors.push({item:i.id,name:i.name,fails,
+      passes:CHECKS.filter(c=>!c.run(i,p)).map(c=>c.label)});
+  });
+  return errors;
+}
+
+/* ---- the single submit pipeline both entry points use ---- */
+function submitV2(p){
+  p.state=PLAN_STATE.VALIDATING; p.checksDone=0; p.checksTotal=CHECKS.length*p.items.length;
+  render();   /* items stay Draft: nothing is queued until validation passes */
+  clearTimeout(p._vtimer);
+  p._vtimer=setTimeout(()=>{
+    const errors=runValidation(p);
+    if(errors.length){ p.errors=errors; p.state=PLAN_STATE.VFAILED; }
+    else {
+      p.errors=null;
+      const lead=p.mode==="create" ? leadTimeError(p.window) : null;
+      if(lead){ p.errors=[{item:"—",name:"Change window",fails:[{label:"Lead time",msg:lead}],passes:[]}];
+                p.state=PLAN_STATE.VFAILED; }
+      else if(p.mode==="create"){ p.state=PLAN_STATE.AWAITING; p.raisedOn="9 Sep";
+              p.items.forEach(i=>i.state=ITEM_STATE.QUEUED); }
+      else { p.state=PLAN_STATE.SCHEDULED;
+             p.items.forEach(i=>i.state=ITEM_STATE.QUEUED); }
+    }
+    render();
+  },2600);   /* long enough that Stop validating is actually reachable */
+}
+
+/* Lifecycle actions available from each state. Actions are explicit verbs —
+   one "Cancel" whose blast radius ranges from a draft to a live estate is a
+   safety problem, so each state names its own. */
+function planActions(p){
+  const acts=planActionsFor(p);
+  return acts.filter(a=>a[0]!=="details" || planEditScope(p)!=="none");
+}
+function planActionsFor(p){
+  switch(p.state){
+    case PLAN_STATE.DRAFT:    return [["submit","Submit plan","primary"],["details","Edit plan",""],["delete","Delete plan",""]];
+    case PLAN_STATE.VFAILED:  return [["resubmit","Resubmit","primary"],["details","Edit plan",""],["delete","Delete plan",""]];
+    case PLAN_STATE.AWAITING: return [["details","Edit plan",""],["withdraw","Withdraw request",""]];
+    case PLAN_STATE.SCHEDULED:return [["details","Edit plan",""],["terminate","Terminate plan",""]];
+    case PLAN_STATE.VALIDATING:return [["details","Edit plan",""],["stopvalidating","Stop validating",""]];
+    case PLAN_STATE.EXECUTING:return [["details","Edit plan",""],["cancel","Cancel plan",""]];
+    case PLAN_STATE.ACTION:   return [["retry","Retry","primary"],["details","Edit plan",""],["cancel","Cancel plan",""]];
+    default: return (canRename(p)&&planEditScope(p)!=="none") ? [["details","Edit plan",""]] : [];
+  }
+}
+function runPlanAction(id,a){
+  const p=getPlan(id); if(!p) return;
+  if(a==="edit"){ editPlan(p.id); return; }
+  if(a==="details"){ openPlanEdit(p.id); return; }
+  if(a==="stopvalidating"){
+    clearTimeout(p._vtimer); p._vtimer=null;
+    p.state=PLAN_STATE.DRAFT; p.errors=null; p.checksDone=0;
+    showToast("Validation stopped. The plan is back in draft.");
+    render(); return;
+  }
+  if(a==="submit"||a==="resubmit"){ stopEditing(); submitV2(p); return; }
+  if(a==="delete"){ plansV2=plansV2.filter(x=>x!==p); goList(); showToast("Plan deleted."); return; }
+  if(a==="withdraw"){ p.state=PLAN_STATE.CANCELLED; p.cancelledBy="you · request withdrawn"; }
+  if(a==="terminate"){ p.state=PLAN_STATE.CANCELLED; p.cancelledBy="you · terminated before window"; }
+  if(a==="cancel"){ p.state=PLAN_STATE.CANCELLING;
+    setTimeout(()=>{ p.items.forEach(i=>{ if(i.state===ITEM_STATE.INPROGRESS||i.state===ITEM_STATE.QUEUED)
+      i.state=ITEM_STATE.CANCELLED; }); p.state=PLAN_STATE.CANCELLED; p.cancelledBy="you"; render(); },900); }
+  if(a==="retry"){ p.state=PLAN_STATE.EXECUTING; p.planTaskFailed=null; }
+  render();
+}
+
+/* ---- execution reference ---- */
+function execRef(p){ return p.execRef || null; }
+
+/* ---- the dataset. Every item's operation type matches its plan, and
+   every device/tenant pair exists in the reference data. ---- */
+let plansV2=[];
+/* Every valid target the authoring form could produce, in one pool. */
+function targetPool(){
+  const out=[];
+  Object.keys(TENANTS_BY_DEVICE).forEach(h=>TENANTS_BY_DEVICE[h].forEach(t=>
+    out.push({name:t.id, kind:"R-series device", journey:"rseries",
+              device:h, tenant:t.id, from:t.v, impact:2})));
+  VIRTUAL_TENANTS.forEach(t=>out.push({name:t.id, kind:"Virtual tenant", journey:"virtual",
+              device:"—", tenant:t.id, from:t.v, impact:2}));
+  /* a tenant already on the newest approved version has nothing to upgrade to,
+     and validation would reject it — so it is not a candidate for a plan */
+  return out.filter(t=>TMOS_VERSIONS.some(v=>isTarget(v)&&v.approved&&newer(v.v,t.from)));
+}
+const verNum=v=>v.split(".").map(Number);
+function newer(a,b){                      /* is a strictly newer than b? */
+  const x=verNum(a), y=verNum(b);
+  for(let i=0;i<Math.max(x.length,y.length);i++){
+    if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0);
+  }
+  return false;
+}
+function pickTarget(pool){
+  /* cycle rather than clamp: clamping made every item past the pool size
+     collapse onto the same target, so a plan could upgrade one tenant twice */
+  if(!pool.length) targetPool().forEach(x=>pool.push(x));
+  const t=pool.shift();
+  /* an upgrade goes forwards. Picking the first approved version that merely
+     differed produced downgrades for tenants already on the latest. */
+  const up=TMOS_VERSIONS.filter(v=>isTarget(v)&&v.approved&&newer(v.v,t.from));
+  const to=(up[0]||TMOS_VERSIONS.find(v=>v.approved)||TMOS_VERSIONS[0]).v;
+  return Object.assign({},t,{to});
+}
+
+function buildV2Data(){
+  const pool=targetPool();
+  const V2_STATE={ "PL-0033":PLAN_STATE.ACTION, "PL-0012":PLAN_STATE.EXECUTING,
+    "PL-0040":PLAN_STATE.VALIDATING, "PL-0035":PLAN_STATE.SCHEDULED,
+    "PL-0034":PLAN_STATE.AWAITING,  "PL-0031":PLAN_STATE.VFAILED,
+    "PL-0024":PLAN_STATE.SCHEDULED, "PL-0018":PLAN_STATE.COMPLETED, "PL-0051":PLAN_STATE.DRAFT };
+  const IMAP={ "Waiting for action":ITEM_STATE.ACTION, "Running":ITEM_STATE.INPROGRESS,
+    "Completed":ITEM_STATE.SUCCEEDED, "Validating":ITEM_STATE.QUEUED,
+    "Queued":ITEM_STATE.QUEUED, "Draft":ITEM_STATE.DRAFT };
+  plansV2=plans.map(p=>{
+    const q=Object.assign({},p);
+    Object.defineProperty(q,"window",{get(){return this.windowStart||"";},
+      set(v){this.windowStart=v;},configurable:true});
+    q.windowStart=p.windowStart; q.windowEnd=p.windowEnd;
+    q.state=V2_STATE[p.id]||PLAN_STATE.DRAFT;
+    q.mode=p.mode;
+    /* Items are generated from the same reference data the authoring form
+       selects from, so the list can never assert a combination the form
+       could not produce. */
+    q.items=p.items.map((i,n)=>{
+      const t=pickTarget(pool);
+      return {id:i.id, name:t.name, kind:t.kind, journey:t.journey,
+        device:t.device, tenant:t.tenant, operation:p.operation,
+        impactCount:t.impact, from:t.from, to:t.to,
+        stage:"Not started", state:IMAP[i.state]||ITEM_STATE.QUEUED};
+    });
+    if(q.state===PLAN_STATE.VFAILED){
+      /* the failure has to be real, or the state is an assertion with no evidence */
+      q.items.forEach(i=>{ i.to=i.from;              /* version already running */
+        i.state=ITEM_STATE.DRAFT; });                  /* nothing is queued on a failed plan */
+      q.errors=runValidation(q);
+    }
+    if(q.state===PLAN_STATE.ACTION) q.planTaskFailed="create change ticket timed out";
+    if(q.state===PLAN_STATE.AWAITING) q.raisedOn="5 Sep";
+    q.items.forEach(it=>{ const n=flatTasks(workflowFor(it).wf||[[]]).length||1;
+      it.taskIdx = it.state===ITEM_STATE.SUCCEEDED ? n-1
+                 : it.state===ITEM_STATE.INPROGRESS ? Math.floor(n*0.55)
+                 : it.state===ITEM_STATE.ACTION ? Math.floor(n*0.7) : 0;
+      /* where inside the current task the run has reached */
+      const wf=workflowFor(it).wf;
+      const cur=wf?flatTasks(wf)[it.taskIdx]:null;
+      const msN=cur?cur.ms.length:0;
+      it.msIdx = it.state===ITEM_STATE.INPROGRESS ? Math.floor(msN/2) : 0; });
+    if(q.state===PLAN_STATE.EXECUTING){ q.startedAt="22:04"; q.execRef="EX-"+q.id.slice(3)+"-01"; }
+    if(q.state===PLAN_STATE.COMPLETED){ q.endedAt="03:12"; q.execRef="EX-"+q.id.slice(3)+"-01";
+      q.items.forEach(i=>i.state=ITEM_STATE.SUCCEEDED); }
+    return q;
+  });
+  /* a device/tenant pair the authoring flow forbids must never be seeded */
+  plansV2.forEach(p=>p.items.forEach(i=>{
+    if(i.tenant==="tnt-payments-01") i.device="rseries-ard-01";
+    if(i.device==="rseries-cin-03"){ i.device="rseries-cin-01"; i.tenant="tnt-clearing-01"; }
+  }));
+  /* one plan whose window has passed unused — the Expired case */
+  const exp=plansV2.find(p=>p.id==="PL-0024");
+  if(exp){ exp.state=PLAN_STATE.EXPIRED; exp.windowStart="2 Sep, 22:00";
+    exp.items.forEach(i=>i.state=ITEM_STATE.SKIPPED); }
+  /* F5OS host-pair upgrades — the peer journey, built exactly as the form
+     produces it: two peers chosen by hand, no tenant, host OS versions. */
+  const f5osItem=(id,a,b,from,to,state)=>({id, name:a+" / "+b, kind:"Host pair",
+    journey:"hostpair", device:a+" / "+b, peer1:a, peer2:b, tenant:"—",
+    operation:"F5OS", impactCount:2+(TENANTS_BY_DEVICE[a]||[]).length+(TENANTS_BY_DEVICE[b]||[]).length,
+    from, to, stage:"Not started", state, taskIdx:0});
+  const f5osPlan=(id,name,desc,change,ws,we,state,items)=>{
+    const q={id,name,desc,operation:"F5OS",change,windowStart:ws,windowEnd:we,
+             mode:"byoc",state,items};
+    Object.defineProperty(q,"window",{get(){return this.windowStart||"";},
+      set(v){this.windowStart=v;},configurable:true});
+    return q;
+  };
+  plansV2.splice(2,0,
+    f5osPlan("PL-0060","Ardent host platform, F5OS uplift","Both Ardent hosts, rolling",
+      "CR-7990","14 Oct, 22:00","15 Oct, 02:00", PLAN_STATE.EXECUTING,
+      [f5osItem("IT-6001","rseries-ard-01","rseries-ard-02","1.6.2","1.8.0",ITEM_STATE.INPROGRESS)]),
+    f5osPlan("PL-0061","Bramble host platform, F5OS uplift","Both Bramble hosts",
+      "requested","24 Oct, 22:00","25 Oct, 02:00", PLAN_STATE.AWAITING,
+      [f5osItem("IT-6002","rseries-bra-01","rseries-bra-02","1.7.0","1.8.0",ITEM_STATE.QUEUED)]));
+  plansV2.find(p=>p.id==="PL-0060").mode="byoc";
+  plansV2.find(p=>p.id==="PL-0061").mode="create";
+  plansV2.find(p=>p.id==="PL-0060").startedAt="22:06";
+  plansV2.find(p=>p.id==="PL-0060").execRef="EX-0060-01";
+  plansV2.find(p=>p.id==="PL-0061").raisedOn="8 Sep";
+
+  /* one quick submit already in flight, so the two kinds sit side by side */
+  const qs={id:"PL-7042", name:"vtn-settle-01 → 17.1.1", desc:"Quick submit",
+    operation:"TMOS", change:"CR-7455", windowStart:"12 Oct, 22:00", windowEnd:"13 Oct, 02:00",
+    mode:"byoc", virtual:true, state:PLAN_STATE.SCHEDULED,
+    items:[{id:"IT-7043", name:"vtn-settle-01", kind:"Virtual tenant", journey:"virtual",
+      device:"—", tenant:"vtn-settle-01", operation:"TMOS", impactCount:2,
+      from:"16.1.4", to:"17.1.1", stage:"Not started", state:ITEM_STATE.QUEUED, taskIdx:0}]};
+  Object.defineProperty(qs,"window",{get(){return this.windowStart||"";},
+    set(v){this.windowStart=v;},configurable:true});
+  plansV2.splice(3,0,qs);
+
+  /* One partial and one outright failure, so the outcome markers the design
+     distinguishes are actually reachable. */
+  const part=plansV2.find(p=>p.id==="PL-0018");
+  if(part){ part.state=PLAN_STATE.PARTIAL; part.endedAt="03:12";
+    part.items.forEach((i,n)=>i.state = n===0 ? ITEM_STATE.FAILED : ITEM_STATE.SUCCEEDED); }
+  const fail=plansV2.find(p=>p.id==="PL-0024");
+  if(fail){ fail.state=PLAN_STATE.FAILED; fail.endedAt="01:48";
+    fail.items.forEach(i=>i.state=ITEM_STATE.FAILED); }
+
+  /* one rejected change — terminal: a new plan is required */
+  const rej=plansV2.find(p=>p.id==="PL-0034");
+  if(rej){ rej.state=PLAN_STATE.NOTAPPROVED; }
+
+  /* One item stopped at a real task in the captured workflow, so the recovery
+     actions have something concrete to act on. Task 13 is Standby Node Upgrade. */
+  plansV2.filter(q=>q.state===PLAN_STATE.EXECUTING).forEach(q=>{
+    const a=q.items.find(i=>i.state===ITEM_STATE.ACTION);
+    if(a){ a.failedTask=13;                 /* step 13 · Standby Node Upgrade */
+           a.failureReason="Upgrade image did not install on the standby node. The device is unchanged and the pair is still serving traffic from the active node.";
+           a.taskIdx=13; }
+  });
+
+  /* Nothing may claim to have run on a plan that never reached execution. */
+  plansV2.forEach(q=>{
+    if(planHasRun(q) || q.state===PLAN_STATE.EXPIRED) return;
+    const resting =
+      q.state===PLAN_STATE.NOTAPPROVED ? ITEM_STATE.NOTAPPROVED    /* the change was rejected */
+      : (q.state===PLAN_STATE.AWAITING||q.state===PLAN_STATE.SCHEDULED) ? ITEM_STATE.QUEUED
+      : ITEM_STATE.DRAFT;                                          /* draft, validating, failed */
+    q.items.forEach(i=>{ i.state=resting; i.taskIdx=0; i.stage="Not started"; });
+    delete q.execRef;
+  });
+
+}
+
+/* ---- the listing ---- */
+let seg="needs", q2="", opFilter="", outFilter="", sortBy="window", sortTouched=false, editing=null;
+
+/* A plan is editable only until execution begins.
+   Executing, Completing, Cancelling and every terminal state are closed.
+   Validating is excluded too: the system is mid-check, so there is nothing
+   stable to edit. */
+/* Full editing belongs to the two states where the plan is the user's to
+   correct: never submitted, or handed back to be fixed. Once a change ticket
+   has been raised or approved, editing what the run depends on would leave the
+   approval describing something else — so those states get the name only. */
+const EDITABLE=new Set([PLAN_STATE.DRAFT,PLAN_STATE.VFAILED]);
+function canEdit(p){ return EDITABLE.has(p.state); }
+
+/* Renaming stays open while the plan is live, because the name is a human
+   label rather than an input to the run. Terminal plans are records and keep
+   the name they completed under. */
+function canRename(p){ return !TERMINAL.has(p.state) && !EDITABLE.has(p.state); }
+
+/* A virtual plan's name is derived from its item, not chosen by anyone, so it
+   is never editable — renaming it would let the label drift from the operation
+   it describes. Derive it on read so it cannot go stale either. */
+function planTitle(p){
+  if(!p.virtual) return p.name;
+  const i=p.items[0];
+  return i ? i.name+" → "+i.to : p.name;
+}
+
+/* A plan export is already scoped to the plan you are on: one operation type,
+   one lifecycle. A period and filters could only subtract evidence from the
+   change record, so this is confirm-and-attach, like exporting a single event
+   from Activity. The shared filter state is left alone — a plan export must
+   not disturb what Activity is showing. */
+function openPlanExport(id){
+  openExport(activityLog().filter(r=>r.plan===id && r.evidence), true);
+}
+
+function planEditScope(p){
+  /* A plan returned for correction can have its change record fixed too — the
+     failure may be the ticket or the window, not an item. Once it is live the
+     name is all that is left, because everything else is what the run depends on.
+     A virtual plan has no editable name, so in a live state it has nothing to edit. */
+  if(p.virtual) return canEdit(p) ? "change" : "none";
+  return canEdit(p) ? "details" : "name";
+}
+
+function openPlanEdit(id){
+  const p=getPlan(id); if(!p) return;
+  const scope=planEditScope(p), full=(scope==="details"||scope==="change"), nameable=(scope!=="change");
+  resetDrawerChrome();
+  document.getElementById("drawerTitle").textContent=nameable?"Edit plan":"Edit change record";
+  document.getElementById("drawerSub").textContent=p.id+" · "+p.state;
+  const mode=p.mode==="create"?"create":"byoc";
+  document.getElementById("drawerBody").innerHTML=
+    `${nameable?`<div class="dw-g"><span class="lab">Plan name</span>
+       <div class="field"><input id="peName" value="${esc(p.name)}"></div></div>`:""}
+     ${full?`
+     <div class="dw-g"><span class="lab">Change record</span>
+       <div class="choice-row">
+         <div class="choice ${mode==="byoc"?"selected":""}" data-pemode="byoc">
+           <input type="radio" ${mode==="byoc"?"checked":""}><div><strong>I have one</strong></div></div>
+         <div class="choice ${mode==="create"?"selected":""}" data-pemode="create">
+           <input type="radio" ${mode==="create"?"checked":""}><div><strong>Request one</strong></div></div>
+       </div>
+       <div id="peChange" style="margin-top:14px"></div>
+     </div>`:""}
+     <div class="dw-g"><span class="lab">Locked</span>
+       <table class="tbl devprops"><tbody>
+        <tr><td class="pk">Operation type</td><td class="pv"><b>${esc(p.operation)}</b></td></tr>
+        ${nameable?"":`<tr><td class="pk">Plan name</td><td class="pv"><b>${esc(planTitle(p))}</b><span class="pd">Generated from the item</span></td></tr>`}
+        ${full?"":`<tr><td class="pk">Change number</td><td class="pv"><b>${esc(p.change||"—")}</b></td></tr>
+        <tr><td class="pk">Maintenance window</td><td class="pv"><b>${esc(p.window)}</b></td></tr>`}
+        <tr><td class="pk">Items</td><td class="pv"><b>${p.items.length}</b></td></tr>
+       </tbody></table></div>`;
+  document.getElementById("drawerFoot").innerHTML=
+    `<span class="msg" id="peMsg"></span>
+     <button class="btn" onclick="closeDrawer()">Cancel</button>
+     <button class="btn primary" id="peSave">Save</button>`;
+
+  let peMode=mode;
+  const changeBox=()=>{
+    const el=document.getElementById("peChange"); if(!el) return;
+    el.innerHTML = peMode==="byoc"
+      ? `<div class="field"><label>Change number</label><input id="peCrno" value="${esc(p.change&&p.change!=="requested"?p.change:"")}"></div>`
+      : `<div class="two"><div class="field"><label>Requested window start</label><input id="peWs" value="${esc(p.windowStart||"")}"></div>
+         <div class="field"><label>Requested window end</label><input id="peWe" value="${esc(p.windowEnd||"")}"></div></div>`;
+    el.querySelectorAll("input").forEach(i=>i.addEventListener("input",sync));
+  };
+  const sync=()=>{
+    const el=document.getElementById("peName");
+    const name=el?(el.value||"").trim():planTitle(p);
+    let msg="", ok=!!name;
+    if(el&&!name) msg="A plan name is required.";
+    if(full&&ok){
+      if(peMode==="byoc"){
+        const v=(document.getElementById("peCrno")||{}).value||"";
+        if(!v.trim()){ ok=false; msg="Enter the change number."; }
+      }else{
+        const v=(document.getElementById("peWs")||{}).value||"";
+        if(!v.trim()){ ok=false; msg="Set the requested window."; }
+        else { const lead=leadTimeError(v); if(lead){ msg=lead; } }
+      }
+    }
+    document.getElementById("peMsg").textContent=msg;
+    document.getElementById("peSave").disabled=!ok;
+  };
+  document.querySelectorAll("[data-pemode]").forEach(el=>el.addEventListener("click",()=>{
+    peMode=el.dataset.pemode;
+    document.querySelectorAll("[data-pemode]").forEach(x=>{
+      const on=x.dataset.pemode===peMode;
+      x.classList.toggle("selected",on); x.querySelector("input").checked=on; });
+    changeBox(); sync();
+  }));
+  changeBox();
+  document.getElementById("peName").addEventListener("input",sync);
+  sync();
+
+  document.getElementById("peSave").addEventListener("click",()=>{
+    const el=document.getElementById("peName");
+    if(el) p.name=el.value.trim();
+    if(full){
+      p.mode=peMode;
+      if(peMode==="byoc"){ p.change=document.getElementById("peCrno").value.trim(); }
+      else{ p.change="requested";
+            p.windowStart=document.getElementById("peWs").value.trim();
+            p.windowEnd=document.getElementById("peWe").value.trim(); }
+    }
+    closeDrawer(); render();
+    showToast(full?"Plan details updated.":"Plan renamed.");
+  });
+  showDrawer();
+  const n=document.getElementById("peName")||document.querySelector("#drawerBody input");
+  if(n){ n.focus(); if(n.select) n.select(); }
+}
+function editPlan(id){ editing=id; selectedPlan=id; view="plan"; render(); }
+function stopEditing(){ editing=null; }
+function searchV2(query){
+  const terms=query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  return plansV2.filter(p=>terms.every(t=>{
+    const m=/^(\w+):(.*)$/.exec(t);
+    if(m){
+      const [,k,v]=m;
+      if(k==="change") return (p.change||"").toLowerCase().includes(v);
+      if(k==="op")     return (p.operation||"").toLowerCase().includes(v);
+      if(k==="state")  return (p.state||"").toLowerCase().includes(v);
+      if(k==="device") return p.items.some(i=>(i.device||"").toLowerCase().includes(v));
+      if(k==="tenant") return p.items.some(i=>(i.tenant||"").toLowerCase().includes(v));
+      if(k==="source") return v==="quick" ? !!p.virtual : !p.virtual;
+      return false;
+    }
+    const hay=[p.name,p.id,p.change,p.operation,p.execRef||"",
+      ...p.items.map(i=>i.device+" "+i.tenant+" "+i.name)].join(" ").toLowerCase();
+    return hay.includes(t);
+  }));
+}
+
+const DISPO_MARK={needs:"▲",running:"◐",waiting:"◷",done:"✓"};
+
+/* How a closed plan ended. A single ✓ across every terminal state was putting a
+   success marker beside failed, expired and rejected plans. */
+const OUTCOME={
+  [PLAN_STATE.COMPLETED]:   {rank:4, mark:"✓", tone:"good",    label:"Completed"},
+  [PLAN_STATE.PARTIAL]:     {rank:2, mark:"◑", tone:"partial", label:"Completed with failures"},
+  [PLAN_STATE.FAILED]:      {rank:1, mark:"✕", tone:"bad",     label:"Failed"},
+  [PLAN_STATE.NOTAPPROVED]: {rank:3, mark:"○", tone:"none",    label:"Not approved"},
+  [PLAN_STATE.CANCELLED]:   {rank:3, mark:"○", tone:"none",    label:"Cancelled"},
+  [PLAN_STATE.EXPIRED]:     {rank:3, mark:"○", tone:"none",    label:"Expired"}
+};
+const outcomeOf=p=>OUTCOME[p.state]||null;
+function dispoMark(p){
+  const o=outcomeOf(p);
+  return o?o.mark:DISPO_MARK[disposition(p)];
+}
+
+function planRowV2(p){
+  const c=countsV2(p), d=disposition(p), virtual=!!p.virtual;
+  const id=virtual?("QS-"+p.id.slice(3)):p.id;
+  const seg4=[0,1,2,3].map(n=>{
+    const filled=Math.round((c.done/Math.max(c.total,1))*4);
+    return `<span class="v2seg ${n<filled?"on":""}"></span>`;
+  }).join("");
+  const title=virtual
+    ? `${esc(p.items[0]?p.items[0].tenant:p.name)} · ${esc(p.items[0]?p.items[0].from+"→"+p.items[0].to:"")}`
+    : esc(planTitle(p));
+  return `<a class="v2row ${virtual?"is-qs":""}" href="#${esc(p.id)}" data-openv2="${esc(p.id)}">
+    <span class="v2dispo ${d} ${(outcomeOf(p)||{}).tone||""}" aria-hidden="true">${dispoMark(p)}</span>
+    <span class="v2name"><b>${title}</b><span class="v2sub mono">${virtual?`<span class="qs-tag">Quick submit</span>`:""}${esc(id)}${virtual?"":" · "+c.total+(c.total===1?" item":" items")}</span></span>
+    <span class="v2op mono">${esc(p.operation)}</span>
+    <span class="v2chg mono">${esc(p.change||"—")}</span>
+    <span class="v2win mono">${esc(p.window)}${p.windowEnd?"–"+esc(p.windowEnd.replace(/^.*,\s*/,"")):""}</span>
+    <span class="v2prog"><span class="v2bar">${seg4}</span><span class="v2sub mono">${c.done}/${c.total}</span></span>
+    <span class="v2state"><b>${esc(p.state)}</b><span class="v2sub ${d==="needs"?"demand":""}">${esc(qualifier(p))}</span></span>
+  </a>`;
+}
+
+const SORTS=[["window","Window"],["outcome","Outcome"],["state","State"],["name","Plan name"],["items","Items"]];
+function effectiveSort(){ return sortTouched ? sortBy : (seg==="done" ? "outcome" : "window"); }
+function sortRows(rows){
+  const key=effectiveSort();
+  if(key==="outcome") return rows.slice().sort((a,b)=>
+    ((outcomeOf(a)||{rank:9}).rank)-((outcomeOf(b)||{rank:9}).rank));
+  return rows.slice().sort((a,b)=>{
+    if(key==="name")  return a.name.localeCompare(b.name);
+    if(key==="items") return b.items.length-a.items.length;
+    if(key==="state") return a.state.localeCompare(b.state);
+    const da=parseWindow(a.window), db=parseWindow(b.window);
+    if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1;
+    return da-db;
+  });
+}
+/* Operation type is an independent axis from disposition — an operator asks
+   "TMOS plans that need me", which is a two-dimensional question. So it is a
+   filter that composes with the segment, not a second row of tabs. */
+function visibleRows(){
+  let rows = q2.trim() ? searchV2(q2) : plansV2.filter(p=>disposition(p)===seg);
+  if(opFilter) rows = rows.filter(p=>p.operation===opFilter);
+  if(outFilter) rows = rows.filter(p=>p.state===outFilter);
+  return sortRows(rows);
+}
+function opCount(op,k){
+  let rows = q2.trim() ? searchV2(q2) : plansV2.filter(p=>disposition(p)===k);
+  if(outFilter && k==="done") rows = rows.filter(p=>p.state===outFilter);
+  return op ? rows.filter(p=>p.operation===op).length : rows.length;
+}
+
+function renderListV2(){
+  setCrumb(TRAIL.concat(["Plans and items"]));
+  const searching=!!q2.trim();
+  const rows=visibleRows();
+  const OPS=[...new Set(plansV2.map(p=>p.operation))].sort();
+  const totalItems=plansV2.reduce((a,p)=>a+p.items.length,0);
+  document.getElementById("app").innerHTML=`
+  <div class="page-head">
+   <div><h1>Plans and items</h1><div class="sub">${plansV2.length} plans · ${totalItems} items</div></div>
+   <div class="right"><button class="btn" id="quickBtn">Quick submit</button><button class="btn primary" id="newPlan">New plan</button></div>
+  </div>
+  <div class="v2segs" role="group" aria-label="Filter by disposition">
+   ${SEGMENTS.map(([k,label])=>{
+     const n=opCount(opFilter,k);
+     return `<button class="v2seg-btn ${!searching&&seg===k?"on":""}" data-seg="${k}" aria-pressed="${!searching&&seg===k}">${label} <span class="mono">${n}</span></button>`;
+   }).join("")}
+  </div>
+  <div class="v2controls">
+   <div class="v2search">
+     <input id="v2q" value="${esc(q2)}" placeholder="Search, or change:CR-7112  device:rseries-ard-01" aria-label="Search plans and items">
+     ${searching?`<button class="btn small" id="v2clear">Clear</button>`:""}
+   </div>
+   <div class="v2facets">
+    <label class="v2facet"><span>Operation</span>
+      <select id="v2op" aria-label="Filter by operation type">
+        <option value="">All${opFilter?"":" ("+plansV2.length+")"}</option>
+        ${OPS.map(o=>`<option value="${esc(o)}" ${opFilter===o?"selected":""}>${esc(o)} (${plansV2.filter(p=>p.operation===o).length})</option>`).join("")}
+      </select></label>
+    ${seg==="done"&&!searching?`<label class="v2facet"><span>Outcome</span>
+      <select id="v2out" aria-label="Filter by outcome">
+        <option value="">All</option>
+        ${Object.keys(OUTCOME).filter(st=>plansV2.some(p=>p.state===st))
+          .sort((a,b)=>OUTCOME[a].rank-OUTCOME[b].rank)
+          .map(st=>`<option value="${esc(st)}" ${outFilter===st?"selected":""}>${esc(OUTCOME[st].label)} (${plansV2.filter(p=>p.state===st).length})</option>`).join("")}
+      </select></label>`:""}
+    <label class="v2facet"><span>Sort</span>
+      <select id="v2sort" aria-label="Sort plans">
+        ${SORTS.map(([k,l])=>`<option value="${k}" ${effectiveSort()===k?"selected":""}>${l}</option>`).join("")}
+      </select></label>
+    ${opFilter?`<button class="btn small" id="v2opclear">Clear</button>`:""}
+   </div>
+  </div>
+  <div class="v2live" aria-live="polite">${searching||opFilter?rows.length+" "+(rows.length===1?"plan":"plans")+(opFilter?" · "+esc(opFilter):"")+(searching?" matching":""):""}</div>
+  ${rows.length?`<div class="v2table">
+    <div class="v2head"><span></span><span>Plan</span><span>Operation</span><span>Change</span><span>Window</span><span>Progress</span><span>State</span></div>
+    ${rows.map(planRowV2).join("")}
+  </div>`:`<div class="panel"><div class="emptybox"><h3>${
+      searching?"No matches":opFilter?"No "+esc(opFilter)+" plans here":"0 plans"
+    }</h3>${seg==="needs"&&!searching?'<button class="btn primary" id="newPlan2">New plan</button>':""}</div></div>`}`;
+
+  document.querySelectorAll("[data-seg]").forEach(b=>b.addEventListener("click",()=>{
+    seg=b.dataset.seg; q2=""; outFilter="";   /* outcome only means something in Closed */
+    renderListV2();
+    const f=document.querySelector(`[data-seg="${seg}"]`); if(f) f.focus();   /* focus survives re-render */
+  }));
+  document.querySelectorAll("[data-openv2]").forEach(a=>a.addEventListener("click",e=>{
+    if(e.metaKey||e.ctrlKey||e.button===1) return;                            /* let new-tab through */
+    e.preventDefault();
+    /* when a row is here because an item stopped, land on that item's failed
+       task rather than making the operator hunt for it */
+    const p=getPlan(a.dataset.openv2), at=p&&attentionItem(p);
+    if(at) openItem(p.id,at.id); else openPlan(a.dataset.openv2);
+  }));
+  const qi=document.getElementById("v2q");
+  qi.addEventListener("input",()=>{ q2=qi.value; const at=qi.selectionStart;
+    renderListV2(); const n=document.getElementById("v2q");
+    n.focus(); n.setSelectionRange(at,at); });
+  const op=document.getElementById("v2op");
+  op.addEventListener("change",()=>{ opFilter=op.value; renderListV2();
+    const f=document.getElementById("v2op"); if(f) f.focus(); });
+  const ou=document.getElementById("v2out");
+  if(ou) ou.addEventListener("change",()=>{ outFilter=ou.value; renderListV2();
+    const f=document.getElementById("v2out"); if(f) f.focus(); });
+  const so=document.getElementById("v2sort");
+  so.addEventListener("change",()=>{ sortBy=so.value; sortTouched=true; renderListV2();
+    const f=document.getElementById("v2sort"); if(f) f.focus(); });
+  const oc=document.getElementById("v2opclear");
+  if(oc) oc.addEventListener("click",()=>{ opFilter=""; renderListV2(); });
+  const cl=document.getElementById("v2clear");
+  if(cl) cl.addEventListener("click",()=>{ q2=""; renderListV2(); });
+  document.getElementById("newPlan").addEventListener("click",openNewPlan);
+  document.getElementById("quickBtn").addEventListener("click",startQuick);
+  const n2=document.getElementById("newPlan2"); if(n2) n2.addEventListener("click",openNewPlan);
+}
+
+/* ---- plan detail: the state is the state; counts sit beside it ---- */
+function renderPlanV2(){
+  const p=getPlan(selectedPlan); if(!p) return goList();
+  const c=countsV2(p), acts=planActions(p), ref=execRef(p);
+  setCrumb(PLANS_TRAIL.concat([p.id]));
+  document.getElementById("app").innerHTML=`
+  <div class="detail-header">
+   <div><div class="detail-title-row"><h1>${esc(planTitle(p))}</h1></div>
+     <div class="sub">${esc(p.virtual?"QS-"+p.id.slice(3):p.id)}${p.virtual?" · quick submit":""}</div></div>
+   <div class="detail-status">
+     <span class="pill ${disposition(p)==="needs"?"dark":""}">${esc(p.state.toUpperCase())}</span>
+     ${acts.map(([k,label,cls])=>`<button class="btn ${cls}" data-planact="${k}">${label}</button>`).join("")}
+     ${activityLog().some(r=>r.plan===p.id&&r.evidence)
+        ? `<button class="btn" data-planexport="${esc(p.id)}">Export report</button>` : ""}
+   </div>
+   <div class="context">
+    <div class="meta">
+     <div><label>Created by</label><b>${esc(planOwner(p))}</b></div>
+     <div><label>Operation</label><b>${esc(p.operation)}</b></div>
+     <div><label>Change</label><b>${esc(p.change||"—")}</b></div>
+     <div><label>Maintenance window</label><b>${esc(p.window)}${p.windowEnd?"–"+esc(p.windowEnd.replace(/^.*,\s*/,"")):""}</b></div>
+     ${ref?`<div><label>Execution reference</label><b>${esc(ref)}</b></div>`:""}
+     <div><label>Progress</label><b>${c.done}/${c.total}</b></div>
+    </div>
+    <div class="window"><div class="window-head"><b>${esc(qualifier(p))}</b></div></div>
+   </div>
+  </div>
+  ${p.state===PLAN_STATE.NOTAPPROVED?`<div class="notice" style="margin-top:16px">${esc(p.change)} was rejected. This plan cannot be re-requested — create a new plan.</div>`:""}
+  ${p.state===PLAN_STATE.DRAFT?"":`
+  <section class="panel" style="margin-top:16px">
+   <div class="panel-head"><span class="section-label">Items</span>
+     ${canEdit(p)?`<button class="btn small" onclick="openAddItem()">+ Add item</button>`:""}
+     <span class="muted mono">${
+       p.state===PLAN_STATE.VFAILED
+         ? plural((p.errors||[]).length,"item")+" failed validation"
+         : [[c.succeeded,"succeeded"],[c.running,"running"],[c.action,"need you"],
+            [c.failed,"failed"],[c.skipped,"skipped"],[c.cancelled,"cancelled"],
+            [c.notapproved,"not approved"]]
+           .filter(x=>x[0]).map(x=>x[0]+" "+x[1]).join(" · ") || plural(c.total,"item")+" not started"
+     }</span></div>
+   <table class="exec-table"><thead><tr><th>Item</th><th>Target</th><th>Upgrade</th><th>State</th><th></th></tr></thead><tbody>
+   ${p.items.map(i=>{
+     const f=itemFailure(p,i);
+     return `<tr class="${f?"row-fail":""}">
+     <td><button class="item-link" data-open-item="${p.id}|${i.id}">${esc(i.name)}</button>
+         <div class="sub">${esc(i.kind)}</div></td>
+     <td class="mono">${esc(i.tenant)}</td>
+     <td class="mono">${esc(i.from)} → ${esc(i.to)}</td>
+     <td>${f
+        ? `<b class="fail-state">Failed validation</b><div class="sub">${f.fails.map(x=>esc(x.label)).join(" · ")}</div>`
+        : stateHTML(i.state)}</td>
+     <td>${f?`<button class="open-link" data-checks="${esc(i.id)}" aria-expanded="false">Show checks</button> `:""}${
+        canEdit(p)
+          ? `<button class="open-link" onclick="removeItem('${i.id}')">Remove</button>`
+          : (f||!itemHasRun(i)?"":`<button class="open-link" data-open-item="${p.id}|${i.id}">View execution</button>`)}</td>
+   </tr>${f?`<tr class="checks-row" id="chk-${esc(i.id)}" hidden><td colspan="5">
+     <ul class="checks">
+       ${f.fails.map(x=>`<li class="bad"><b>${esc(x.label)}</b> ${esc(x.msg)}</li>`).join("")}
+       ${(f.passes||[]).map(x=>`<li class="good">${esc(x)}</li>`).join("")}
+     </ul></td></tr>`:""}`;}).join("")}
+   </tbody></table>
+  </section>`}`;
+  document.querySelectorAll("[data-planact]").forEach(b=>
+    b.addEventListener("click",()=>runPlanAction(p.id,b.dataset.planact)));
+  const pe=document.querySelector("[data-planexport]");
+  if(pe) pe.addEventListener("click",()=>openPlanExport(pe.dataset.planexport));
+  bindOpenItem();
+  document.querySelectorAll("[data-checks]").forEach(b=>b.addEventListener("click",()=>{
+    const r=document.getElementById("chk-"+b.dataset.checks), open=r.hidden;
+    r.hidden=!open; b.setAttribute("aria-expanded",String(open));
+    b.textContent=open?"Hide checks":"Show checks";
+  }));
+}
+
+function itemFailure(p,i){
+  if(p.state!==PLAN_STATE.VFAILED) return null;
+  return (p.errors||[]).find(e=>e.item===i.id) || null;
+}
+
+
+/* one binder, called by every view that emits data-open-item */
+
+/* ===================================================================
+   CAPTURED WORKFLOWS — transcribed verbatim from the captured automation.
+   Task names and milestone text are its own words; nothing here is
+   invented. Where a workflow is not yet defined the UI says so rather
+   than filling the gap.
+
+   Task = the numbered step, Milestone = the steps beneath it. Phase is a
+   grouping the domain model does not yet carry, and is treated as a reading
+   of the sequence rather than a settled level.
+   =================================================================== */
+
+/* rSeries tenant estate. 18 steps, four phases. */
+const WORKFLOW_RSERIES=[
+ {phase:"1 · Request Initiation & Validation", by:"Model-X orchestrator", tasks:[
+  {n:"1",name:"Request Submission",ms:[
+    "Target tenant and device identifiers",
+    "Associated Change Request (CR) number",
+    "Engineering-approved version for upgrading the selected tenants",
+    "The Model-X orchestrator receives the request and initialises the workflow"]},
+  {n:"2",name:"Pre-flight Validation",ms:[
+    "Validates all input parameters",
+    "Verifies CR state and approval status",
+    "Performs version compatibility matrix check (From → To version validation)"]},
+  {n:"3",name:"Infrastructure Discovery",ms:[
+    "Queries Model-X Inventory to resolve tenant-to-rSeries host mapping",
+    "Identifies all devices in scope for relicensing and upgrade"]}]},
+
+ {phase:"2 · Relicensing Automation", by:"The client's platform, via AAP", tasks:[
+  {n:"4",name:"Relicensing Initialization",ms:[
+    "Model-X triggers the client's AAP job template for identified hosts",
+    "Process executes sequentially (one host at a time)"]},
+  {n:"5",name:"Pre-checks",ms:[
+    "Validates service and license check dates",
+    "Verifies current license state"]},
+  {n:"6",name:"Dossier Creation",ms:[
+    "Creates upgrade dossier using existing license keys"]},
+  {n:"7",name:"License Retrieval",ms:[
+    "Makes an API call to the F5 Licensing Portal via the client's corporate proxy",
+    "Uses authorized account credentials"]},
+  {n:"8",name:"Failover all tenants from the host under relicensing",ms:[
+    "Check sync status of all the tenants on the host",
+    "Failover all the tenants and make them standby"]},
+  {n:"8",name:"License Application",dup:true,ms:[
+    "Downloads license file from the F5 portal",
+    "Applies license to target host"]},
+  {n:"9",name:"Post-checks & Synchronization",ms:[
+    "Validates new license state",
+    "Synchronizes tenants from Active to Standby node",
+    "Verifies tenant state and sync status",
+    "Upon successful validation, proceeds to next host"]},
+  {n:"10",name:"Validation Gate",ms:[
+    "Model-X validates overall relicensing automation execution state",
+    "Confirms readiness to proceed with the upgrade phase"]}]},
+
+ {phase:"3 · F5 Upgrade Execution", by:"The automation partner", tasks:[
+  {n:"11",name:"Upgrade Preparation",ms:[
+    "Automation executes on all requested HA pairs in parallel",
+    "Monitors each AAP job state individually",
+    "Performs connectivity tests",
+    "Identifies the actual secondary device in the HA pair",
+    "Checks sync status between Primary and Secondary",
+    "Pushes configuration from Primary to Secondary if devices are out of sync",
+    "Takes configuration backup and transfers it to a backup server",
+    "Copies the upgrade image to the standby node"]},
+  {n:"12",name:"Pre-upgrade Validation",ms:[
+    "Runs comprehensive pre-upgrade checks on the standby node"]},
+  {n:"13",name:"Standby Node Upgrade",ms:[
+    "Installs the upgrade image on the secondary (standby) node"]},
+  {n:"14",name:"Post-upgrade Validation",ms:[
+    "Executes post-upgrade checks on the upgraded standby node",
+    "Synchronizes devices to ensure configuration consistency"]},
+  {n:"15",name:"HA Failover",ms:[
+    "Performs controlled HA failover",
+    "Former standby becomes the new active node",
+    "Former active becomes the new standby"]},
+  {n:"16",name:"Primary Node Upgrade",ms:[
+    "Upgrades the new standby node (the original primary) using the same automation workflow",
+    "Ensures both nodes are running the same upgraded version"]}]},
+
+ {phase:"4 · Completion & Reporting", by:"Model-X", tasks:[
+  {n:"17",name:"Change Request Closure",ms:[
+    "Closes the associated Change Request",
+    "Attaches all required artifacts: backup files, pre/post-check results, execution logs, validation reports"]},
+  {n:"18",name:"Workflow State Update",ms:[
+    "Model-X updates the final workflow execution state",
+    "Provides audit trail and completion status"]}]}
+];
+
+/* F5 TMOS HA-pair upgrade. Ten milestones, each mapped to the playbook
+   producing its evidence. Milestone names are templated in the source: they
+   interpolate the host at runtime, so the braces below are the real labels. */
+const WORKFLOW_TMOS_PAIR=[
+ {phase:"F5 TMOS HA-pair upgrade", by:"f5_tmos_pair automation", tasks:[
+  {n:"1",name:"Validate pair targeting",pb:"playbooks/f5_tmos_pair_upgrade.yml",ms:[]},
+  {n:"2 & 3",name:"Prepare device — {{ inventory_hostname }}",pb:"roles/f5_tmos_pair/tasks/prepare_device_self.yml",
+    ms:["The same play run once per node of the pair"]},
+  {n:"4",name:"Pre-upgrade config sync",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"5",name:"Upgrade first standby — {{ plan.standby.host }}",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"6",name:"Failover to upgraded device",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"7",name:"Upgrade second standby — {{ plan.standby.host }}",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"8",name:"Restore original roles and sync",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"9",name:"Final validation — VIP / Pool / Node counts",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]},
+  {n:"10",name:"HA functionality verification",pb:"roles/f5_tmos_pair/tasks/upgrade.yml",ms:[]}]}
+];
+
+/* The impacted-CI check is mandatory before an item can be submitted, so its
+   result is part of the item's record, carried under the execution
+   reference. Recomputed from the item's own target so it cannot
+   drift from what the item actually is. */
+function itemImpact(i){
+  return computeImpact({
+    op: i.operation,
+    deviceType: i.journey==="rseries" ? "rseries" : "virtual",
+    device: i.device, tenant: i.tenant,
+    peer1: i.peer1, peer2: i.peer2
+  });
+}
+
+function runItemAction(pid,iid,a){
+  const p=getPlan(pid), i=getItem(pid,iid); if(!p||!i) return;
+  if(a==="retry"){
+    i.state=ITEM_STATE.INPROGRESS; i.taskIdx=i.failedTask;
+    i.failedTask=undefined; i.failureReason=null;
+    showToast("Retrying from the failed task.");
+  }
+  if(a==="rollback"){
+    i.state=ITEM_STATE.ROLLINGBACK; showToast("Rollback started.");
+    setTimeout(()=>{ i.state=ITEM_STATE.ROLLEDBACK; i.failedTask=undefined; render(); },1200);
+  }
+  if(a==="cancel"){
+    i.state=ITEM_STATE.CANCELLED; i.failedTask=undefined;
+    showToast("Item abandoned. The device is left as it is.");
+  }
+  render();
+}
+
+/* A milestone is a step with a state, not a bullet. Its state follows the task
+   that contains it — task and milestone share one vocabulary: Succeeded / Running / Failed / Not started. */
+/* Only an item that is actually running can have a running task. Every other
+   item either never started, stopped at a failure, was halted, or finished —
+   so the workflow can never claim work is in flight on a closed plan. */
+const RUNNING_STATES=new Set([ITEM_STATE.INPROGRESS,ITEM_STATE.ROLLINGBACK]);
+const FAILED_STATES =new Set([ITEM_STATE.ACTION,ITEM_STATE.FAILED,
+                              ITEM_STATE.ROLLEDBACK,ITEM_STATE.ROLLBACKFAILED]);
+
+/* Where the item stopped. failedTask is authoritative when the data carries
+   it; otherwise the task index is the stopping point, because that is what it
+   means for an item that is no longer moving. */
+function itemStop(i,total){
+  const cur=Math.max(0,Math.min(i.taskIdx===undefined?0:i.taskIdx,total-1));
+  if(i.state===ITEM_STATE.SUCCEEDED)  return {at:total,kind:"done"};
+  if(FAILED_STATES.has(i.state))      return {at:i.failedTask===undefined?cur:i.failedTask,kind:"failed"};
+  if(RUNNING_STATES.has(i.state))     return {at:cur,kind:"current"};
+  if(i.state===ITEM_STATE.CANCELLED)  return {at:cur,kind:"halted"};
+  return {at:0,kind:"todo"};          /* Draft, Queued, Skipped, Not approved */
+}
+
+function milestoneState(i,taskState,msIdx){
+  if(taskState==="done") return "Succeeded";
+  if(taskState==="todo") return "Not started";
+  const at=i.msIdx===undefined?0:i.msIdx;
+  if(msIdx<at) return "Succeeded";
+  if(msIdx>at) return "Not started";
+  return taskState==="failed" ? "Failed"
+       : taskState==="halted" ? "Cancelled" : "Running";
+}
+const MS_MARK={Succeeded:"✓", Running:"●", Failed:"✕", Cancelled:"○", "Not started":""};
+
+function failedTaskName(i){
+  const {wf}=workflowFor(i); if(!wf || i.failedTask===undefined) return null;
+  const t=flatTasks(wf)[i.failedTask]; return t?t.name:null;
+}
+
+function workflowFor(item){
+  if(item.kind==="HA pair") return {wf:WORKFLOW_TMOS_PAIR, src:"TMOS HA pair"};
+  if(item.journey==="rseries") return {wf:WORKFLOW_RSERIES, src:"rSeries tenant estate"};
+  return {wf:null, src:null};
+}
+const flatTasks=wf=>wf.reduce((a,p)=>a.concat(p.tasks),[]);
+
+/* ---- item execution: the captured workflow, Phase → Task → Milestone ---- */
+function renderItemV2(){
+  const p=getPlan(selectedPlan); if(!p) return goList();
+  const i=getItem(selectedPlan,selectedItem); if(!i) return openPlan(selectedPlan);
+  const {wf,src}=workflowFor(i);
+  const idx=p.items.findIndex(x=>x.id===selectedItem);
+  const prev=idx>0?p.items[idx-1]:null, next=idx<p.items.length-1?p.items[idx+1]:null;
+  setCrumb(PLANS_TRAIL.concat([[p.id,"plan",p.id],i.name]));
+
+  const all=wf?flatTasks(wf):[];
+  const started=itemHasRun(i);
+  const stop=itemStop(i,all.length);
+  let n=0;
+  const body = wf ? wf.map(ph=>`
+    <div class="wf-phase">
+      <div class="wf-phase-head"><b>Phase ${esc(ph.phase)}</b><span class="mono">${esc(ph.by)}</span></div>
+      ${ph.tasks.map(t=>{
+        const at=n++;
+        /* An item that has not been dispatched has run no task. Without this the
+           task index defaults to 0 and the first task renders as Running on a
+           plan still sitting in draft. */
+        const state = !started ? "todo"
+          : at<stop.at   ? "done"
+          : at===stop.at ? stop.kind
+          : "todo";
+        const open = started && at===stop.at && stop.kind!=="todo";
+        return `<div class="wf-task ${state} ${open?"open":""}">
+          <button class="wf-head" type="button" data-wftask="${at}" aria-expanded="${open}">
+            <span class="wf-n mono">${esc(t.n)}${t.dup?"*":""}</span>
+            <span class="wf-name">${esc(t.name)}</span>
+            <span class="wf-state mono">${state==="failed"?"FAILED":state==="done"?"SUCCEEDED":state==="current"?"RUNNING":state==="halted"?"CANCELLED":"NOT STARTED"}</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="wf-body">
+            ${t.ms.length?`<ol class="ms-list">${t.ms.map((m,mi)=>{
+                const st=milestoneState(i,state,mi);
+                return `<li class="ms ${st.toLowerCase().replace(" ","-")}">
+                  <span class="ms-mark" aria-hidden="true">${MS_MARK[st]||""}</span>
+                  <span class="ms-name">${esc(m)}</span>
+                  <span class="ms-state mono">${esc(st)}</span></li>`;}).join("")}</ol>`
+              :`<div class="wf-none">Milestones for this task are still to be defined.</div>`}
+            ${t.pb?`<div class="wf-pb mono">${esc(t.pb)}</div>`:""}
+            ${state==="failed"?`
+              <div class="wf-fail">${esc(i.failureReason||"The task did not complete.")}</div>
+              ${i.state===ITEM_STATE.ACTION?`
+              <div class="wf-actions">
+                <button class="btn primary" data-itemact="retry">Retry task</button>
+                ${canRollback(p)?`<button class="btn" data-itemact="rollback">Roll back item</button>`:""}
+                <button class="btn" data-itemact="cancel">Abandon item</button>
+              </div>`:""}`:""}
+          </div>
+        </div>`;}).join("")}
+    </div>`).join("")
+   : `<div class="notice">The ${esc(i.kind)} workflow is still to be defined.</div>`;
+
+  const attention=p.items.filter(x=>x.state===ITEM_STATE.ACTION);
+  const rest=p.items.filter(x=>x.state!==ITEM_STATE.ACTION);
+  const railBtn=x=>`<button class="rail-item ${x.id===selectedItem?"on":""}"
+      data-railitem="${esc(x.id)}" ${x.id===selectedItem?'aria-current="true"':""}>
+      <span class="rail-dot ${itemHasRun(x)?"ran":""}" aria-hidden="true"></span>
+      <span class="rail-body"><b>${esc(x.name)}</b>
+        <span class="rail-meta mono">${esc(x.from)} → ${esc(x.to)}</span>
+        <span class="rail-state">${esc(x.state)}${itemHasRun(x)&&x.stage&&x.stage!=="Not started"?" · "+esc(x.stage):""}</span>
+      </span></button>`;
+
+  document.getElementById("app").innerHTML=`
+  <div class="item-workspace">
+   <aside class="rail">
+     <button class="rail-head" data-railplan="${esc(p.id)}">
+       <b>${esc(planTitle(p))}</b>
+       <span class="mono">${esc(p.virtual?"QS-"+p.id.slice(3):p.id)} · ${plural(p.items.length,"item")}</span>
+     </button>
+     ${attention.length?`<div class="rail-group">Needs attention · ${attention.length}</div>${attention.map(railBtn).join("")}`:""}
+     ${rest.length?`<div class="rail-group">${attention.length?"Other items · "+rest.length:"Items · "+rest.length}</div>${rest.map(railBtn).join("")}`:""}
+   </aside>
+   <main class="rail-main">
+  <div class="detail-header">
+    <div><div class="detail-title-row"><h1>${esc(i.name)}</h1><span class="chip">${esc(i.tenant)}</span></div>
+      <div class="version">${esc(i.from)} → ${esc(i.to)} · ${esc(i.operation)} · ${esc(i.kind)}</div></div>
+    <div class="detail-status"><span class="pill ${i.state===ITEM_STATE.ACTION?"dark":""}">${esc(i.state.toUpperCase())}</span></div>
+    <div class="context"><div class="meta">
+      <div><label>Item</label><b>${esc(i.id)}</b></div>
+      <div><label>Change</label><b>${esc(p.change||"—")}</b></div>
+      <div><label>Maintenance window</label><b>${esc(p.window)}</b></div>
+      ${p.execRef?`<div><label>Execution reference</label><b>${esc(p.execRef)}</b></div>`:""}
+      ${wf?`<div><label>Tasks</label><b>${started?(Math.min(stop.at+1,all.length))+" of "+all.length:all.length}</b></div>`:""}
+    </div></div>
+  </div>
+  ${(()=>{const rows=itemImpact(i); return rows.length?`
+  <section class="panel" style="margin-top:12px">
+    <div class="panel-head"><span class="section-label">Impacted CIs</span>
+      <span class="muted mono">${plural(rows.length,"CI")}</span></div>
+    <table class="tbl impact-tbl"><thead><tr><th>Device</th><th>Tenant</th><th>Why</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td class="mono">${esc(r.device)}</td><td class="mono">${esc(r.tenant)}</td><td>${esc(r.why)}</td></tr>`).join("")}
+    </tbody></table>
+  </section>`:"";})()}
+  <section class="panel" style="margin-top:12px">
+    <div class="panel-head"><span class="section-label">Workflow execution</span>
+      ${src?`<span class="muted mono">${esc(src)}</span>`:""}</div>
+    <div class="wf">${body}</div>
+  </section>
+   </main>
+  </div>`;
+
+  document.querySelectorAll("[data-railitem]").forEach(b=>b.addEventListener("click",()=>
+    openItem(selectedPlan,b.dataset.railitem)));
+  document.querySelectorAll("[data-itemact]").forEach(b=>b.addEventListener("click",()=>
+    runItemAction(selectedPlan,selectedItem,b.dataset.itemact)));
+  const rh=document.querySelector("[data-railplan]");
+  if(rh) rh.addEventListener("click",()=>openPlan(rh.dataset.railplan));
+  document.querySelectorAll("[data-wftask]").forEach(b=>b.addEventListener("click",()=>{
+    const t=b.closest(".wf-task"); t.classList.toggle("open");
+    b.setAttribute("aria-expanded",t.classList.contains("open")); }));
+
+  /* If this item stopped, the stopped task is why you are here — put it in
+     view rather than making the operator scroll a nineteen-task workflow. */
+  const failedEl=document.querySelector(".wf-task.failed");
+  if(failedEl){
+    /* synchronous: rAF does not fire in a background tab, so the scroll would
+       silently not happen. Reading offsetTop flushes layout first. */
+    void failedEl.offsetTop;
+    failedEl.scrollIntoView({block:"center",behavior:"auto"});
+  }
+}
+
+
+/* ===================================================================
+   DEVICES — read-only inventory. Built from the same reference data the
+   authoring flow selects from, so the two can never disagree. No
+   selection, no plan creation: this view exists to be looked at.
+   =================================================================== */
+function inventory(){
+  const rows=[];
+  RSERIES_DEVICES.forEach(d=>{
+    const ver=(d.label.split("— ")[1]||"—").trim();
+    rows.push({name:d.id, type:"rSeries host", os:"F5OS", version:ver, region:d.region||"—",
+               host:"—", partner:d.pair||"—", carries:(TENANTS_BY_DEVICE[d.id]||[]).length});
+  });
+  Object.keys(TENANTS_BY_DEVICE).forEach(h=>{
+    TENANTS_BY_DEVICE[h].forEach(t=>{
+      rows.push({name:t.id, type:"Tenant", os:"TMOS", version:t.v,
+                 region:(deviceById(h)||{}).region||"—",      /* a tenant is where its host is */
+                 host:h, partner:t.pair||"—", carries:null});
+    });
+  });
+  VIRTUAL_TENANTS.concat(VIRTUAL_PARTNERS).forEach(t=>{
+    rows.push({name:t.id, type:"Virtual tenant", os:"TMOS", version:t.v, region:t.region||"—",
+               host:"—", partner:t.pair||"—", carries:null});
+  });
+  return rows;
+}
+
+
+/* Compliance is derived from the approved-version baseline the product already
+   holds, not stored separately — so it cannot disagree with what the version
+   dropdown offers when you build a plan. */
+function versionsFor(os){ return os==="F5OS"?F5OS_VERSIONS:TMOS_VERSIONS; }
+
+function compliance(r){
+  const list=versionsFor(r.os);
+  const rec=list.find(v=>v.v===r.version);
+  const latest=(list.find(v=>v.latest)||{}).v;
+  if(!rec)          return {state:"Drifted", why:"unrecognised build", bad:true};
+  if(!rec.approved) return {state:"Drifted", why:"unapproved build",  bad:true};
+  if(r.version===latest) return {state:"Compliant", why:"latest approved build"};
+  const behind=list.filter(v=>v.approved&&newer(v.v,r.version)).length;
+  return {state:"Compliant", why:plural(behind,"build")+" behind"};
+}
+
+/* device type in the client's vocabulary, derived from the shape we hold */
+function deviceClass(r){
+  if(r.type==="rSeries host")  return r.partner&&r.partner!=="—" ? "Host · HA pair" : "Host · standalone";
+  if(r.type==="Tenant")        return "Hosted tenant";
+  if(r.type==="Virtual tenant")return "Virtual tenant";
+  return r.type;
+}
+/* the operation type that acts on this device — hosts are upgraded by F5OS,
+   tenants by TMOS. Kept separate from OS because the two need not stay 1:1. */
+function opFor(r){ return r.os; }
+
+let devQ="", devType="", devOp="", devRegion="", devComp="", devSort="name", devDir=1;
+/* Columns are the sort control — clicking a header sorts by it. */
+const DEV_COLS=[["name","Name"],["cls","Type"],["os","OS type"],["version","Version"],
+  ["comp","Compliance"],["region","Region"],["host","Host"]];
+function devValue(r,k){
+  if(k==="cls")  return deviceClass(r);
+  if(k==="comp") return compliance(r).state;
+  return r[k]===undefined?"":String(r[k]);
+}
+
+function devRows(){
+  const q=devQ.toLowerCase().trim();
+  let rows=inventory();
+  if(devType)   rows=rows.filter(r=>deviceClass(r)===devType);
+  if(devOp)     rows=rows.filter(r=>opFor(r)===devOp);
+  if(devRegion) rows=rows.filter(r=>r.region===devRegion);
+  if(devComp)   rows=rows.filter(r=>compliance(r).state===devComp);
+  if(q) rows=rows.filter(r=>[r.name,deviceClass(r),r.os,r.version,compliance(r).state,
+    r.region,r.host,r.partner].join(" ").toLowerCase().includes(q));
+  return rows.sort((a,b)=>devDir*devValue(a,devSort)
+    .localeCompare(devValue(b,devSort),undefined,{numeric:true}));
+}
+
+
+/* Device and tenant detail — the property sets are the functional
+   requirements' own tables, in their order. Properties the inventory does
+   not carry are shown and marked, not omitted and not invented: the shape
+   the client asked for is itself the useful thing to review. */
+const DEVICE_PROPS=[
+  ["Name","Device hostname"],
+  ["Management IP","IP address used to manage the device"],
+  ["Management Interface","Network interface used for management traffic"],
+  ["Device Type","Category"],
+  ["Vendor","Manufacturer"],
+  ["Model","Hardware model"],
+  ["Software Version","Currently running software version"]
+];
+const TENANT_PROPS=[
+  ["Name","Tenant name"],
+  ["Software Version","Currently running software version"],
+  ["Status","Running state"],
+  ["HA Role","Active, standby or none"],
+  ["HA Partner","The paired device or tenant for failover"],
+  ["Traffic Groups","Network traffic groups assigned to this tenant"],
+  ["Virtual Servers","Number of virtual servers running"],
+  ["Slots","Resource allocation on the host"]
+];
+
+let devSelected=null;
+
+function deviceRecord(name){
+  const inv=inventory().find(r=>r.name===name);
+  if(!inv) return null;
+  const host = inv.type==="rSeries host";
+  const known = host
+    ? { "Name":inv.name, "Device Type":"Physical host (rSeries)", "Vendor":"F5",
+        "Software Version":inv.version+"  ·  F5OS" }
+    : { "Name":inv.name, "Software Version":inv.version+"  ·  TMOS",
+        "HA Partner":inv.partner };
+  return {inv, host, known, props: host?DEVICE_PROPS:TENANT_PROPS};
+}
+
+function renderDeviceDetail(){
+  const rec=deviceRecord(devSelected);
+  if(!rec){ devSelected=null; return renderDevices(); }
+  const {inv,host,known,props}=rec;
+  /* A hosted tenant sits under its host, so the trail says so however you
+     arrived — a breadcrumb reports position, not the route taken. Hosts and
+     virtual tenants have no parent device and stay one level down. */
+  const parent = inv.host && inv.host!=="—" ? [[inv.host,"device",inv.host]] : [];
+  setCrumb([C_HOME,C_DEVICES].concat(parent,[inv.name]));
+
+  const tenants = host ? (TENANTS_BY_DEVICE[inv.name]||[]) : [];
+  const missing = props.filter(([k])=>!known[k]).length;
+
+  document.getElementById("app").innerHTML=`
+  <div class="detail-header">
+    <div><div class="detail-title-row"><h1>${esc(inv.name)}</h1>
+      <span class="chip">${esc(inv.type)}</span></div>
+      <div class="version">${esc(inv.os)} ${esc(inv.version)}${inv.host!=="—"?" · on "+esc(inv.host):""}${inv.region&&inv.region!=="—"?" · "+esc(inv.region):""}</div></div>
+    <div class="detail-status">${inv.partner!=="—"
+      ? `<button class="btn" data-devopen="${esc(inv.partner)}">HA partner: ${esc(inv.partner)}</button>` : ""}</div>
+  </div>
+
+  <section class="panel" style="margin-top:16px">
+    <div class="panel-head"><span class="section-label">${host?"Device properties":"Tenant properties"}</span>
+      ${missing?`<span class="muted mono">${missing} of ${props.length} to be added</span>`:""}</div>
+    <table class="tbl devprops"><tbody>
+      ${props.map(([k,desc])=>`<tr>
+        <td class="pk">${esc(k)}</td>
+        <td class="pv">${known[k]
+          ? `<b>${esc(known[k])}</b>`
+          : `<span class="unheld">To be added</span><span class="pd">${esc(desc)}</span>`}</td>
+      </tr>`).join("")}
+    </tbody></table>
+  </section>
+
+  ${host?`<section class="panel" style="margin-top:16px">
+    <div class="panel-head"><span class="section-label">Tenants on this host</span>
+      <span class="muted mono">${tenants.length}</span></div>
+    ${tenants.length?`<table class="tbl tenants-tbl"><thead><tr><th>Tenant</th><th>Software version</th><th>HA partner</th></tr></thead><tbody>
+      ${tenants.map(t=>`<tr>
+        <td><button class="item-link" data-devopen="${esc(t.id)}">${esc(t.id)}</button></td>
+        <td class="mono">${esc(t.v)}</td>
+        <td class="mono">${esc(t.pair||"—")}</td></tr>`).join("")}
+    </tbody></table>`:`<div class="notice">No tenants recorded on this host.</div>`}
+  </section>`:""}`;
+
+  document.querySelectorAll("[data-devopen]").forEach(b=>b.addEventListener("click",()=>{
+    openDevice(b.dataset.devopen);
+  }));
+}
+
+
+/* ===================================================================
+   ACTIVITY — the audit trail and completion status. Events are derived
+   from the plans themselves, so the log can never disagree with the state
+   it describes.
+
+   Export carries the defined evidence payload: backup files, pre/post-check
+   results, execution logs, validation reports.
+   =================================================================== */
+
+/* Change-request closure names the payload exactly. One vocabulary. */
+const EVIDENCE={backup:"Backup files", checks:"Pre/post-check results",
+  logs:"Execution logs", reports:"Validation reports"};
+
+const OPERATORS=["Priya Raghavan","Tom Whitfield","Ana Duarte","Samuel Okonjo",
+  "Mei-Ling Chen","Daniel Brannigan","Freya Lindqvist"];
+function planOwner(p){
+  if(p.createdBy) return p.createdBy;
+  let h=0; for(const ch of p.id) h=(h*31+ch.charCodeAt(0))>>>0;
+  return OPERATORS[h%OPERATORS.length];
+}
+
+const ACTORS={
+  op:"Operator", orch:"Model-X orchestrator",
+  aap:"The client's platform, via AAP", partner:"The automation partner",
+  change:"Change management"
+};
+
+const MONTH_N={Jan:"01",Feb:"02",Mar:"03",Apr:"04",May:"05",Jun:"06",
+  Jul:"07",Aug:"08",Sep:"09",Sept:"09",Oct:"10",Nov:"11",Dec:"12"};
+function evDate(r){
+  /* "8 Sep" -> 2026-09-08 so a range comparison is a string compare */
+  const m=/^(\d{1,2})\s+([A-Za-z]{3,4})/.exec(r.d||"");
+  if(!m) return "2026-09-09";                       /* undated events sit at "now" */
+  return "2026-"+(MONTH_N[m[2]]||"09")+"-"+m[1].padStart(2,"0");
+}
+
+function activityLog(){
+  const ev=[], push=(p,o)=>ev.push(Object.assign({plan:p.id,planName:planTitle(p),
+    operation:p.operation, by:planOwner(p)},o));
+  plansV2.forEach(p=>{
+    const c=countsV2(p);
+    push(p,{t:"04:12",d:"8 Sep",type:"Plan created",actor:"op",
+      detail:plural(p.items.length,"item")+" · "+p.operation});
+    if(p.state===PLAN_STATE.DRAFT) return;
+
+    push(p,{t:"09:20",d:"8 Sep",type:"Submitted for validation",actor:"op",detail:p.change||"—"});
+    if(p.state===PLAN_STATE.VALIDATING) return;
+
+    if(p.state===PLAN_STATE.VFAILED){
+      push(p,{t:"09:21",d:"8 Sep",type:"Validation failed",actor:"orch",
+        detail:(p.errors||[]).map(e=>e.name+" · "+e.fails.map(f=>f.label).join(", ")).join(" · ")||"checks failed",
+        evidence:[EVIDENCE.reports]});
+      return;
+    }
+    push(p,{t:"09:21",d:"8 Sep",type:"Validation passed",actor:"orch",
+      detail:plural(CHECKS.length*p.items.length,"check")+" · all clear",evidence:[EVIDENCE.reports]});
+
+    if(p.mode==="create") push(p,{t:"09:25",d:p.raisedOn||"8 Sep",type:"Change requested",actor:"change",detail:"awaiting approval"});
+    if(p.state===PLAN_STATE.AWAITING) return;
+    if(p.state===PLAN_STATE.NOTAPPROVED){
+      push(p,{t:"14:02",d:"9 Sep",type:"Change rejected",actor:"change",
+        detail:p.change+" · plan cannot be re-requested"});
+      return;
+    }
+    if(p.mode==="create") push(p,{t:"11:40",d:"9 Sep",type:"Change approved",actor:"change",detail:p.change});
+    push(p,{t:"11:41",d:"9 Sep",type:"Scheduled",actor:"orch",detail:"window "+p.window});
+    if(p.state===PLAN_STATE.SCHEDULED) return;
+
+    if(p.state===PLAN_STATE.EXPIRED){
+      push(p,{t:"02:00",d:p.window.split(",")[0],type:"Window expired",actor:"orch",
+        detail:plural(c.skipped,"item")+" skipped · nothing was attempted"});
+      return;
+    }
+    if(p.state===PLAN_STATE.ACTION){
+      push(p,{t:"22:00",d:"—",type:"Execution started",actor:"orch",
+        detail:"window opened · plan-level tasks running"});
+      push(p,{t:"22:01",d:"—",type:"Plan task failed",actor:"orch",
+        detail:p.planTaskFailed||"a plan-level task failed",evidence:[EVIDENCE.logs]});
+      return;
+    }
+
+    push(p,{t:p.startedAt||"22:04",d:"—",type:"Execution started",actor:"partner",
+      detail:p.execRef?"reference "+p.execRef:plural(p.items.length,"item")+" dispatched"});
+    p.items.filter(i=>i.state===ITEM_STATE.SUCCEEDED).slice(0,3).forEach(i=>
+      push(p,{t:"23:"+(10+p.items.indexOf(i)%40),d:"—",type:"Item succeeded",actor:"partner",
+        item:i.name,detail:i.from+" → "+i.to,
+        evidence:[EVIDENCE.backup,EVIDENCE.checks,EVIDENCE.logs]}));
+    const a=attentionItem(p);
+    if(a) push(p,{t:"23:47",d:"—",type:"Task failed",actor:"partner",item:a.name,
+      detail:(failedTaskName(a)||"a task")+" · awaiting your decision",
+      evidence:[EVIDENCE.backup,EVIDENCE.checks,EVIDENCE.logs]});
+    if(p.state===PLAN_STATE.COMPLETED)
+      push(p,{t:p.endedAt||"03:12",d:"—",type:"Change closed",actor:"orch",
+        detail:p.change+" · artefacts attached",
+        evidence:Object.values(EVIDENCE)});
+  });
+  /* newest first — an audit trail is read from the most recent event back */
+  return ev.sort((a,b)=>(evDate(b)+" "+b.t).localeCompare(evDate(a)+" "+a.t));
+}
+
+let actQ="", actType="", actPlan="";
+function actRows(){
+  let rows=activityLog();
+  if(actType) rows=rows.filter(r=>r.type===actType);
+  if(actPlan) rows=rows.filter(r=>r.plan===actPlan);
+  const q=actQ.toLowerCase().trim();
+  if(q) rows=rows.filter(r=>[r.plan,r.planName,r.item||"",r.type,r.detail,ACTORS[r.actor]]
+    .join(" ").toLowerCase().includes(q));
+  return rows;
+}
+
+
+/* ===================================================================
+   HOME — the landing view. It answers one question first ("is anything
+   wanted from me?") and then gives a way into each module. Every number
+   is derived from the same source the module itself reads, so Home can
+   never disagree with the page it links to.
+   =================================================================== */
+function renderHome(){
+  setCrumb(["Home"]);
+
+  const needs=plansV2.filter(p=>disposition(p)==="needs");
+  const running=plansV2.filter(p=>disposition(p)==="running");
+  const waiting=plansV2.filter(p=>disposition(p)==="waiting");
+  const done=plansV2.filter(p=>disposition(p)==="done");
+  const items=plansV2.reduce((a,p)=>a+p.items.length,0);
+
+  /* the next window to open, among plans that are actually waiting for one */
+  const upcoming=waiting.map(p=>({p,d:parseWindow(p.window)}))
+    .filter(x=>x.d).sort((a,b)=>a.d-b.d)[0];
+
+  const inv=inventory();
+  const byType={}; inv.forEach(r=>byType[r.type]=(byType[r.type]||0)+1);
+
+  const log=activityLog().slice(0,5);
+
+  document.getElementById("app").innerHTML=`
+  <div class="page-head">
+    <div><h1>Patching</h1><div class="sub">${plural(plansV2.length,"plan")} · ${plural(items,"item")} · ${plural(inv.length,"device")}</div></div>
+    <div class="right"><button class="btn" id="homeQuick">Quick submit</button><button class="btn primary" id="homeNew">New plan</button></div>
+  </div>
+
+  <section class="panel home-needs">
+    <div class="panel-head"><span class="section-label">Needs you</span>
+      <span class="muted mono">${needs.length?plural(needs.length,"plan"):"nothing right now"}</span></div>
+    ${needs.length?`<div class="home-list">
+      ${needs.map(p=>`<button class="home-row" data-homeplan="${esc(p.id)}">
+        <span class="v2dispo needs" aria-hidden="true">▲</span>
+        <span class="home-main"><b>${esc(planTitle(p))}</b>
+          <span class="v2sub mono">${esc(p.virtual?"QS-"+p.id.slice(3):p.id)} · ${esc(p.operation)}</span></span>
+        <span class="home-state"><b>${esc(p.state)}</b><span class="v2sub demand">${esc(qualifier(p))}</span></span>
+      </button>`).join("")}
+    </div>`:`<div class="home-clear">Nothing is waiting on you.</div>`}
+  </section>
+
+  <div class="home-grid">
+    <section class="panel">
+      <div class="panel-head"><span class="section-label">In flight</span></div>
+      <div class="home-facts">
+        <div><label>Running</label><b>${running.length}</b></div>
+        <div><label>Waiting</label><b>${waiting.length}</b></div>
+        <div><label>Finished</label><b>${done.length}</b></div>
+      </div>
+      ${upcoming?`<div class="home-next">
+        <label>Next window</label>
+        <button class="item-link" data-homeplan="${esc(upcoming.p.id)}">${esc(planTitle(upcoming.p))}</button>
+        <span class="v2sub mono">${esc(upcoming.p.window)}</span></div>`:""}
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><span class="section-label">Estate</span>
+        <button class="open-link" data-homenav="devices">All devices</button></div>
+      <div class="home-facts">
+        ${Object.keys(byType).map(t=>`<div><label>${esc(t)}</label><b>${byType[t]}</b></div>`).join("")}
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:16px">
+    <div class="panel-head"><span class="section-label">Recent activity</span>
+      <button class="open-link" data-homenav="activity">All activity</button></div>
+    <div class="home-list">
+      ${log.map(r=>`<button class="home-row home-act" data-homeplan="${esc(r.plan)}">
+        <span class="mono act-when">${esc(r.d==="—"?"":r.d+" ")}${esc(r.t)}</span>
+        <span class="home-main"><b>${esc(r.type)}</b><span class="v2sub">${esc(r.detail)}</span></span>
+        <span class="v2sub mono">${esc(r.plan)}</span>
+      </button>`).join("")}
+    </div>
+  </section>`;
+
+  document.querySelectorAll("[data-homeplan]").forEach(b=>b.addEventListener("click",()=>{
+    const p=getPlan(b.dataset.homeplan), at=p&&attentionItem(p);
+    if(at) openItem(p.id,at.id); else openPlan(b.dataset.homeplan);
+  }));
+  document.querySelectorAll("[data-homenav]").forEach(b=>b.addEventListener("click",()=>{
+    go(NAV_FRAME[b.dataset.homenav]||{v:"list"});
+  }));
+  document.getElementById("homeNew").addEventListener("click",openNewPlan);
+  document.getElementById("homeQuick").addEventListener("click",startQuick);
+}
+
+function renderActivity(){
+  setCrumb([C_HOME,"Activity"]);
+  const all=activityLog(), rows=actRows();
+  const TYPES=[...new Set(all.map(r=>r.type))];
+  const withEvidence=rows.filter(r=>r.evidence).length;
+  document.getElementById("app").innerHTML=`
+  <div class="page-head">
+    <div><h1>Activity</h1><div class="sub">${plural(all.length,"event")} across ${plural(plansV2.length,"plan")}</div></div>
+    <div class="right"><button class="btn primary" id="actExportAll" ${withEvidence?"":"disabled"}>Export report</button></div>
+  </div>
+  <div class="v2controls">
+    <div class="v2search">
+      <input id="actQ" value="${esc(actQ)}" placeholder="Search by plan, item, event or actor" aria-label="Search activity">
+      ${actQ?`<button class="btn small" id="actClear">Clear</button>`:""}
+    </div>
+    <div class="v2facets">
+      <label class="v2facet"><span>Event</span>
+        <select id="actType" aria-label="Filter by event type">
+          <option value="">All (${all.length})</option>
+          ${TYPES.map(t=>`<option value="${esc(t)}" ${actType===t?"selected":""}>${esc(t)} (${all.filter(r=>r.type===t).length})</option>`).join("")}
+        </select></label>
+      <label class="v2facet"><span>Plan</span>
+        <select id="actPlan" aria-label="Filter by plan">
+          <option value="">All plans</option>
+          ${plansV2.map(p=>`<option value="${esc(p.id)}" ${actPlan===p.id?"selected":""}>${esc(p.virtual?"QS-"+p.id.slice(3):p.id)}</option>`).join("")}
+        </select></label>
+      ${(actType||actPlan)?`<button class="btn small" id="actFClear">Clear</button>`:""}
+    </div>
+  </div>
+  <div class="v2live" aria-live="polite">${(actQ||actType||actPlan)?plural(rows.length,"event")+" shown":""}</div>
+  ${rows.length?`<div class="v2table">
+    <div class="act-head"><span>When</span><span>Plan</span><span>Item</span><span>Event</span><span>By</span><span></span></div>
+    ${rows.map((r,n)=>`<div class="act-row">
+      <span class="mono act-when">${esc(r.d==="—"?"":r.d+" ")}${esc(r.t)}</span>
+      <span><button class="item-link" data-actplan="${esc(r.plan)}">${esc(r.plan)}</button>
+        <span class="v2sub">${esc(r.planName)}</span></span>
+      <span class="mono">${esc(r.item||"—")}</span>
+      <span><b>${esc(r.type)}</b><span class="v2sub">${esc(r.detail)}</span></span>
+      <span class="v2sub">${esc(r.actor==="op"?(r.by||ACTORS.op):(ACTORS[r.actor]||r.actor))}</span>
+      <span>${r.evidence?`<button class="open-link" data-actexport="${n}">Export</button>`:""}</span>
+    </div>`).join("")}
+  </div>`:`<div class="panel"><div class="emptybox"><h3>No matching activity</h3></div></div>`}`;
+
+  const q=document.getElementById("actQ");
+  q.addEventListener("input",()=>{actQ=q.value;const at=q.selectionStart;renderActivity();
+    const n=document.getElementById("actQ");n.focus();n.setSelectionRange(at,at);});
+  const c1=document.getElementById("actClear"); if(c1) c1.addEventListener("click",()=>{actQ="";renderActivity();});
+  const ty=document.getElementById("actType");
+  ty.addEventListener("change",()=>{actType=ty.value;renderActivity();
+    const f=document.getElementById("actType"); if(f) f.focus();});
+  const pl=document.getElementById("actPlan");
+  pl.addEventListener("change",()=>{actPlan=pl.value;renderActivity();
+    const f=document.getElementById("actPlan"); if(f) f.focus();});
+  const c2=document.getElementById("actFClear");
+  if(c2) c2.addEventListener("click",()=>{actType="";actPlan="";renderActivity();});
+  document.querySelectorAll("[data-actplan]").forEach(b=>b.addEventListener("click",()=>openPlan(b.dataset.actplan)));
+  document.querySelectorAll("[data-actexport]").forEach(b=>b.addEventListener("click",()=>
+    openExport([rows[+b.dataset.actexport]],true)));
+  const ex=document.getElementById("actExportAll");
+  if(ex&&!ex.disabled) ex.addEventListener("click",()=>openExport(activityLog(),false));
+}
+
+/* defines exactly what an export contains, so the drawer names the payload
+   rather than pretending a file has been produced. */
+let expFrom="", expTo="", expOp="", expType="";
+function openExport(items,scoped){
+  resetDrawerChrome();
+  if(scoped){ /* the scope is already fixed: no range to choose */ }
+  else { const ds=activityLog().map(evDate).sort();
+         if(!expFrom) expFrom=ds[0]; if(!expTo) expTo=ds[ds.length-1]; }
+  document.getElementById("drawerTitle").textContent="Export report";
+  drawExport(items,scoped);
+  showDrawer();
+}
+
+function exportSelection(base){
+  let rows=base.filter(r=>r.evidence);
+  if(expFrom) rows=rows.filter(r=>evDate(r)>=expFrom);
+  if(expTo)   rows=rows.filter(r=>evDate(r)<=expTo);
+  if(expOp)   rows=rows.filter(r=>r.operation===expOp);
+  if(expType) rows=rows.filter(r=>r.type===expType);
+  return rows;
+}
+
+function drawExport(base,scoped){
+  const items=scoped?base:exportSelection(base);
+  const files=[...new Set(items.flatMap(i=>i.evidence||[]))];
+  const plans=[...new Set(items.map(i=>i.plan))];
+  const OPS=[...new Set(activityLog().map(r=>r.operation))].sort();
+  const TYPES=[...new Set(activityLog().filter(r=>r.evidence).map(r=>r.type))];
+  const onePlan=plans.length===1;
+  document.getElementById("drawerSub").textContent=
+    plural(items.length,"event")+" · "+(onePlan?plans[0]:plural(plans.length,"plan"));
+  document.getElementById("drawerBody").innerHTML=
+    `${scoped?"":`
+    <div class="dw-g"><span class="lab">Period</span>
+      <div class="two">
+        <div class="field"><label>From</label><input type="date" id="expFrom" value="${esc(expFrom)}"></div>
+        <div class="field"><label>To</label><input type="date" id="expTo" value="${esc(expTo)}"></div>
+      </div></div>
+    <div class="dw-g"><span class="lab">Filters</span>
+      <div class="two">
+        <div class="field"><label>Operation type</label>
+          <select id="expOp"><option value="">All</option>
+            ${OPS.map(o=>`<option value="${esc(o)}" ${expOp===o?"selected":""}>${esc(o)}</option>`).join("")}
+          </select></div>
+        <div class="field"><label>Event</label>
+          <select id="expType"><option value="">All</option>
+            ${TYPES.map(t=>`<option value="${esc(t)}" ${expType===t?"selected":""}>${esc(t)}</option>`).join("")}
+          </select></div>
+      </div></div>`}
+     <div class="dw-g"><span class="lab">Contents</span>
+       ${files.length?`<ul class="checks">${files.map(f=>`<li class="good">${esc(f)}</li>`).join("")}</ul>`
+         :`<div class="wf-none">${scoped?"No evidence has been produced yet.":"Nothing in this range carries evidence."}</div>`}</div>
+     <div class="dw-g"><span class="lab">Events</span>
+       ${items.length?`<table class="tbl"><tbody>
+         ${items.slice(0,12).map(i=>`<tr><td class="mono">${esc(i.d==="—"?"":i.d+" ")}${esc(i.t)}</td>
+           ${onePlan?"":`<td class="mono">${esc(i.plan)}</td>`}<td>${esc(i.type)}</td></tr>`).join("")}
+         ${items.length>12?`<tr><td colspan="${onePlan?2:3}" class="muted">and ${items.length-12} more</td></tr>`:""}
+       </tbody></table>`:`<div class="wf-none">No events selected.</div>`}</div>`;
+  document.getElementById("drawerFoot").innerHTML=
+    `<span class="msg">${items.length?"Attaches to "+(plans.length===1?"the change record":plural(plans.length,"change record")):""}</span>
+     <button class="btn" onclick="closeDrawer()">Cancel</button>
+     <button class="btn primary" id="expGo" ${items.length?"":"disabled"}>Export</button>`;
+  if(!scoped){
+    const bind=(id,set)=>{const el=document.getElementById(id);
+      if(el) el.addEventListener("change",()=>{set(el.value);drawExport(base,scoped);});};
+    bind("expFrom",v=>expFrom=v); bind("expTo",v=>expTo=v);
+    bind("expOp",v=>expOp=v);     bind("expType",v=>expType=v);
+  }
+  const go=document.getElementById("expGo");
+  if(go&&!go.disabled) go.addEventListener("click",()=>{
+    closeDrawer(); showToast(plural(files.length,"artefact")+" exported from "+plural(items.length,"event")+".");
+  });
+}
+
+function renderDevices(){
+  setCrumb([C_HOME,"Devices"]);
+  const all=inventory(), rows=devRows();
+  const TYPES=[...new Set(all.map(r=>r.type))];
+  document.getElementById("app").innerHTML=`
+  <div class="page-head">
+    <div><h1>Devices</h1><div class="sub">${all.length} in inventory · ${
+      TYPES.map(t=>all.filter(r=>r.type===t).length+" "+t.toLowerCase()+(all.filter(r=>r.type===t).length===1?"":"s")).join(" · ")
+    }</div></div>
+  </div>
+  <div class="v2controls">
+    <div class="v2search">
+      <input id="devQ" value="${esc(devQ)}" placeholder="Search by name, region, host, version or HA partner" aria-label="Search inventory">
+      ${devQ?`<button class="btn small" id="devClear">Clear</button>`:""}
+    </div>
+    <div class="v2facets">
+      ${[["devTypeF","Device type",devType,[...new Set(all.map(deviceClass))].sort()],
+         ["devOpF","Operation",devOp,[...new Set(all.map(opFor))].sort()],
+         ["devRegionF","Region",devRegion,[...new Set(all.map(r=>r.region))].sort()],
+         ["devCompF","Compliance",devComp,["Compliant","Drifted"]]
+        ].map(([id,label,cur,opts])=>`
+        <label class="v2facet"><span>${esc(label)}</span>
+          <select id="${id}" aria-label="Filter by ${esc(label.toLowerCase())}">
+            <option value="">All</option>
+            ${opts.map(o=>`<option value="${esc(o)}" ${cur===o?"selected":""}>${esc(o)}</option>`).join("")}
+          </select></label>`).join("")}
+      ${(devType||devOp||devRegion||devComp)?`<button class="btn small" id="devFClear">Clear</button>`:""}
+    </div>
+  </div>
+  <div class="v2live" aria-live="polite">${(devQ||devType||devOp||devRegion||devComp)?rows.length+" of "+all.length+" shown":""}</div>
+  ${rows.length?`<div class="v2table">
+    <div class="dev-head">
+      ${DEV_COLS.map(([k,label])=>`<button class="dev-sort ${devSort===k?"on":""}" data-devsort="${k}"
+        aria-label="Sort by ${esc(label)}">${esc(label)}<span class="dev-arrow">${devSort===k?(devDir>0?"↑":"↓"):""}</span></button>`).join("")}
+    </div>
+    ${rows.map(r=>{const c=compliance(r); return `<div class="dev-row" role="button" tabindex="0" data-devrow="${esc(r.name)}">
+      <span><span class="dev-name dev-v mono">${esc(r.name)}</span></span>
+      <span><span class="dev-v">${esc(deviceClass(r))}</span>${r.carries!==null?`<span class="v2sub">${r.carries} tenant${r.carries===1?"":"s"}</span>`:""}</span>
+      <span class="mono"><span class="dev-v">${esc(r.os)}</span></span>
+      <span class="mono"><span class="dev-v">${esc(r.version)}</span></span>
+      <span><span class="dev-v comp ${c.bad?"bad":"ok"}">${esc(c.state)}</span><span class="v2sub">${esc(c.why)}</span></span>
+      <span class="mono"><span class="dev-v">${esc(r.region)}</span></span>
+      <span class="mono"><span class="dev-v">${esc(r.host)}</span>${r.partner!=="—"?`<span class="v2sub mono">↔ ${esc(r.partner)}</span>`:""}</span>
+    </div>`;}).join("")}
+  </div>`:`<div class="panel"><div class="emptybox"><h3>No matches</h3></div></div>`}`;
+
+  document.querySelectorAll("[data-devsort]").forEach(b=>b.addEventListener("click",()=>{
+    const k=b.dataset.devsort;
+    if(devSort===k) devDir=-devDir; else { devSort=k; devDir=1; }
+    renderDevices();
+    const f=document.querySelector(`[data-devsort="${k}"]`); if(f) f.focus();
+  }));
+  [["devTypeF",v=>devType=v],["devOpF",v=>devOp=v],
+   ["devRegionF",v=>devRegion=v],["devCompF",v=>devComp=v]].forEach(([id,set])=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener("change",()=>{ set(el.value); renderDevices();
+      const f=document.getElementById(id); if(f) f.focus(); });
+  });
+  const fc=document.getElementById("devFClear");
+  if(fc) fc.addEventListener("click",()=>{devType=devOp=devRegion=devComp="";renderDevices();});
+  document.querySelectorAll("[data-devrow]").forEach(el=>{
+    const open=()=>openDevice(el.dataset.devrow);
+    el.addEventListener("click",open);
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } });
+  });
+  const q=document.getElementById("devQ");
+  q.addEventListener("input",()=>{ devQ=q.value; const at=q.selectionStart;
+    renderDevices(); const n=document.getElementById("devQ"); n.focus(); n.setSelectionRange(at,at); });
+  const cl=document.getElementById("devClear");
+  if(cl) cl.addEventListener("click",()=>{ devQ=""; renderDevices(); });
+}
+
+function bindOpenItem(){
+  document.querySelectorAll("[data-open-item]").forEach(b=>b.addEventListener("click",()=>{
+    const [pid,iid]=b.dataset.openItem.split("|"); openItem(pid,iid);
+  }));
+}
+
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>
+  go(NAV_FRAME[b.dataset.nav]||{v:"list"})));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); });
+
+buildV2Data();
+/* Land wherever the URL says, so refresh and a pasted link both work. */
+(function boot(){
+  const f=resolveFrame(hashToFrame(location.hash));
+  histWrite(f,frameToHash(f),true);
+  applyFrame(f);
+})();
+</script>
+</body>
+</html>
