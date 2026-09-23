@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model-X — Plans and items</title>
+<style>
+:root{
+  --ink:#000;--ink2:#333;--ink3:#6b6b6b;--ink4:#929292;
+  --line:#d3d3d3;--line2:#e8e8e8;--surface:#fff;--surface2:#fafafa;--surface3:#f3f3f3;
+  --ui:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.45}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid #000;outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-columns:214px minmax(0,1fr)}
+.side{border-right:1px solid var(--line);background:#fafafa;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}
+.brand{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 16px}
+.mark{width:16px;height:16px;border:1.5px solid #000;border-radius:2px;position:relative}.mark:after{content:"";position:absolute;inset:3px;background:#000}
+.brand b{font-size:16px}.nav{padding:10px 8px;display:flex;flex-direction:column;gap:2px;flex:1}
+.nav button{border:1px solid transparent;background:none;text-align:left;padding:8px 10px;border-radius:3px;font-size:14px}.nav button:hover{background:#f1f1f1}.nav button.active{background:#000;color:#fff}
+.nav-count{float:right;border:1px solid currentColor;border-radius:12px;padding:0 6px;font:10px var(--data);opacity:.85}
+.sep{border-top:1px solid var(--line2);margin:13px 10px 8px}.label{padding:0 10px 6px;color:var(--ink4);font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+.foot{border-top:1px solid var(--line);padding:11px 15px;color:var(--ink4);font-size:12px}
+.main{min-width:0}.top{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;background:#fff;z-index:10}
+.crumb{font-size:12px;color:var(--ink3)}.crumb b{color:#000}.crumb span{color:var(--ink4);padding:0 7px}
+.top-actions{margin-left:auto;display:flex;gap:7px}
+.wrap{padding:28px 30px 70px;max-width:1420px}
+.page-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:18px}.page-head .right{margin-left:auto;display:flex;gap:7px}
+h1{font-size:26px;letter-spacing:-.035em;line-height:1.2;margin:0;font-weight:700}.sub{font-size:12px;color:var(--ink3)}
+.btn{height:32px;border:1px solid var(--line);background:#fff;border-radius:3px;padding:0 12px;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn:hover{background:#f7f7f7;border-color:#999}.btn.primary{background:#000;color:#fff;border-color:#000}.btn.small{height:28px;padding:0 10px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:0}.tabs button{border:0;background:none;padding:10px 15px 9px;font-size:12px;border-bottom:2px solid transparent}.tabs button.active{border-bottom-color:#000;font-weight:700}
+.attention{border:2px solid #000;padding:10px 12px;margin:0 0 12px;font-size:12px}.attention b{font-weight:700}
+.list-shell{border:1px solid var(--line);background:#fff}
+.table-head,.plan-row,.item-row{display:grid;grid-template-columns:minmax(360px,2.2fr) 130px 135px 160px 155px 120px;align-items:center}
+.table-head{min-height:38px;background:#fafafa;border-bottom:1px solid var(--line);padding:0 14px;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:650}
+.plan-row{min-height:66px;padding:0 14px;border-bottom:1px solid var(--line2);gap:10px}
+.plan-row:last-child{border-bottom:0}
+.plan-main{display:flex;align-items:flex-start;gap:9px;min-width:0}.expand{width:19px;height:19px;min-width:19px;padding:0;border:1px solid var(--line);background:#fff;border-radius:2px;line-height:15px;font-family:var(--data);font-size:12px}.expand:hover{border-color:#000}
+.plan-name{font-weight:700;font-size:13px}.plan-id{font:11px var(--data);color:var(--ink3);margin-top:2px}.desc{font-size:11px;color:var(--ink3);font-weight:400}
+.cell{min-width:0;font-size:12px}.mono{font-family:var(--data)}.state{display:inline-flex;align-items:center;gap:7px;font-size:12px}.dot{width:8px;height:8px;border:1px solid #000;border-radius:50%;display:inline-block}.dot.fill{background:#000}.dot.half{background:linear-gradient(90deg,#000 50%,#fff 50%)}.dot.fail{border-radius:2px;transform:rotate(45deg)}
+.open-link{font-size:12px;text-decoration:underline;cursor:pointer;background:none;border:0;padding:0}
+.plan-expanded{display:none;border-bottom:1px solid var(--line);background:#fcfcfc;padding:0 14px 8px 42px}.plan-expanded.open{display:block}
+.item-row{grid-template-columns:minmax(300px,2.2fr) 130px 175px 150px 120px;padding:0 0;min-height:58px;border-top:1px solid var(--line2)}
+.item-target{font-size:12px}.item-kind{font-size:10px;color:var(--ink3);margin-top:2px}.item-stage{font-size:11px;color:var(--ink2)}.item-state{font-size:11px}
+.plan-summary{display:flex;gap:18px;align-items:center;padding:9px 0 2px;color:var(--ink3);font-size:11px}.plan-summary strong{color:#000}
+.progress{height:4px;background:#e9e9e9;margin-top:5px;max-width:210px}.progress span{display:block;height:100%;background:#000}
+.detail-header{border:1px solid #000;padding:16px 17px;margin-bottom:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 25px}
+.detail-title-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}.detail-title-row h1{font-size:23px}.chip{border:1px solid var(--line);padding:2px 7px;border-radius:12px;font-size:11px}
+.version{font:12px var(--data);margin-top:3px}.detail-status{padding-top:1px}.pill{border:1px solid var(--line);border-radius:18px;padding:4px 9px;font:11px var(--data)}.pill.dark{background:#000;color:#fff;border-color:#000}
+.context{grid-column:1/-1;border-top:1px solid var(--line2);padding-top:11px;display:flex;align-items:flex-end;gap:30px;flex-wrap:wrap}.meta{display:flex;gap:28px;flex-wrap:wrap}.meta label,.window-head label{display:block;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}.meta b{font:12px var(--data);font-weight:500}.window{margin-left:auto;min-width:330px}.window-head{display:flex;justify-content:space-between;gap:12px}.window-head b{font:12px var(--data);font-weight:500}.track{height:5px;border:1px solid #000;background:#fff;margin-top:6px}.track span{display:block;height:100%;background:#000}
+.plan-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px}.panel{border:1px solid var(--line);background:#fff}.panel-head{padding:11px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px}.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:700}.muted{margin-left:auto;color:var(--ink3);font-size:11px}
+.plan-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line2)}.stat{padding:11px 13px;border-right:1px solid var(--line2)}.stat:last-child{border-right:0}.stat label{display:block;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.stat b{display:block;font:16px var(--data);margin-top:2px;font-weight:500}
+.exec-table{width:100%;border-collapse:collapse}.exec-table th{text-align:left;padding:8px 11px;border-bottom:1px solid #000;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.exec-table td{padding:10px 11px;border-bottom:1px solid var(--line2);font-size:12px;vertical-align:middle}.exec-table tr:last-child td{border-bottom:0}.exec-table tr:hover td{background:#fafafa}
+.stagebar{display:flex;gap:3px;min-width:150px}.stage-seg{height:5px;flex:1;background:#e8e8e8}.stage-seg.done{background:#000}.stage-seg.active{border:1px solid #000;background:#fff}.stage-seg.fail{background:#fff;border:1px solid #000;position:relative}.stage-seg.fail:after{content:"";position:absolute;left:1px;right:1px;top:1px;bottom:1px;background:#000;clip-path:polygon(0 0,100% 100%,0 100%,100% 0)}
+.attention-tag{border:1px solid #000;padding:2px 6px;font:10px var(--data);display:inline-block}.item-link{background:none;border:0;padding:0;text-align:left;text-decoration:underline;font-weight:650;font-size:12px}
+.side-summary{padding:14px}.side-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}.side-row:last-child{border-bottom:0}.side-row span:first-child{color:var(--ink3)}
+.side-note{margin:12px 0 0;padding:10px;border-left:2px solid #000;background:#fafafa;font-size:11px}
+.flow-card{border:1px solid var(--line);background:#fff}.flow-head{padding:11px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:center}.flow-summary{padding:11px 14px;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--line2)}
+.flow{padding:12px 14px 14px}.stage{border:1px solid var(--line);margin-bottom:8px}.stage:last-child{margin-bottom:0}.stage.current,.stage.failed{border-color:#000}.stage-head{min-height:62px;padding:10px 12px;display:grid;grid-template-columns:34px minmax(0,1fr) auto 20px;gap:11px;align-items:center;background:#fff;border:0;width:100%;text-align:left}.stage.current .stage-head,.stage.failed .stage-head{background:#fafafa}.stage-icon{width:27px;height:27px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font:11px var(--data)}.stage.done .stage-icon{background:#000;color:#fff;border-color:#000}.stage.current .stage-icon,.stage.failed .stage-icon{border:2px solid #000}.stage-title{font-size:13px;font-weight:700}.stage-meta{font-size:11px;color:var(--ink3);margin-top:2px}.stage-state{font:10px var(--data);border:1px solid var(--line);padding:3px 7px;border-radius:12px}.stage-state.dark{background:#000;color:#fff;border-color:#000}.chev{font-size:13px;color:var(--ink3);transition:.15s transform}.stage.open .chev{transform:rotate(180deg)}.stage-body{display:none;border-top:1px solid var(--line2);padding:7px 12px 11px}.stage.open .stage-body{display:block}
+.milestone{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:9px;align-items:center;min-height:44px;padding:7px 2px;border-bottom:1px solid var(--line2);font-size:12px;cursor:pointer}.milestone:last-child{border-bottom:0}.milestone:hover{background:#fafafa}.mini{width:9px;height:9px;border:1px solid #000;border-radius:50%}.mini.done{background:#000}.mini.fail{border-radius:2px;transform:rotate(45deg)}.mini.active{border:2px solid #000}.milestone-name{font-weight:550}.milestone-desc{font-size:11px;color:var(--ink3);margin-top:1px}.milestone-time{font:10px var(--data);color:var(--ink3)}
+.actions{margin:8px 0 3px 27px;padding:10px 0 2px;border-top:1px solid #000;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.action-copy{margin-right:auto}.action-title{font-size:12px;font-weight:700}.action-copy .sub{font-size:11px}
+.activity{width:100%;border-collapse:collapse;font-size:12px}.activity th{text-align:left;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid #000}.activity td{padding:9px 10px;border-bottom:1px solid var(--line2)}.activity tr:last-child td{border-bottom:0}
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:40;display:none}.drawer{position:absolute;right:0;top:0;height:100%;width:min(500px,100%);background:#fff;border-left:1px solid #000;display:flex;flex-direction:column}.drawer-head{height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 17px}.drawer-head b{margin-right:auto}.drawer-body{padding:17px;overflow:auto}.drawer-foot{border-top:1px solid var(--line);padding:12px 17px;display:flex;justify-content:flex-end}.drawer-kv{display:grid;grid-template-columns:110px 1fr;border-top:1px solid var(--line2)}.drawer-kv div{padding:9px 0;border-bottom:1px solid var(--line2);font-size:12px}.drawer-kv div:nth-child(odd){color:var(--ink3)}
+.toast{position:fixed;right:22px;bottom:22px;background:#000;color:#fff;padding:11px 14px;font-size:12px;display:none;z-index:60}
+@media(max-width:1050px){.table-head,.plan-row{grid-template-columns:minmax(300px,2fr) 100px 110px 130px 120px 95px}.plan-detail-grid{grid-template-columns:1fr}.side-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:0 20px}.window{margin-left:0;width:100%}}
+@media(max-width:780px){.app{grid-template-columns:64px 1fr}.brand b,.nav button:not(.active) span,.label,.foot{display:none}.nav button{padding:9px 8px}.wrap{padding:20px 14px}.top{padding:0 14px}.page-head{display:block}.page-head .right{margin-top:12px}.table-head{display:none}.plan-row{grid-template-columns:1fr auto;gap:6px;padding:12px}.plan-row>.cell:not(:first-of-type){display:none}.plan-expanded{padding:0 12px 8px}.item-row{grid-template-columns:1fr auto;gap:4px;padding:9px 0}.item-row>.cell:nth-child(n+3){display:none}.detail-header{grid-template-columns:1fr}.detail-status{grid-column:1}.context{display:block}.window{margin-top:12px;min-width:0}.plan-stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="mark"></span><b>Model-X</b></div>
+  <nav class="nav">
+    <button class="active" data-nav="plans"><span>Plans and items</span><span class="nav-count">14</span></button>
+    <button data-nav="devices"><span>Devices</span><span class="nav-count">69</span></button>
+    <div class="sep"></div><div class="label">Reference</div>
+    <button data-nav="reference"><span>How to read this</span></button>
+  </nav>
+  <div class="foot">Patching modules<br>Wireframe prototype</div>
+</aside>
+<main class="main">
+<header class="top">
+  <div class="crumb" id="crumb">Model-X <span>›</span> Patching <span>›</span> <b>Plans and items</b></div>
+  <div class="top-actions"><button class="btn small" id="backBtn" style="display:none">Back</button></div>
+</header>
+<div class="wrap" id="app"></div>
+</main>
+</div>
+
+<div class="drawer-bg" id="drawerBg" aria-hidden="true">
+  <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-head"><b id="drawerTitle">Milestone detail</b><button class="btn small" id="closeDrawer">Close</button></div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-foot"><button class="btn" id="closeDrawer2">Close</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+const plans=[
+ {id:"PL-0033",name:"Ardent access switches, one wave",desc:"One item",operation:"—",change:"CR-7880",window:"17 Oct, 22:00",state:"Executing",attention:"needs you",
+  items:[{id:"IT-1041",name:"ardent-access-01",kind:"Standalone device",device:"ardent-access-01",tenant:"access",operation:"FortiOS",from:"7.2.8",to:"7.4.5",stage:"Install image",state:"Action Required"}]},
+ {id:"PL-0012",name:"Q3 perimeter remediation",desc:"Three items",operation:"—",change:"CR-7112",window:"15 Oct, 22:00",state:"Executing",attention:"needs you",
+  items:[
+   {id:"IT-1018",name:"q3-edge-01",kind:"HA pair",device:"q3-edge-01/02",tenant:"perimeter",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Activate image",state:"Executing"},
+   {id:"IT-1019",name:"q3-edge-03",kind:"Standalone device",device:"q3-edge-03",tenant:"perimeter-api",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Install image",state:"Executing"},
+   {id:"IT-1020",name:"q3-edge-04",kind:"Standalone device",device:"q3-edge-04",tenant:"vpn",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Backup",state:"Completed"}
+ ]},
+ {id:"PL-0040",name:"Cinder tenant refresh",desc:"Approved version rollout for the Cinder estate",operation:"TMOS",change:"CR-7412",window:"2 Oct, 22:00",state:"Validating",
+  items:[
+   {id:"IT-1101",name:"cinder-payments-01",kind:"HA pair",device:"rseries-cin-01/02",tenant:"tnt-payments-01",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Validating"},
+   {id:"IT-1102",name:"cinder-orders-01",kind:"Standalone device",device:"rseries-cin-03",tenant:"tnt-orders-01",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Pre-checks",state:"Validating"}
+ ]},
+ {id:"PL-0035",name:"Access switch fleet, four regions",desc:"One item",operation:"—",change:"CR-7770",window:"5 Oct, 22:00",state:"Executing",
+  items:[{id:"IT-1060",name:"access-fleet-wave",kind:"Four-region wave",device:"access-01…12",tenant:"shared",operation:"FortiOS",from:"7.2.7",to:"7.4.5",stage:"Activate image",state:"Executing"}]},
+ {id:"PL-0034",name:"Core switches, activate and commit",desc:"One item",operation:"—",change:"CR-7812",window:"2 Oct, 22:00",state:"Executing",
+  items:[{id:"IT-1054",name:"core-switch-01",kind:"Standalone device",device:"core-switch-01",tenant:"core",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Post-checks",state:"Executing"}]},
+ {id:"PL-0031",name:"Cinder perimeter routers",desc:"One item",operation:"—",change:"—",window:"8 Sept, 22:00",state:"Validating",
+  items:[{id:"IT-1088",name:"cinder-router-01",kind:"Standalone device",device:"cinder-router-01",tenant:"perimeter",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Validation",state:"Validating"}]},
+ {id:"PL-0024",name:"Bramble edge, September",desc:"Two items",operation:"—",change:"CR-7501",window:"7 Oct, 22:00",state:"Validating",
+  items:[
+   {id:"IT-1047",name:"fgt-bra-dmz-01/02",kind:"HA pair",device:"fgt-bra-dmz-01/02",tenant:"dmz",operation:"FortiOS",from:"7.2.8",to:"7.4.5",stage:"Pre-checks",state:"Queued"},
+   {id:"IT-1048",name:"isr-bra-wan-01",kind:"Standalone device",device:"isr-bra-wan-01",tenant:"wan",operation:"IOS-XE",from:"17.3.8",to:"17.9.5",stage:"Pre-checks",state:"Queued"}
+ ]},
+ {id:"PL-0018",name:"Ardent F5 platform refresh",desc:"Two items",operation:"—",change:"CR-7330",window:"17 Oct, 22:00",state:"Executing",
+  items:[
+   {id:"IT-1031",name:"f5-prod-04",kind:"R-series device",device:"f5-prod-04",tenant:"payments",operation:"TMOS",from:"16.1.5",to:"17.1.1",stage:"Install image",state:"Action Required"},
+   {id:"IT-1032",name:"f5-prod-05",kind:"R-series device",device:"f5-prod-05",tenant:"orders",operation:"TMOS",from:"16.1.5",to:"17.1.1",stage:"Activate image",state:"Executing"}
+ ]},
+ {id:"PL-0051",name:"Cinder virtual tenant wave",desc:"One item",operation:"TMOS",change:"CR-7921",window:"19 Oct, 23:00",state:"Draft",
+  items:[{id:"IT-1120",name:"virtual-tenant-billing",kind:"Virtual tenant",device:"—",tenant:"billing-vt",operation:"TMOS",from:"16.1.4",to:"17.1.1",stage:"Not started",state:"Draft"}]}
+];
+
+let view="list", selectedPlan=null, selectedItem=null, tab="execution";
+let expanded=new Set(["PL-0024"]);
+let openStage=2;
+let simMode="action";
+let simTimer=null;
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function dotClass(s){if(s==="Executing"||s==="In Progress")return "half";if(s==="Completed"||s==="Succeeded")return "fill";if(s==="Action Required"||s==="Failed")return "fail";return "";}
+function stateHTML(s){return `<span class="state"><i class="dot ${dotClass(s)}"></i>${esc(s)}</span>`;}
+function getPlan(id){return plans.find(p=>p.id===id);}
+function getItem(pid,iid){const p=getPlan(pid);return p?.items.find(i=>i.id===iid);}
+function counts(p){
+ const c={total:p.items.length,completed:0,executing:0,attention:0,queued:0,validating:0};
+ p.items.forEach(i=>{
+  if(i.state==="Completed")c.completed++;
+  else if(i.state==="Executing")c.executing++;
+  else if(i.state==="Action Required")c.attention++;
+  else if(i.state==="Validating")c.validating++;
+  else c.queued++;
+ });
+ return c;
+}
+function planState(p){
+ const c=counts(p);
+ if(c.attention) return c.attention+" need you";
+ if(c.executing) return c.executing+" executing";
+ if(c.completed===c.total) return "Completed";
+ return p.state;
+}
+function stageSegments(item){
+ const order=["Pre-checks","Backup","Execute upgrade","Post-checks"];
+ const idx=item.stage==="Pre-checks"?0:item.stage==="Backup"?1:(item.stage==="Install image"||item.stage==="Activate image")?2:item.stage==="Post-checks"?3:-1;
+ return order.map((_,n)=>{
+  let cls=n<idx?"done":n===idx?(item.state==="Action Required"?"fail":"active"):"";
+  if(item.state==="Completed")cls="done";
+  return `<span class="stage-seg ${cls}"></span>`;
+ }).join("");
+}
+function renderList(){
+ document.getElementById("crumb").innerHTML='Model-X <span>›</span> Patching <span>›</span> <b>Plans and items</b>';
+ document.getElementById("backBtn").style.display="none";
+ const active=plans.filter(p=>p.state!=="Draft").length;
+ const waiting=plans.filter(p=>p.items.some(i=>i.state==="Action Required")).length;
+ document.getElementById("app").innerHTML=`
+ <div class="page-head">
+  <div><h1>Plans and items</h1><div class="sub">${plans.length} plans · ${plans.reduce((a,p)=>a+p.items.length,0)} items</div></div>
+  <div class="right"><button class="btn">Quick submit</button><button class="btn primary" id="newPlan">New plan</button></div>
+ </div>
+ <div class="tabs">
+  <button class="active">All <span class="mono">${plans.length}</span></button>
+  <button>Drafts <span class="mono">${plans.filter(p=>p.state==="Draft").length}</span></button>
+  <button>Active <span class="mono">${active}</span></button>
+  <button>History <span class="mono">0</span></button>
+ </div>
+ <div style="height:10px"></div>
+ ${waiting?`<div class="attention"><b>${waiting} ${waiting===1?"plan":"plans"} need your attention.</b> Open a plan to see which item is blocked and the next action.</div>`:""}
+ <div class="list-shell">
+  <div class="table-head"><div>Plan</div><div>Operation</div><div>Change</div><div>Window</div><div>Open</div><div>State</div></div>
+  ${plans.map(planRow).join("")}
+ </div>`;
+ document.querySelectorAll("[data-expand]").forEach(b=>b.addEventListener("click",()=>togglePlan(b.dataset.expand)));
+ document.querySelectorAll("[data-open-plan]").forEach(b=>b.addEventListener("click",()=>openPlan(b.dataset.openPlan)));
+ document.querySelectorAll("[data-open-item]").forEach(b=>b.addEventListener("click",()=>{const [pid,iid]=b.dataset.openItem.split("|");openItem(pid,iid);}));
+ document.getElementById("newPlan").addEventListener("click",()=>showToast("New plan creation is outside this execution prototype."));
+}
+function planRow(p){
+ const isOpen=expanded.has(p.id), c=counts(p);
+ return `
+ <div class="plan-row">
+  <div class="cell plan-main"><button class="expand" data-expand="${p.id}" aria-label="${isOpen?"Collapse":"Expand"} plan">${isOpen?"−":"+"}</button><div><div class="plan-name">${esc(p.name)} ${p.attention?`<span class="attention-tag">${esc(p.attention)}</span>`:""}</div><div class="plan-id">${esc(p.id)} · ${p.items.length} ${p.items.length===1?"item":"items"}${p.desc&&p.items.length>1?` <span class="desc">· ${esc(p.desc)}</span>`:""}</div></div></div>
+  <div class="cell">${esc(p.operation)}</div>
+  <div class="cell mono">${esc(p.change)}</div>
+  <div class="cell mono">${esc(p.window)}</div>
+  <div class="cell"><button class="open-link" data-open-plan="${p.id}">Open</button></div>
+  <div class="cell">${stateHTML(planState(p))}</div>
+ </div>
+ <div class="plan-expanded ${isOpen?"open":""}" id="items-${p.id}">
+   <div class="plan-summary"><strong>${c.total} items</strong><span>${c.completed} completed</span><span>${c.executing} executing</span>${c.attention?`<span>${c.attention} need you</span>`:""}${p.state!=="Draft"?`<span>Shared window ${esc(p.window)}</span>`:""}</div>
+   ${p.items.map(i=>itemRow(p,i)).join("")}
+ </div>`;
+}
+function itemRow(p,i){
+ return `<div class="item-row">
+  <div class="cell"><button class="item-link" data-open-item="${p.id}|${i.id}">${esc(i.name)}</button><div class="item-kind">${esc(i.kind)} · ${esc(i.tenant)}</div></div>
+  <div class="cell mono">${esc(i.operation)}</div>
+  <div class="cell item-target mono">${esc(i.from)} → ${esc(i.to)}</div>
+  <div class="cell"><div class="item-stage">${esc(i.stage)}</div><div class="stagebar">${stageSegments(i)}</div></div>
+  <div class="cell item-state">${stateHTML(i.state)}</div>
+ </div>`;
+}
+function togglePlan(id){if(expanded.has(id))expanded.delete(id);else expanded.add(id);renderList();}
+function openPlan(id){selectedPlan=id;view="plan";tab="execution";renderPlan();}
+function renderPlan(){
+ const p=getPlan(selectedPlan), c=counts(p);
+ document.getElementById("crumb").innerHTML=`Model-X <span>›</span> Patching <span>›</span> Plans and items <span>›</span> <b>${esc(p.id)}</b>`;
+ document.getElementById("backBtn").style.display="inline-flex";
+ document.getElementById("backBtn").textContent="Back to plans";
+ document.getElementById("app").innerHTML=`
+ <div class="page-head">
+  <div><h1>${esc(p.name)}</h1><div class="sub">${esc(p.id)} · ${esc(p.operation)} · ${esc(p.change)} · ${esc(p.window)}</div></div>
+  <div class="right"><button class="btn">Edit plan</button></div>
+ </div>
+ <div class="detail-header">
+  <div><div class="detail-title-row"><h1>${esc(p.name)}</h1>${p.attention?`<span class="attention-tag">${esc(p.attention)}</span>`:""}</div><div class="version">Plan-level change window shared by every item in this plan.</div></div>
+  <div class="detail-status"><span class="pill ${c.attention?"dark":""}">${esc(planState(p).toUpperCase())}</span></div>
+  <div class="context">
+   <div class="meta">
+    <div><label>Operation</label><b>${esc(p.operation)}</b></div>
+    <div><label>Change</label><b>${esc(p.change)}</b></div>
+    <div><label>Maintenance window</label><b>${esc(p.window)}</b></div>
+    <div><label>Items</label><b>${c.total}</b></div>
+   </div>
+   <div class="window"><div class="window-head"><span><label>Plan execution</label></span><b>${c.completed+c.executing+c.attention}/${c.total} engaged</b></div><div class="track"><span style="width:${Math.round(((c.completed+c.executing+c.attention)/Math.max(c.total,1))*100)}%"></span></div></div>
+  </div>
+ </div>
+ <div class="tabs">
+  <button class="${tab==="execution"?"active":""}" data-plan-tab="execution">Execution</button>
+  <button class="${tab==="activity"?"active":""}" data-plan-tab="activity">Activity</button>
+ </div>
+ <div style="height:12px"></div>
+ ${tab==="execution"?planExecution(p,c):planActivity(p)}
+ `;
+ document.querySelectorAll("[data-plan-tab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.planTab;renderPlan();}));
+ document.querySelectorAll("[data-open-item]").forEach(b=>b.addEventListener("click",()=>{const [pid,iid]=b.dataset.openItem.split("|");openItem(pid,iid);}));
+}
+function planExecution(p,c){
+ return `<div class="plan-detail-grid">
+  <section class="panel">
+   <div class="panel-head"><span class="section-label">Parallel execution</span><span class="muted">Each item shares this plan's change window</span></div>
+   <div class="plan-stats">
+    <div class="stat"><label>Total items</label><b>${c.total}</b></div>
+    <div class="stat"><label>Executing</label><b>${c.executing}</b></div>
+    <div class="stat"><label>Completed</label><b>${c.completed}</b></div>
+    <div class="stat"><label>Need you</label><b>${c.attention}</b></div>
+   </div>
+   <table class="exec-table"><thead><tr><th>Item</th><th>Current stage</th><th>Progress</th><th>State</th><th></th></tr></thead><tbody>
+    ${p.items.map(i=>`<tr>
+      <td><button class="item-link" data-open-item="${p.id}|${i.id}">${esc(i.name)}</button><div class="sub">${esc(i.kind)} · ${esc(i.device)} · ${esc(i.tenant)}</div></td>
+      <td>${esc(i.stage)}</td>
+      <td><div class="stagebar">${stageSegments(i)}</div><div class="sub" style="margin-top:3px">Pre-checks · Backup · Upgrade · Post-checks</div></td>
+      <td>${i.state==="Action Required"?`<span class="attention-tag">ACTION REQUIRED</span>`:stateHTML(i.state)}</td>
+      <td><button class="open-link" data-open-item="${p.id}|${i.id}">View execution</button></td>
+    </tr>`).join("")}
+   </tbody></table>
+  </section>
+  <aside class="panel">
+   <div class="panel-head"><span class="section-label">Plan context</span></div>
+   <div class="side-summary">
+    <div class="side-row"><span>Change</span><b class="mono">${esc(p.change)}</b></div>
+    <div class="side-row"><span>Window</span><b class="mono">${esc(p.window)}</b></div>
+    <div class="side-row"><span>Operation</span><b>${esc(p.operation)}</b></div>
+    <div class="side-row"><span>Parallel items</span><b>${c.total}</b></div>
+    <div class="side-note"><b>How to read this:</b><br>Rows are independent items. The stage column shows where each item is now. Open an item when you need the exact execution flow or a recovery action.</div>
+   </div>
+  </aside>
+ </div>`;
+}
+function planActivity(p){
+ const rows=[];
+ p.items.forEach(i=>rows.push(["now",i.name,i.stage,i.state]));
+ rows.push(["21:18","Plan created","Plan","Created"]);
+ return `<div class="panel"><div class="panel-head"><span class="section-label">Activity</span><span class="muted">Plan and item events</span></div><table class="activity"><thead><tr><th>Time</th><th>Item</th><th>Event</th><th>Result</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono">${r[0]}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function openItem(pid,iid){selectedPlan=pid;selectedItem=iid;view="item";simMode=getItem(pid,iid).state==="Action Required"?"action":getItem(pid,iid).stage==="Post-checks"?"post":"running";openStage=simMode==="post"?3:simMode==="action"?2:2;renderItem();}
+function itemData(){
+ const i=getItem(selectedPlan,selectedItem);
+ const base=[
+  {name:"Pre-checks",state:"Succeeded",milestones:[["Connectivity","Succeeded","21:18","Device reachable and responsive."],["Storage","Succeeded","21:19","Sufficient storage available."],["Health baseline","Succeeded","21:21","Baseline health captured."]]},
+  {name:"Backup",state:"Succeeded",milestones:[["Create backup","Succeeded","21:22","Rollback point created."],["Verify backup","Succeeded","21:26","Backup point verified successfully."]]},
+  {name:"Execute upgrade",state:"In Progress",milestones:[["Stage image","Succeeded","21:27","Target image staged."],["Install image","In Progress","21:34","Image installation is running."],["Activate image","Pending","—","Waiting for installation to complete."]]},
+  {name:"Post-checks",state:"Pending",milestones:[["Device health","Pending","—","Runs after activation."],["Tenant health","Pending","—","Runs after device health."]]}
+ ];
+ if(simMode==="action"){base[2].state="Action Required";base[2].milestones[1]=["Install image","Failed","21:36","Image upload failed."];base[2].milestones[2]=["Activate image","Pending","—","Waiting for installation to complete."];base[3].state="Pending";}
+ if(simMode==="post"){base[2].state="Succeeded";base[2].milestones.forEach((m,idx)=>m[1]="Succeeded");base[2].milestones[1][2]="21:34";base[2].milestones[2][2]="21:38";base[3].state="In Progress";base[3].milestones[0]=["Device health","Succeeded","21:42","Device health passed."];base[3].milestones[1]=["Tenant health","In Progress","Running","Tenant health checks are running."];}
+ return {item:i,stages:base};
+}
+function renderItem(){
+ const d=itemData(), i=d.item, action=simMode==="action";
+ document.getElementById("crumb").innerHTML=`Model-X <span>›</span> Patching <span>›</span> Plans and items <span>›</span> ${esc(selectedPlan)} <span>›</span> <b>${esc(i.name)}</b>`;
+ document.getElementById("backBtn").style.display="inline-flex";document.getElementById("backBtn").textContent="Back to plan";
+ document.getElementById("app").innerHTML=`
+ <div class="detail-header">
+  <div><div class="detail-title-row"><h1>${esc(i.device)}</h1><span class="chip">${esc(i.tenant)}</span></div><div class="version">${esc(i.from)} → ${esc(i.to)} · ${esc(i.operation)} · ${esc(i.kind)}</div></div>
+  <div class="detail-status"><span class="pill ${action?"dark":""}">${action?"ACTION REQUIRED":"IN PROGRESS"}</span></div>
+  <div class="context">
+   <div class="meta">
+    <div><label>Plan</label><b>${esc(selectedPlan)}</b></div>
+    <div><label>Change</label><b>CR-004790</b></div>
+    <div><label>Maintenance window</label><b>6 Sept, 21:00–23:00</b></div>
+    <div><label>Started</label><b>21:18</b></div>
+   </div>
+   <div class="window"><div class="window-head"><span><label>Window time remaining</label></span><b>${action?"42m 18s":simMode==="post"?"35m 12s":"38m 06s"}</b></div><div class="track"><span style="width:${action?65:simMode==="post"?71:68}%"></span></div></div>
+  </div>
+ </div>
+ <div class="tabs">
+  <button class="${tab==="execution"?"active":""}" data-item-tab="execution">Execution</button>
+  <button class="${tab==="activity"?"active":""}" data-item-tab="activity">Activity</button>
+ </div>
+ <div style="height:12px"></div>
+ ${tab==="execution"?itemExecution(d):itemActivity(d)}
+ `;
+ document.querySelectorAll("[data-item-tab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.itemTab;renderItem();}));
+ document.querySelectorAll("[data-stage]").forEach(b=>b.addEventListener("click",e=>{if(e.target.closest(".milestone")||e.target.closest("button"))return;openStage=Number(b.dataset.stage);renderItem();}));
+ document.querySelectorAll("[data-milestone]").forEach(b=>b.addEventListener("click",()=>openDrawer(b.dataset.milestone)));
+ document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>runAction(b.dataset.action)));
+}
+function itemExecution(d){
+ const summary=simMode==="action"?"Execution stopped at Install image":simMode==="post"?"Post-checks in progress · Tenant health":"Execution in progress · Activate image";
+ return `<div class="flow-card">
+  <div class="flow-head"><span class="section-label">Execution flow</span><span class="muted">Completed stages collapse automatically</span></div>
+  <div class="flow-summary">${summary}</div>
+  <div class="flow">${d.stages.map((s,idx)=>stageHTML(s,idx)).join("")}</div>
+ </div>
+ <div style="display:flex;justify-content:flex-end;gap:7px;margin-top:9px">
+  <button class="btn small" data-demo="action">Action required</button>
+  <button class="btn small" data-demo="running">Running</button>
+  <button class="btn small" data-demo="post">Post-checks</button>
+ </div>`;
+}
+function stageHTML(s,idx){
+ const done=s.state==="Succeeded",failed=s.state==="Action Required",active=s.state==="In Progress";
+ const open=idx===openStage;
+ return `<div class="stage ${done?"done":""} ${failed?"failed":""} ${active?"current":""} ${open?"open":""}" data-stage="${idx}">
+  <button class="stage-head" type="button" aria-expanded="${open}">
+   <div class="stage-icon">${done?"✓":failed?"!":active?"●":idx+1}</div>
+   <div><div class="stage-title">${esc(s.name)}</div><div class="stage-meta">${done?"Completed":failed?"Action required":active?"Running":"Not started"}</div></div>
+   <div class="stage-state ${done||failed||active?"dark":""}">${esc(failed?"ACTION REQUIRED":s.state.toUpperCase())}</div>
+   <div class="chev">⌄</div>
+  </button>
+  <div class="stage-body">
+   ${s.milestones.map((m,mi)=>`<div class="milestone" data-milestone="${idx}|${mi}">
+    <i class="mini ${m[1]==="Succeeded"?"done":m[1]==="Failed"?"fail":m[1]==="In Progress"?"active":""}"></i>
+    <div><div class="milestone-name">${esc(m[0])}</div><div class="milestone-desc">${esc(m[3])}</div></div>
+    <div class="milestone-time">${esc(m[2])}</div>
+   </div>`).join("")}
+   ${failed?`<div class="actions"><div class="action-copy"><div class="action-title">Install image failed</div><div class="sub">Choose how to continue this item.</div></div><button class="btn primary" data-action="retry">Retry</button><button class="btn" data-action="rollback">Rollback</button><button class="btn" data-action="cancel">Cancel</button></div>`:""}
+  </div>
+ </div>`;
+}
+function itemActivity(d){
+ const rows=[["21:36","Execute upgrade","Install image",simMode==="action"?"Failed":"Succeeded"],["21:34","Execute upgrade","Stage image","Succeeded"],["21:26","Backup","Verify backup","Succeeded"],["21:22","Backup","Create backup","Succeeded"],["21:18","Pre-checks","Connectivity","Succeeded"]];
+ if(simMode==="post")rows.unshift(["now","Post-checks","Tenant health","In Progress"]);
+ return `<div class="panel"><div class="panel-head"><span class="section-label">Activity</span><span class="muted">Newest first</span></div><table class="activity"><thead><tr><th>Time</th><th>Stage</th><th>Milestone</th><th>Result</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${stateHTML(r[3])}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function openDrawer(key){
+ const [stageIdx,mIdx]=key.split("|").map(Number), d=itemData(), s=d.stages[stageIdx], m=s.milestones[mIdx];
+ document.getElementById("drawerTitle").textContent=m[0];
+ document.getElementById("drawerBody").innerHTML=`<div class="sub" style="margin-bottom:14px">${esc(s.name)} · ${esc(m[1])}</div>
+ <div class="drawer-kv">
+  <div>Stage</div><div>${esc(s.name)}</div>
+  <div>Milestone</div><div>${esc(m[0])}</div>
+  <div>Status</div><div>${esc(m[1])}</div>
+  <div>Time</div><div class="mono">${esc(m[2])}</div>
+  <div>Device</div><div class="mono">${esc(d.item.device)}</div>
+  <div>Tenant</div><div class="mono">${esc(d.item.tenant)}</div>
+  <div>Target</div><div class="mono">${esc(d.item.from)} → ${esc(d.item.to)}</div>
+ </div>
+ <div class="side-note" style="margin-top:16px"><b>Result</b><br>${esc(m[3])}</div>`;
+ document.getElementById("drawerBg").style.display="block";document.getElementById("drawerBg").setAttribute("aria-hidden","false");
+}
+function closeDrawer(){document.getElementById("drawerBg").style.display="none";document.getElementById("drawerBg").setAttribute("aria-hidden","true");}
+function runAction(action){
+ if(action==="retry"){simMode="running";openStage=2;showToast("Retry started. Install image is running.");}
+ if(action==="rollback"){showToast("Rollback requested from the last completed recovery point.");return;}
+ if(action==="cancel"){showToast("Item marked for cancellation. No rollback started.");return;}
+ if(action==="retry")renderItem();
+}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(showToast.t);showToast.t=setTimeout(()=>t.style.display="none",2400);}
+document.getElementById("backBtn").addEventListener("click",()=>{if(view==="item"){view="plan";renderPlan();}else{view="list";renderList();}});
+document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
+document.getElementById("closeDrawer2").addEventListener("click",closeDrawer);
+document.getElementById("drawerBg").addEventListener("click",e=>{if(e.target.id==="drawerBg")closeDrawer();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();});
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.nav==="plans"){view="list";renderList();}else showToast("This prototype focuses on Plans and items.");}));
+renderList();
+})();
+</script>
+</body>
+</html>

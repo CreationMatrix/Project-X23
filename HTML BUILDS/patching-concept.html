@@ -1,0 +1,2230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TessArc — Patching</title>
+<style>
+
+:root{
+  --c-ink:#000; --c-ink-2:#333; --c-ink-3:#6b6b6b; --c-ink-4:#949494;
+  --c-line:#d2d2d2; --c-line-2:#e7e7e7;
+  --c-surface:#fff; --c-surface-2:#fafafa; --c-surface-3:#f2f2f2;
+  --c-fill:#111;
+
+  --f-ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --t-display:19px; --t-title:14px; --t-body:13px; --t-data:12px; --t-label:10.5px;
+
+  --r:3px; --row:34px; --nav-w:198px; --top-h:46px; --pad:24px; --maxw:1360px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--f-ui);font-size:var(--t-body);line-height:1.45;
+  color:var(--c-ink);background:var(--c-surface);-webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+table{border-collapse:collapse;width:100%}
+:focus-visible{outline:2px solid var(--c-ink);outline-offset:2px}
+.num,.tbl td,.kpi-v,.bar-t{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:var(--nav-w) minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--c-line);background:var(--c-surface-2);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.side-brand{height:var(--top-h);display:flex;align-items:center;gap:8px;
+  padding:0 16px;border-bottom:1px solid var(--c-line)}
+.mark{width:16px;height:16px;border:1.5px solid var(--c-ink);border-radius:2px;position:relative;flex:0 0 auto}
+.mark::after{content:"";position:absolute;inset:3px;background:var(--c-ink)}
+.side-brand b{font-size:var(--t-title);letter-spacing:-.01em}
+.side-nav{padding:10px 8px;display:flex;flex-direction:column;gap:1px;flex:1;overflow:auto}
+.side-nav a{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 10px;border-radius:var(--r);color:var(--c-ink-2);border:1px solid transparent}
+.side-nav a:hover{background:var(--c-surface-3)}
+.side-nav a[aria-current="page"]{background:var(--c-ink);color:#fff;border-color:var(--c-ink)}
+.side-nav a[aria-current="page"] .pill{border-color:#fff;color:#fff}
+.side-sep{margin:12px 10px 6px;border-top:1px solid var(--c-line-2)}
+.side-lab{padding:0 10px 6px;font-size:var(--t-label);letter-spacing:.09em;
+  text-transform:uppercase;color:var(--c-ink-4)}
+.pill{font-family:var(--f-data);font-size:10px;line-height:1;
+  border:1px solid var(--c-line);border-radius:20px;padding:3px 6px;color:var(--c-ink-3)}
+.side-act{padding:0 8px 10px}
+.side-act .btn{width:100%;justify-content:center}
+.side-foot{padding:10px 14px;border-top:1px solid var(--c-line);font-size:var(--t-label);color:var(--c-ink-4);line-height:1.5}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{height:var(--top-h);border-bottom:1px solid var(--c-line);
+  display:flex;align-items:center;gap:12px;padding:0 var(--pad);
+  position:sticky;top:0;background:var(--c-surface);z-index:20}
+.crumb{display:flex;align-items:center;gap:6px;font-size:var(--t-data);color:var(--c-ink-3);min-width:0;flex-wrap:wrap}
+.crumb a{color:var(--c-ink-3);cursor:pointer}
+.crumb a:hover{color:var(--c-ink);text-decoration:underline;text-underline-offset:2px}
+.crumb b{color:var(--c-ink);font-weight:600}
+.crumb span{color:var(--c-ink-4)}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.wrap{padding:var(--pad);max-width:var(--maxw);width:100%}
+
+h1{font-size:var(--t-display);letter-spacing:-.02em;font-weight:650;line-height:1.2}
+h2{font-size:var(--t-title);font-weight:650;letter-spacing:-.01em}
+h3{font-size:var(--t-body);font-weight:650}
+.lab{font-size:var(--t-label);letter-spacing:.09em;text-transform:uppercase;color:var(--c-ink-3);font-weight:600}
+.sub{color:var(--c-ink-3);font-size:var(--t-data)}
+.mono{font-family:var(--f-data);font-size:var(--t-data)}
+.hint{font-size:11.5px;color:var(--c-ink-3);line-height:1.5}
+.vhead{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
+.vhead .sub{margin-top:3px;max-width:74ch}
+.vhead-r{margin-left:auto;display:flex;gap:8px;align-items:center;flex:0 0 auto}
+
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;
+  border:1px solid var(--c-line);background:var(--c-surface);border-radius:var(--r);
+  font-size:var(--t-data);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--c-ink-3);background:var(--c-surface-2)}
+.btn-p{background:var(--c-fill);color:#fff;border-color:var(--c-fill)}
+.btn-p:hover{background:#000;border-color:#000}
+.btn-sm{height:24px;padding:0 8px;font-size:11.5px}
+.btn[aria-pressed="true"]{background:var(--c-ink);color:#fff;border-color:var(--c-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--c-line);background:var(--c-surface)}
+.btn-p:disabled:hover{background:var(--c-fill)}
+.linkbtn{background:none;border:0;padding:0;font-size:11.5px;color:var(--c-ink);
+  text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+.card{border:1px solid var(--c-line);border-radius:var(--r);background:var(--c-surface)}
+.card-h{padding:11px 14px;border-bottom:1px solid var(--c-line-2);display:flex;align-items:center;gap:10px}
+.card-h .lab{margin-right:auto}
+.card-b{padding:14px}
+.card-b.flush{padding:0}
+.rows{display:flex;flex-direction:column;gap:14px}
+.cols{display:grid;gap:14px}
+.c-main{grid-template-columns:minmax(0,1fr) 296px;align-items:start}
+@media(max-width:1120px){.c-main{grid-template-columns:minmax(0,1fr)}}
+.tscroll{overflow-x:auto;max-width:100%}
+
+.tbl{font-size:var(--t-data)}
+.tbl th{text-align:left;font-size:var(--t-label);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--c-ink-3);font-weight:600;padding:8px 12px;border-bottom:1px solid var(--c-line);
+  white-space:nowrap;background:var(--c-surface)}
+.tbl td{padding:0 12px;height:var(--row);border-bottom:1px solid var(--c-line-2);
+  vertical-align:middle;white-space:nowrap}
+.tbl tbody tr:hover{background:var(--c-surface-2)}
+.tbl tr[data-open]{cursor:pointer}
+.tbl .r{text-align:right}
+.tbl .w{white-space:normal}
+.tools{display:flex;gap:8px;align-items:center;padding:10px 12px;
+  border-bottom:1px solid var(--c-line-2);flex-wrap:wrap}
+.inp,select.inp,textarea.inp{height:28px;border:1px solid var(--c-line);border-radius:var(--r);
+  padding:0 9px;background:var(--c-surface);font-size:var(--t-data);min-width:0}
+.inp:focus{border-color:var(--c-ink);outline:none}
+select.inp{padding-right:24px}
+select.inp.on,.inp.on{border-color:var(--c-ink);background:var(--c-surface-3)}
+.grow{flex:1;min-width:130px}
+textarea.inp{height:auto;padding:8px 9px;font-family:var(--f-data);line-height:1.6;resize:vertical;width:100%}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--c-ink)}
+th .caret{font-family:var(--f-data);font-size:9px;color:var(--c-ink-4);margin-left:4px}
+th.sorted{color:var(--c-ink)}
+th.sorted .caret{color:var(--c-ink)}
+
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:var(--t-data)}
+.st i{font-style:normal;font-family:var(--f-data);width:13px;height:13px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;flex:0 0 auto}
+.st-done i::before{content:"\25CF"}
+.st-run i::before{content:"\25D0"}
+.st-fail i{border:1.5px solid var(--c-ink);border-radius:2px}
+.st-fail i::before{content:"\00D7";font-weight:700}
+.st-wait i::before{content:"\25CB"}
+.st-ready i::before{content:"\25C6"}
+.st-draft i::before{content:"\25CC"}
+.st-warn i::before{content:"\25B3";font-size:12px}
+.st b{font-weight:500}
+.st-fail b{font-weight:650}
+
+.bar{height:6px;border:1px solid var(--c-ink);border-radius:1px;background:var(--c-surface);
+  overflow:hidden;min-width:52px}
+.bar span{display:block;height:100%;background:var(--c-fill)}
+.bar.hatch span{background:repeating-linear-gradient(45deg,var(--c-ink) 0 2px,#fff 2px 5px)}
+.bar-w{display:flex;align-items:center;gap:8px}
+.bar-t{font-family:var(--f-data);font-size:11px;color:var(--c-ink-3);min-width:34px}
+
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field .lab{display:flex;align-items:center;gap:6px}
+.frow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+
+.step{border:1px solid var(--c-line);border-radius:var(--r);overflow:hidden}
+.step+.step{margin-top:14px}
+.step-h{display:flex;align-items:center;gap:11px;padding:11px 14px 0;background:var(--c-surface-2)}
+.step-n{width:20px;height:20px;border:1px solid var(--c-ink);border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--f-data);font-size:11px;flex:0 0 auto}
+.step.derived .step-n{background:var(--c-ink);color:#fff}
+.step-h h3{margin-right:auto}
+.step-d{padding:5px 14px 11px;background:var(--c-surface-2);border-bottom:1px solid var(--c-line-2);font-size:11.5px;line-height:1.55;color:var(--c-ink-2)}
+.step-d span{display:block;max-width:88ch}
+.step-b{padding:14px}
+.opts{display:flex;flex-direction:column;gap:1px}
+.opt{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border:1px solid transparent;
+  border-radius:var(--r);cursor:pointer}
+.opt:hover{background:var(--c-surface-2)}
+.opt.sel{border-color:var(--c-ink);background:var(--c-surface-2)}
+.opt input{margin-top:2px;accent-color:#000;width:13px;height:13px;flex:0 0 auto}
+.opt .ot{display:block;font-size:var(--t-data);font-weight:600}
+.opt .od{display:block;font-size:11.5px;color:var(--c-ink-3);margin-top:1px}
+.lockrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 9px}
+.lock{font-family:var(--f-data);font-size:10.5px;border:1px solid var(--c-ink);
+  border-radius:2px;padding:2px 7px}
+.lock.free{border-style:dashed;border-color:var(--c-line);color:var(--c-ink-3);font-family:var(--f-ui);font-size:11px}
+.dlist{border:1px solid var(--c-line);border-radius:var(--r);max-height:236px;overflow:auto}
+.dl-r{display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--c-line-2)}
+.dl-r:last-child{border-bottom:0}
+.dl-r .dn{font-family:var(--f-data);font-size:11.5px}
+.dl-r .dm{font-size:11px;color:var(--c-ink-3);margin-left:auto;white-space:nowrap}
+.dl-r .rm{border:1px solid var(--c-line);background:var(--c-surface);border-radius:2px;
+  width:19px;height:19px;line-height:1;cursor:pointer;font-size:12px;flex:0 0 auto}
+.dl-r .rm:hover{border-color:var(--c-ink)}
+.dl-e{padding:14px;color:var(--c-ink-3);font-size:11.5px}
+.rejects{border:2px solid var(--c-ink);border-radius:var(--r);padding:10px 12px;margin-top:10px;font-size:11.5px;line-height:1.6}
+.rejects b{display:block;margin-bottom:4px}
+.rejects div{font-family:var(--f-data);font-size:11px}
+.big{font-family:var(--f-data);font-size:19px;font-weight:650;letter-spacing:-.01em;line-height:1.1}
+.resolved{border:1px solid var(--c-line);border-radius:var(--r);padding:11px 13px;
+  display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.resolved .rb{flex:1;min-width:200px}
+.wv{display:flex;align-items:center;gap:12px;padding:7px 11px;border:1px solid var(--c-line-2);
+  border-radius:var(--r);font-size:11.5px}
+.wv+.wv{margin-top:5px}
+.wv .wn{font-family:var(--f-data);font-size:10.5px;border:1px solid var(--c-line);
+  border-radius:2px;padding:1px 6px;flex:0 0 auto}
+.wv .wm{margin-left:auto;font-family:var(--f-data);font-size:11px;color:var(--c-ink-3);white-space:nowrap}
+
+.rail{position:sticky;top:calc(var(--top-h) + 14px)}
+.kv{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  padding:6px 0;border-bottom:1px solid var(--c-line-2);font-size:var(--t-data)}
+.kv:last-of-type{border-bottom:0}
+.kv .k{color:var(--c-ink-3)}
+.kv .v{font-family:var(--f-data);text-align:right}
+.kv .v.warn{border-bottom:2px solid var(--c-ink);font-weight:650}
+.railmsg{font-size:11.5px;color:var(--c-ink-3);line-height:1.5;margin-top:9px}
+.railmsg.warn{color:var(--c-ink);border-left:2px solid var(--c-ink);padding-left:9px}
+
+.v3g{min-width:760px}
+@media(max-width:1080px){.v3g .c-chg,.v3g .c-win{display:none}.v3g{min-width:560px}}
+.v3g td{height:auto;padding:9px 12px;vertical-align:middle}
+.v3g tr.pg-master td{background:var(--c-surface-2)}
+.v3g tr.pg-master:hover td{background:var(--c-surface-3)}
+.v3g td.pg-ind{padding-left:38px;position:relative}
+.v3g td.pg-ind::before{content:"";position:absolute;left:20px;top:-9px;
+  height:calc(50% + 9px);width:9px;border-left:1px solid var(--c-line);
+  border-bottom:1px solid var(--c-line);border-bottom-left-radius:2px}
+.pg-tog{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;
+  border:1px solid var(--c-line);border-radius:2px;background:var(--c-surface);
+  font-family:var(--f-data);font-size:11px;line-height:1;margin-right:7px;flex:0 0 auto}
+
+.ptabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--c-line);margin:-4px 0 4px}
+.ptab{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 13px;
+  background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;
+  font-size:var(--t-data);color:var(--c-ink-3);cursor:pointer;white-space:nowrap}
+.ptab:hover{color:var(--c-ink);background:var(--c-surface-2)}
+.ptab.on{color:var(--c-ink);font-weight:650;border-bottom-color:var(--c-ink)}
+.ptab-n{font-family:var(--f-data);font-size:10px;line-height:1;border:1px solid var(--c-line);
+  border-radius:20px;padding:3px 6px;color:var(--c-ink-3)}
+.ptab.on .ptab-n{border-color:var(--c-ink);color:var(--c-ink)}
+.pg-sec{display:flex;align-items:center;gap:9px;margin:18px 0 7px}
+.pg-cnt{font-family:var(--f-data);font-size:11px;border:1px solid var(--c-line);
+  border-radius:9px;padding:1px 7px;color:var(--c-ink-3)}
+.dep{font-size:11px;color:var(--c-ink-3);padding:2px 0 0 0}
+.seqline{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--c-line-2)}
+.seqline:last-child{border-bottom:0}
+.seqline .sn{font-family:var(--f-data);font-size:11px;color:var(--c-ink-4);
+  border:1px solid var(--c-line);border-radius:2px;padding:1px 6px;flex:0 0 auto}
+.seqline .sl{flex:1;min-width:0}
+.seqline .st2{display:block;font-size:var(--t-body);font-weight:600}
+.seqline .sd{display:block;font-size:11px;color:var(--c-ink-3);margin-top:1px}
+
+.idrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:9px}
+.ln{text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+.crx{display:inline-flex;align-items:center;font-family:var(--f-data);font-size:10px}
+.crx span{border:1px solid var(--c-line);border-right:0;padding:2px 7px;color:var(--c-ink-4)}
+.crx span:last-child{border-right:1px solid var(--c-line)}
+.crx span.on{background:var(--c-ink);color:#fff;border-color:var(--c-ink)}
+.crx span.now{border-color:var(--c-ink);border-width:1.5px;color:var(--c-ink);font-weight:650}
+.rec{font-size:10.5px;font-family:var(--f-data);border:1px solid var(--c-line);
+  border-radius:2px;padding:2px 7px;color:var(--c-ink-3)}
+.rec.hard{border-color:var(--c-ink);border-width:2px;color:var(--c-ink);font-weight:650}
+
+.band{border:1px solid var(--c-line);border-radius:var(--r);padding:12px 14px;margin-top:14px}
+.band-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:9px}
+.band-h .sub{margin-left:auto}
+.wbar{position:relative;height:9px;border:1px solid var(--c-ink);border-radius:1px;background:var(--c-surface)}
+.wbar i{display:block;height:100%;background:var(--c-fill)}
+.wbar u{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--c-ink)}
+
+.dead{border:2px solid var(--c-ink);border-radius:var(--r);margin-top:12px}
+.dead-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 14px;
+  border-bottom:1px solid var(--c-line)}
+.dead-h .sub{margin-left:auto}
+.dead-b{display:flex;gap:16px;align-items:flex-start;padding:13px 14px}
+.dead-t{font-family:var(--f-data);font-size:26px;font-weight:650;letter-spacing:-.02em;
+  line-height:1;flex:0 0 auto;border-bottom:2px solid var(--c-ink);padding-bottom:3px}
+.dead-f{display:flex;gap:8px;padding:0 14px 13px}
+
+.sumline{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;margin-top:14px;
+  border:1px solid var(--c-line);border-radius:var(--r);padding:11px 14px;font-size:var(--t-data)}
+.sumline b{font-family:var(--f-data)}
+.sumline .warn b{border-bottom:2px solid var(--c-ink)}
+
+.rline{display:flex;gap:6px 18px;flex-wrap:wrap;align-items:baseline;margin-top:16px;
+  padding:10px 14px;border:1px dashed var(--c-line);border-radius:var(--r);font-size:11.5px;
+  line-height:1.5;color:var(--c-ink-2)}
+.rline .sub{margin-left:auto}
+.tl{position:relative;margin-top:12px}
+.tl:before{content:"";position:absolute;left:8px;top:12px;bottom:14px;width:1px;background:var(--c-line)}
+.tk{position:relative}
+.tk+.tk{margin-top:10px}
+.mkr{position:absolute;left:2px;top:15px;width:15px;height:15px;border-radius:50%;
+  border:3px solid var(--c-surface);box-shadow:0 0 0 1px var(--c-line);background:var(--c-surface);z-index:2}
+.tk.done .mkr{background:var(--c-ink);box-shadow:0 0 0 1px var(--c-ink)}
+.tk.running .mkr{background:repeating-linear-gradient(45deg,var(--c-ink) 0 1.5px,#fff 1.5px 4px);
+  box-shadow:0 0 0 1px var(--c-ink)}
+.tk.failed .mkr{background:var(--c-surface);box-shadow:0 0 0 2px var(--c-ink)}
+
+.tkc{margin-left:34px;border:1px solid var(--c-line);border-radius:var(--r);
+  background:var(--c-surface);overflow:hidden}
+.tk.failed .tkc{border-width:2px;border-color:var(--c-ink)}
+.tk.open .tkc{border-color:var(--c-ink-3)}
+.tkh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;
+  padding:13px 15px;cursor:pointer}
+.tkh:hover{background:var(--c-surface-2)}
+.tkt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:600}
+.tkn{font-family:var(--f-data);font-size:10.5px;color:var(--c-ink-4);font-weight:400}
+.tks{font-size:11.5px;color:var(--c-ink-3);margin-top:3px}
+.tkr{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.chev{font-family:var(--f-data);font-size:12px;color:var(--c-ink-4);transition:transform .12s}
+.tk.open .chev{transform:rotate(90deg)}
+.tp{font-size:10.5px;font-family:var(--f-data);border:1px solid var(--c-line);
+  border-radius:20px;padding:3px 9px;white-space:nowrap;color:var(--c-ink-3)}
+.tp-done{border-color:var(--c-ink);color:var(--c-ink)}
+.tp-run{background:var(--c-ink);color:#fff;border-color:var(--c-ink)}
+.tp-fail{border-color:var(--c-ink);border-width:2px;color:var(--c-ink);font-weight:650}
+.tkb{border-top:1px solid var(--c-line-2);padding:14px 15px;background:var(--c-surface-2)}
+
+.slab{font-size:var(--t-label);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--c-ink-3);font-weight:600;margin:14px 0 7px}
+.slab-n{font-size:10.5px;letter-spacing:0;text-transform:none;font-weight:400;
+  color:var(--c-ink-4);margin-left:7px}
+
+.mls{border:1px solid var(--c-line);border-radius:var(--r);background:var(--c-surface);overflow:hidden}
+.ml{display:grid;grid-template-columns:20px 18px minmax(0,1fr) auto auto;gap:10px;align-items:center;
+  padding:9px 12px;border-bottom:1px solid var(--c-line-2);font-size:var(--t-data);position:relative}
+.ml:last-child{border-bottom:0}
+.ml:not(:last-child)::after{content:"";position:absolute;left:21px;top:calc(50% + 9px);
+  height:calc(50% + 9px);width:1px;background:var(--c-line)}
+.mi-s{font-family:var(--f-data);font-size:10px;color:var(--c-ink-4);text-align:right}
+.mi-g{font-family:var(--f-data);font-size:12px;text-align:center}
+.ml-wait .mi-g,.ml-wait .mi-n{color:var(--c-ink-4)}
+.ml-fail{background:var(--c-surface-2)}
+.ml-fail .mi-g{font-weight:700}
+.mi-n{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
+.mi-c{font-family:var(--f-data);font-size:11px;color:var(--c-ink-3);white-space:nowrap}
+.mi-c .of{color:var(--c-ink-4);font-family:var(--f-ui)}
+
+.dvl{margin-top:9px;border:1px solid var(--c-line);border-radius:var(--r);
+  background:var(--c-surface);overflow:hidden}
+.dv{display:grid;grid-template-columns:minmax(150px,1.3fr) minmax(0,1fr) minmax(0,1fr) 112px;gap:12px;
+  align-items:center;padding:9px 12px;border-bottom:1px solid var(--c-line-2);font-size:var(--t-data)}
+.dv>b{white-space:nowrap}
+.dv:last-child{border-bottom:0}
+.dv-m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv-s{text-align:right}
+@media(max-width:820px){
+  .dv{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+  .dv .sub{grid-column:1}
+  .dv-m{grid-column:1;white-space:normal}
+  .dv-s{grid-column:2;grid-row:1/3}
+}
+
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.opill{border:1px solid var(--c-line);border-radius:var(--r);padding:5px 9px;
+  background:var(--c-surface);font-size:11px;color:var(--c-ink-3);white-space:nowrap}
+.opill b{color:var(--c-ink);font-family:var(--f-data);margin-right:3px}
+.opill.hard{border-width:2px;border-color:var(--c-ink);color:var(--c-ink)}
+
+.wfbs{margin-top:10px;border:1px solid var(--c-line);border-radius:var(--r);
+  background:var(--c-surface);overflow:hidden}
+.wfb{display:grid;grid-template-columns:66px minmax(0,1fr) 74px 96px 54px;gap:10px;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--c-line-2);font-size:11.5px}
+.wfb:last-child{border-bottom:0}
+.wfb .sub{font-size:11px}
+.wfc-n{font-family:var(--f-data);font-size:11px;color:var(--c-ink-3);text-align:right}
+.wfc-n .of{color:var(--c-ink-4)}
+.dist{display:flex;height:13px;border:1px solid var(--c-line);border-radius:2px;overflow:hidden}
+.dist i{display:block;height:100%}
+.dist i.s-done{background:var(--c-fill)}
+.dist i.s-run{background:repeating-linear-gradient(45deg,var(--c-ink) 0 1.5px,#fff 1.5px 4px)}
+
+.dist i.s-fail{background:var(--c-surface);box-shadow:inset 0 0 0 2px var(--c-ink)}
+.dist i.s-aband{background:repeating-linear-gradient(90deg,var(--c-ink-4) 0 1px,transparent 1px 3px)}
+.dist i.s-wait{background:var(--c-surface)}
+
+.exc{margin-top:12px;border:2px solid var(--c-ink);border-radius:var(--r);
+  padding:11px 12px;background:var(--c-surface)}
+.exc-f{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.lag{margin-top:10px;border-left:2px solid var(--c-ink-3);background:var(--c-surface);padding:9px 12px}
+
+.rp{margin-top:12px;border:1px solid var(--c-ink);border-radius:var(--r);
+  background:var(--c-surface);overflow:hidden}
+.rp-h{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:10px 12px;
+  border-bottom:1px solid var(--c-line)}
+.rp-h b{margin-right:auto}
+.rp-h .inp{height:26px;font-size:11.5px}
+.rp .tbl td{height:auto;padding:8px 12px;vertical-align:middle}
+
+@media(max-width:700px){
+  .tkc{margin-left:24px}
+  .tkh{grid-template-columns:minmax(0,1fr)}
+  .tkr{margin-top:7px}
+  .wfb{grid-template-columns:60px minmax(0,1fr) 50px;gap:7px}
+  .wfb .dist,.wfb .wfc-n{grid-column:1/-1}
+}
+
+.stop{margin:2px 12px 12px 34px;border:2px solid var(--c-ink);border-radius:var(--r);padding:11px 12px}
+.stop-f{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+
+.lg{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;padding:10px 2px;
+  font-size:11px;color:var(--c-ink-3)}
+.lg .g{width:17px;height:17px;font-size:9.5px;margin-right:5px;vertical-align:-4px}
+.lg span{display:inline-flex;align-items:center}
+.mx-note{flex:1 1 240px;min-width:200px}
+
+@media(max-width:1080px){
+  .bd th.rn,.bd td.rn{min-width:268px}
+  .bd th.wc{width:84px;min-width:84px}
+}
+@media(max-width:700px){
+  .bd th.rn,.bd td.rn{min-width:216px}
+  .dead-b{flex-direction:column;gap:9px}
+  .band-h .sub{margin-left:0;flex:1 1 100%}
+}
+
+.wff{padding:13px 14px;border-bottom:1px solid var(--c-line)}
+.wff-h{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.wff h3{font-size:15px;font-weight:650;letter-spacing:-.01em}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:40}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(640px,94vw);background:var(--c-surface);
+  border-left:1px solid var(--c-ink);z-index:41;display:flex;flex-direction:column}
+.sheet-h{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--c-line);flex:0 0 auto}
+.sheet-h h2{margin-right:auto;min-width:0}
+.sheet-b{overflow:auto;padding:18px;flex:1 1 auto;min-height:0}
+
+.note{display:none}
+body.notes .note{display:block;border-left:2px solid var(--c-ink);background:var(--c-surface-3);
+  padding:8px 11px;margin:10px 0;font-size:11.5px;line-height:1.55;max-width:80ch}
+body.notes .note::before{content:"WHY";font-family:var(--f-data);font-size:9.5px;
+  letter-spacing:.1em;display:block;margin-bottom:3px;color:var(--c-ink-3)}
+.banner{border:1px solid var(--c-line);border-radius:var(--r);background:var(--c-surface-3);
+  padding:9px 13px;font-size:11.5px;line-height:1.55;display:flex;gap:10px;align-items:flex-start}
+.banner.hard{border-width:2px;border-color:var(--c-ink);background:var(--c-surface)}
+.src{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:var(--f-data);
+  border:1px solid var(--c-line);border-radius:2px;padding:1px 6px;color:var(--c-ink-3);white-space:nowrap}
+.src.doc{border-color:var(--c-ink);color:var(--c-ink)}
+.src.unk{border-style:dashed}
+.tag{font-size:10.5px;border:1px solid var(--c-line);border-radius:2px;padding:1px 6px;
+  font-family:var(--f-data);color:var(--c-ink-3)}
+.tag.hard{border-color:var(--c-ink);color:var(--c-ink)}
+.stale{border-bottom:1px dashed var(--c-ink-4)}
+.empty{padding:34px;text-align:center;color:var(--c-ink-3);font-size:var(--t-data)}
+hr.sep{border:0;border-top:1px solid var(--c-line-2);margin:16px 0}
+.oq{border-left:2px solid var(--c-ink-4);padding:10px 13px;background:var(--c-surface-2);
+  border-radius:0 var(--r) var(--r) 0}
+.oq+.oq{margin-top:9px}
+.oq h3{font-size:var(--t-body);margin-bottom:3px}
+.oq p{font-size:11.5px;line-height:1.55;color:var(--c-ink-2);max-width:84ch}
+.prose p{font-size:var(--t-data);line-height:1.65;color:var(--c-ink-2);max-width:84ch;margin-top:9px}
+.prose h3{margin-top:16px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="side-brand"><span class="mark"></span><b>TessArc</b><span class="pill">Patching</span></div>
+    <nav class="side-nav" id="nav"></nav>
+    <div class="side-act"><button class="btn btn-p" data-go="new">New plan item</button></div>
+    <div class="side-foot">Concept only.<br>All data is fictional.</div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb" id="crumb"></div>
+      <div class="top-r">
+      </div>
+    </header>
+    <div class="wrap" id="view"></div>
+  </div>
+
+</div>
+<div id="sheet"></div>
+
+<script>
+
+const APPROVED = {"TransitOS":"8.6.1","LatticeOS":"2.6.0","BastionOS":"3.8.0","SentinelOS":"5.3.3",
+  "VectorOS":"6.4.0","VectorHost":"1.4.0","RelayOS":"9.4-208"};
+const APPROVED_ON = {"TransitOS":"14 Aug 2026","LatticeOS":"2 Jul 2026","BastionOS":"9 Jun 2026",
+  "SentinelOS":"21 Aug 2026","VectorOS":"5 Aug 2026","VectorHost":"5 Aug 2026","RelayOS":"18 Jul 2026"};
+const VENDOR = {"TransitOS":"Vantage","LatticeOS":"Vantage","BastionOS":"Vantage","SentinelOS":"Kestrel",
+  "VectorOS":"Harrow","VectorHost":"Harrow","RelayOS":"Pinnacle"};
+
+const MINS = {"Standalone":18,"HA pair":38,"Tenant":22,"Host":45};
+
+const STALE_DAYS = 3;
+const LEAD_DAYS  = 4;
+const EXP_RANK   = {"Internet-facing":0,"Perimeter":1,"Internal":2};
+
+function mk(name,platform,version,shape,region,exposure,drift,days,host,members){
+  return {name,platform,version,shape,region,exposure,drift,days,host,members};
+}
+const DEVICES = [
+  mk("fw-ard-perim-01/02","SentinelOS","5.3.0","HA pair","Ardent","Internet-facing",false,0,null,"fw-ard-perim-01 · fw-ard-perim-02"),
+  mk("fw-bra-perim-01/02","SentinelOS","5.3.0","HA pair","Bramble","Internet-facing",true,1,null,"fw-bra-perim-01 · fw-bra-perim-02"),
+  mk("fw-cin-perim-01/02","SentinelOS","5.3.0","HA pair","Cinder","Internet-facing",false,0,null,"fw-cin-perim-01 · fw-cin-perim-02"),
+  mk("fw-dov-perim-01/02","SentinelOS","5.3.0","HA pair","Dovetail","Internet-facing",false,0,null,"fw-dov-perim-01 · fw-dov-perim-02"),
+  mk("fw-elm-perim-01/02","SentinelOS","5.3.0","HA pair","Elmwood","Internet-facing",false,4,null,"fw-elm-perim-01 · fw-elm-perim-02"),
+  mk("fw-ard-dmz-01/02","SentinelOS","5.1.4","HA pair","Ardent","Perimeter",false,0,null,"fw-ard-dmz-01 · fw-ard-dmz-02"),
+  mk("fw-bra-dmz-01/02","SentinelOS","5.1.4","HA pair","Bramble","Perimeter",false,0,null,"fw-bra-dmz-01 · fw-bra-dmz-02"),
+  mk("fw-cin-dmz-01","SentinelOS","5.1.4","Standalone","Cinder","Perimeter",true,0),
+  mk("fw-ard-int-01/02","SentinelOS","5.3.3","HA pair","Ardent","Internal",false,0,null,"fw-ard-int-01 · fw-ard-int-02"),
+  mk("vpn-ard-edge-01/02","BastionOS","3.6.2","HA pair","Ardent","Internet-facing",false,0,null,"vpn-ard-edge-01 · vpn-ard-edge-02"),
+  mk("vpn-dov-edge-01/02","BastionOS","3.6.2","HA pair","Dovetail","Internet-facing",true,0,null,"vpn-dov-edge-01 · vpn-dov-edge-02"),
+  mk("vpn-bra-edge-01/02","BastionOS","3.6.2","HA pair","Bramble","Internet-facing",false,0,null,"vpn-bra-edge-01 · vpn-bra-edge-02"),
+  mk("vpn-cin-vpn-01","BastionOS","3.8.0","Standalone","Cinder","Perimeter",false,9),
+  mk("vpn-ard-vpn-01","BastionOS","3.8.0","Standalone","Ardent","Perimeter",false,0),
+  mk("tnt-payments-01","VectorOS","6.2.1","Tenant","Ardent","Perimeter",false,0,"host-ard-01"),
+  mk("tnt-trading-01","VectorOS","6.2.1","Tenant","Ardent","Perimeter",false,0,"host-ard-01"),
+  mk("tn-web-01","VectorOS","6.2.1","Tenant","Ardent","Internet-facing",true,0,"host-ard-01"),
+  mk("tnt-mobile-01","VectorOS","6.2.1","Tenant","Ardent","Internet-facing",false,0,"host-ard-02"),
+  mk("tn-api-01","VectorOS","6.4.0","Tenant","Cinder","Internet-facing",false,0,"host-cin-01"),
+  mk("tnt-intl-01","VectorOS","6.4.0","Tenant","Cinder","Internal",false,0,"host-cin-01"),
+  mk("host-ard-01","VectorHost","1.2.0","Host","Ardent","Internal",false,0),
+  mk("host-ard-02","VectorHost","1.2.0","Host","Ardent","Internal",false,0),
+  mk("host-cin-01","VectorHost","1.4.0","Host","Cinder","Internal",false,0),
+  mk("lb-ard-01/02","VectorOS","6.0.4","HA pair","Ardent","Perimeter",false,0,null,"lb-ard-01 · lb-ard-02"),
+  mk("lb-dov-01/02","VectorOS","6.0.4","HA pair","Dovetail","Perimeter",true,0,null,"lb-dov-01 · lb-dov-02"),
+  mk("px-ard-01/02","RelayOS","9.2-114","HA pair","Ardent","Internet-facing",false,0,null,"px-ard-01 · px-ard-02"),
+  mk("px-cin-01/02","RelayOS","9.2-114","HA pair","Cinder","Perimeter",false,0,null,"px-cin-01 · px-cin-02"),
+  mk("px-bra-01/02","RelayOS","9.4-208","HA pair","Bramble","Perimeter",false,0,null,"px-bra-01 · px-bra-02"),
+  mk("core-ard-core-01","LatticeOS","2.4.3","Standalone","Ardent","Internal",false,0),
+  mk("core-ard-core-02","LatticeOS","2.4.3","Standalone","Ardent","Internal",false,0),
+  mk("core-cin-core-01","LatticeOS","2.4.3","Standalone","Cinder","Internal",false,5),
+  mk("core-dov-core-01","LatticeOS","2.6.0","Standalone","Dovetail","Internal",false,0),
+  mk("sw-cin-acc-01","TransitOS","8.2.0","Standalone","Cinder","Internal",false,0),
+  mk("sw-cin-acc-02","TransitOS","8.2.0","Standalone","Cinder","Internal",false,6),
+  mk("sw-cin-acc-03","TransitOS","8.2.0","Standalone","Cinder","Perimeter",false,0),
+  mk("sw-ard-acc-01","TransitOS","8.2.0","Standalone","Ardent","Internal",false,0),
+  mk("sw-ard-acc-02","TransitOS","8.2.0","Standalone","Ardent","Internal",true,0),
+  mk("sw-ard-acc-03","TransitOS","8.2.0","Standalone","Ardent","Internal",false,0),
+  mk("sw-dov-acc-01","TransitOS","8.2.0","Standalone","Dovetail","Internal",false,0),
+  mk("sw-bra-acc-01","TransitOS","8.6.1","Standalone","Bramble","Internal",false,0),
+  mk("rtr-cin-wan-01","TransitOS","8.2.0","Standalone","Cinder","Internet-facing",false,0),
+  mk("rtr-cin-wan-02","TransitOS","8.2.0","Standalone","Cinder","Internet-facing",false,0),
+  mk("rtr-ard-wan-01","TransitOS","8.1.2","Standalone","Ardent","Perimeter",false,0),
+  mk("rtr-ard-wan-02","TransitOS","8.1.2","Standalone","Ardent","Perimeter",false,0),
+  mk("rtr-dov-wan-01","TransitOS","8.1.2","Standalone","Dovetail","Perimeter",false,0),
+  mk("rtr-bra-wan-01","TransitOS","8.1.2","Standalone","Bramble","Perimeter",true,0),
+  mk("sw-bra-acc-02","TransitOS","8.2.0","Standalone","Bramble","Internal",false,0),
+  mk("sw-bra-acc-03","TransitOS","8.2.0","Standalone","Bramble","Perimeter",false,0),
+  mk("sw-bra-acc-04","TransitOS","8.2.0","Standalone","Bramble","Internal",false,0),
+  mk("sw-cin-acc-04","TransitOS","8.2.0","Standalone","Cinder","Internal",false,0),
+  mk("sw-cin-acc-05","TransitOS","8.2.0","Standalone","Cinder","Perimeter",false,0),
+  mk("sw-cin-acc-06","TransitOS","8.2.0","Standalone","Cinder","Internal",false,2),
+  mk("sw-dov-acc-02","TransitOS","8.2.0","Standalone","Dovetail","Internal",false,0),
+  mk("sw-dov-acc-03","TransitOS","8.2.0","Standalone","Dovetail","Perimeter",false,0),
+  mk("sw-dov-acc-04","TransitOS","8.2.0","Standalone","Dovetail","Internal",false,0),
+  mk("sw-ard-acc-04","TransitOS","8.2.0","Standalone","Ardent","Internal",false,0),
+  mk("sw-ard-acc-05","TransitOS","8.2.0","Standalone","Ardent","Perimeter",false,0),
+  mk("sw-ard-acc-06","TransitOS","8.2.0","Standalone","Ardent","Internal",false,0)
+];
+DEVICES.forEach((d,i)=>{
+  d.id       = "d"+i;
+  d.vendor   = VENDOR[d.platform];
+  d.approved = APPROVED[d.platform];
+  d.behind   = d.version !== d.approved;
+  d.stale    = d.days >= STALE_DAYS;
+  d.mins     = MINS[d.shape];
+});
+
+const BYNAME = {};
+DEVICES.forEach(d=>{
+  BYNAME[d.name.toLowerCase()] = d;
+  if(d.members) d.members.split("·").forEach(m=>{ BYNAME[m.trim().toLowerCase()] = d; });
+});
+
+let PLANS = [
+  {id:"PL-0012", name:"Q3 perimeter remediation", owner:"Operations"},
+  {id:"PL-0018", name:"Ardent Vector platform refresh", owner:"Operations"},
+  {id:"PL-0024", name:"Bramble edge, September", owner:"Operations"},
+  {id:"PL-0031", name:"Cinder perimeter routers", owner:"Operations"},
+  {id:"PL-0032", name:"Ardent access switches", owner:"Operations"},
+  {id:"PL-0033", name:"Ardent access switches, one wave", owner:"Operations"},
+  {id:"PL-0034", name:"Core switches, activate and commit", owner:"Operations"},
+  {id:"PL-0035", name:"Access switch fleet, four regions", owner:"Operations"}
+];
+
+let ITEMS = [
+  {id:"IT-0141", name:"Kestrel perimeter firewalls", plat:"SentinelOS", ver:"5.3.0", target:"5.3.3",
+   devs:["fw-ard-perim-01/02","fw-bra-perim-01/02","fw-cin-perim-01/02","fw-dov-perim-01/02"],
+   plan:"PL-0012", seq:1, date:"2026-09-04", change:"CR-7112", state:"done", pct:100, dep:null, rollout:"region", conc:10},
+  {id:"IT-0142", name:"Bastion edge firewalls", plat:"BastionOS", ver:"3.6.2", target:"3.8.0",
+   devs:["vpn-ard-edge-01/02","vpn-dov-edge-01/02","vpn-bra-edge-01/02"],
+   plan:"PL-0012", seq:2, date:"2026-09-11", change:"CR-7140", state:"part", pct:67, dep:"IT-0141", rollout:"region", conc:10},
+  {id:"IT-0148", name:"Relay pairs, Ardent and Cinder", plat:"RelayOS", ver:"9.2-114", target:"9.4-208",
+   devs:["px-ard-01/02","px-cin-01/02"],
+   plan:"PL-0012", seq:3, date:"2026-09-18", change:"requested", state:"waiting", dep:"IT-0142", rollout:"exp", conc:10},
+
+  {id:"IT-0155", name:"Vector platform layer, Ardent", plat:"VectorHost", ver:"1.2.0", target:"1.4.0",
+   devs:["host-ard-01","host-ard-02"],
+   plan:"PL-0018", seq:1, date:"2026-09-05", change:"CR-7330", state:"run", pct:45, dep:null, rollout:"one", conc:10},
+  {id:"IT-0156", name:"Ardent tenants", plat:"VectorOS", ver:"6.2.1", target:"6.4.0",
+   devs:["tnt-payments-01","tnt-trading-01","tn-web-01","tnt-mobile-01"],
+   plan:"PL-0018", seq:2, date:"2026-09-12", change:"requested", state:"waiting", dep:"IT-0155", hard:true, rollout:"exp", conc:10},
+
+  {id:"IT-0158", name:"Bramble perimeter firewalls", plat:"SentinelOS", ver:"5.1.4", target:"5.3.3",
+   devs:["fw-bra-dmz-01/02"],
+   plan:"PL-0024", seq:1, date:"2026-09-16", change:"CR-7501", state:"ready", dep:null, rollout:"one", conc:10},
+  {id:"IT-0159", name:"Bramble WAN router", plat:"TransitOS", ver:"8.1.2", target:"8.6.1",
+   devs:["rtr-bra-wan-01"],
+   plan:"PL-0024", seq:2, date:"2026-09-09", change:"CR-7502", state:"ready", dep:"IT-0158", rollout:"one", conc:10},
+
+  {id:"IT-0160", name:"Cinder perimeter routers", plat:"TransitOS", ver:"8.2.0", target:"8.6.1",
+   devs:["rtr-cin-wan-01","rtr-cin-wan-02","sw-cin-acc-03"],
+   plan:"PL-0031", seq:1, date:"2026-09-08", change:"requested", state:"waiting", dep:null, rollout:"exp", conc:10},
+  {id:"IT-0163", name:"Ardent access switches", plat:"TransitOS", ver:"8.2.0", target:"8.6.1",
+   devs:["sw-ard-acc-01","sw-ard-acc-02","sw-ard-acc-03"],
+   plan:"PL-0032", seq:1, date:"", change:"", state:"draft", dep:null, rollout:"one", conc:10},
+  {id:"IT-0180", name:"Access switches, one wave", plat:"TransitOS", ver:"8.2.0", target:"8.6.1",
+   devs:["sw-ard-acc-01","sw-ard-acc-02","sw-ard-acc-03","sw-ard-acc-04",
+         "sw-ard-acc-05","sw-ard-acc-06","sw-cin-acc-01","sw-cin-acc-02",
+         "sw-cin-acc-04","sw-cin-acc-05","sw-cin-acc-06","sw-dov-acc-02",
+         "sw-dov-acc-03","sw-dov-acc-04","sw-bra-acc-02","sw-bra-acc-03",
+         "sw-bra-acc-04","rtr-cin-wan-01","rtr-cin-wan-02","sw-cin-acc-03"],
+   plan:"PL-0033", seq:1, date:"2026-09-14", change:"CR-7880", state:"part", pct:58, dep:null,
+   rollout:"one", conc:25},
+  {id:"IT-0170", name:"Core switches, activated and not committed", plat:"LatticeOS", ver:"2.4.3", target:"2.6.0",
+   devs:["core-ard-core-01","core-ard-core-02","core-cin-core-01"],
+   plan:"PL-0034", seq:1, date:"2026-09-06", change:"CR-7812", state:"run", pct:74, dep:null,
+   rollout:"region", conc:10},
+  {id:"IT-0166", name:"Access switch fleet, four regions", plat:"TransitOS", ver:"8.2.0", target:"8.6.1",
+   devs:["sw-bra-acc-02","sw-bra-acc-03","sw-bra-acc-04",
+         "sw-cin-acc-04","sw-cin-acc-05","sw-cin-acc-06",
+         "sw-dov-acc-02","sw-dov-acc-03","sw-dov-acc-04",
+         "sw-ard-acc-04","sw-ard-acc-05","sw-ard-acc-06"],
+   plan:"PL-0035", seq:1, date:"2026-09-10", change:"CR-7770", state:"run", pct:52, dep:null, rollout:"conc", conc:3}
+];
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const el  = id => document.getElementById(id);
+
+const PV = {};
+function pv(){ return ""; }
+function note(){ return ""; }
+
+const ST = {
+  draft:  ["draft","Draft"],
+  waiting:["wait", "Awaiting change"],
+  ready:  ["ready","Approved, not started"],
+  run:    ["run",  "Running"],
+  part:   ["fail", "Partly failed"],
+  done:   ["done", "Done"]
+};
+function stChip(s){
+  const m = ST[s] || ST.draft;
+  return '<span class="st st-'+m[0]+'"><i></i><b>'+esc(m[1])+'</b></span>';
+}
+function bar(pct,hatch){
+  const p = Math.max(0,Math.min(100,pct||0));
+  return '<div class="bar-w"><div class="bar'+(hatch?" hatch":"")+'"><span style="width:'+p+'%"></span></div>'+
+         '<span class="bar-t">'+p+'%</span></div>';
+}
+function fmtMins(m){
+  const h = Math.floor(m/60), r = Math.round(m%60);
+  return h ? (h+"h"+(r?" "+r+"m":"")) : (r+"m");
+}
+function dfmt(s){
+  if(!s) return "no window";
+  return new Date(s+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+}
+function seenText(d){ return d.days===0 ? "today" : d.days===1 ? "1 day ago" : d.days+" days ago"; }
+function workingDaysFrom(n){
+  const d = new Date(); let a = 0;
+  while(a<n){ d.setDate(d.getDate()+1); const w = d.getDay(); if(w!==0 && w!==6) a++; }
+  return d;
+}
+const iso = d => d.toISOString().slice(0,10);
+
+function inFlightNames(){
+  const set = new Set();
+  ITEMS.forEach(i=>{ if(i.state==="run"||i.state==="ready"||i.state==="part") i.devs.forEach(n=>set.add(n)); });
+  return set;
+}
+
+const S = {
+  route:"devices",
+  notes:false,
+
+  dev:{q:"",plat:"",ver:"",status:"",config:"",shape:"",region:"",exp:"",sort:"exposure",dir:1},
+
+  item:{devs:[],rollout:"one",change:"none",override:false,conc:10,window:4,
+        name:"",crno:"",date:"",reason:"",overrideVer:"",plan:""},
+  rejected:[],
+  carried:0,
+
+  lastRoute:null,
+  ptab:"all",
+  group:"plan",
+  open:new Set(),
+  exec:{open:new Set(), q:"", f:""},
+  sheet:null
+};
+
+const NAV = [
+  ["devices","Devices"],
+  ["plans",  "Plans and items"]
+];
+const REF = [];
+const CRUMB = {
+  devices:["TessArc","Patching","Devices"],
+  new:    ["TessArc","Patching","Plans and items","New plan item"],
+  plans:  ["TessArc","Patching","Plans and items"],
+  reading:["TessArc","Patching"]
+};
+const itemRoute = r => r.indexOf("item/")===0 ? r.slice(5) : null;
+
+function crumbFor(r){
+  const id = itemRoute(r);
+  if(id){
+    const it = ITEMS.find(x=>x.id===id), plan = it && PLANS.find(p=>p.id===it.plan);
+    return [["TessArc",null],["Patching",null],["Plans and items","plans"]]
+      .concat(plan ? [[plan.name,"plans:"+plan.id]] : [])
+      .concat([[id,null]]);
+  }
+  const flat = CRUMB[r] || CRUMB.devices;
+  const dest = {"Devices":"devices","Plans and items":"plans","How to read this":"reading"};
+  return flat.map((p,i)=>[p, (i<flat.length-1 && dest[p]) ? dest[p] : null]);
+}
+
+function go(r){
+  S.route = r;
+  if(location.hash !== "#/"+r) location.hash = "#/"+r;
+  render();
+}
+window.addEventListener("hashchange",()=>{
+  const r = (location.hash||"").replace(/^#\//,"") || "devices";
+  if(r !== S.route){ S.route = r; render(); }
+});
+
+function renderChrome(){
+
+  const here = (S.route==="new" || itemRoute(S.route)) ? "plans" : S.route;
+  el("nav").innerHTML =
+    NAV.map(([r,l])=>'<a href="#/'+r+'"'+(here===r?' aria-current="page"':'')+'>'+esc(l)+
+      '<span class="pill">'+(r==="devices"?DEVICES.length:ITEMS.length)+'</span></a>').join("")+
+    (REF.length
+      ? '<div class="side-sep"></div><div class="side-lab">Reference</div>'+
+        REF.map(([r,l])=>'<a href="#/'+r+'"'+(here===r?' aria-current="page"':'')+'>'+esc(l)+'</a>').join("")
+      : "");
+
+  const c = crumbFor(S.route);
+  el("crumb").innerHTML = c.map(([label,dest],i)=>{
+    const last = i===c.length-1;
+    const body = last ? '<b>'+esc(label)+'</b>'
+      : dest ? '<a href="#" data-crumb="'+esc(dest)+'">'+esc(label)+'</a>'
+             : esc(label);
+    return body + (last ? "" : ' <span>\u203a</span>');
+  }).join(" ");
+}
+
+function render(){
+  const keep = (S.lastRoute === S.route) ? window.scrollY : null;
+  renderChrome();
+  const v = el("view");
+  if(S.route==="devices")      v.innerHTML = viewDevices();
+  else if(S.route==="new")     v.innerHTML = viewComposer();
+  else if(S.route==="plans")   v.innerHTML = viewPlans();
+  else if(S.route==="reading") v.innerHTML = viewReading();
+  else if(itemRoute(S.route))  v.innerHTML = viewItem(itemRoute(S.route));
+  else { S.route="devices"; v.innerHTML = viewDevices(); }
+
+  if(S.lastRoute !== S.route){ S.lastRoute = S.route; window.scrollTo(0,0); }
+  else if(keep != null) window.scrollTo(0, keep);
+  renderSheet();
+}
+
+const F_DEV = {
+  plat:  ["All platforms", () => uniq("platform")],
+  ver:   ["Any version",   () => uniq("version")],
+  status:["Any",           () => ["Behind approved target","Current"]],
+  config:["Any",           () => ["Drifted","Compliant"]],
+  shape: ["All shapes",    () => uniq("shape")],
+  region:["All regions",   () => uniq("region")],
+  exp:   ["Any exposure",  () => ["Internet-facing","Perimeter","Internal"]]
+};
+const F_LAB = {plat:"Platform",ver:"Current version",status:"Version status",
+  config:"Config",shape:"Shape",region:"Region",exp:"Exposure"};
+const uniq = k => [...new Set(DEVICES.map(d=>d[k]))].sort();
+
+function devMatch(d){
+  const f = S.dev;
+  if(f.plat   && d.platform !== f.plat)   return false;
+  if(f.ver    && d.version  !== f.ver)    return false;
+  if(f.region && d.region   !== f.region) return false;
+  if(f.shape  && d.shape    !== f.shape)  return false;
+  if(f.exp    && d.exposure !== f.exp)    return false;
+  if(f.status==="Behind approved target" && !d.behind) return false;
+  if(f.status==="Current" && d.behind) return false;
+  if(f.config==="Drifted"   && !d.drift) return false;
+  if(f.config==="Compliant" &&  d.drift) return false;
+  if(f.q && !(d.name+" "+(d.host||"")+" "+(d.members||"")).toLowerCase().includes(f.q)) return false;
+  return true;
+}
+function devSorted(){
+  const f = S.dev, k = f.sort, dir = f.dir;
+  return DEVICES.filter(devMatch).sort((a,b)=>{
+    let x,y;
+    if(k==="exposure"){ x=EXP_RANK[a.exposure]; y=EXP_RANK[b.exposure]; }
+    else if(k==="status"){ x=a.behind?0:1; y=b.behind?0:1; }
+    else if(k==="config"){ x=a.drift?0:1;  y=b.drift?0:1;  }
+    else if(k==="seen"){   x=-a.days;      y=-b.days;      }
+    else return String(a[k]||"").localeCompare(String(b[k]||""))*dir;
+    return (x-y)*dir || a.name.localeCompare(b.name);
+  });
+}
+const devFiltersOn = () => Object.keys(F_DEV).some(k=>S.dev[k]) || !!S.dev.q;
+
+function selOpt(key){
+  const [ph,vals] = F_DEV[key];
+  return '<div class="field" style="min-width:0"><span class="lab">'+esc(F_LAB[key])+'</span>'+
+    '<select class="inp'+(S.dev[key]?" on":"")+'" data-df="'+key+'">'+
+      '<option value="">'+esc(ph)+'</option>'+
+      vals().map(v=>'<option'+(S.dev[key]===v?" selected":"")+'>'+esc(v)+'</option>').join("")+
+    '</select></div>';
+}
+function th(k,label,extra){
+  const on = S.dev.sort===k;
+  return '<th class="sortable'+(on?" sorted":"")+'"'+(extra||"")+' data-sort="'+k+'">'+esc(label)+
+    '<span class="caret">'+(on ? (S.dev.dir===1?"↓":"↑") : "↕")+'</span></th>';
+}
+
+function viewDevices(){
+  const rows = devSorted(), flight = inFlightNames();
+
+  const body = rows.map(d=>{
+    const sub = d.host ? "on "+d.host : (d.members||"");
+    return '<tr>'+
+      '<td class="w"><b class="mono">'+esc(d.name)+'</b>'+
+        (sub?'<div class="sub" style="font-size:11px">'+esc(sub)+'</div>':'')+'</td>'+
+      '<td>'+esc(d.platform)+'<div class="sub" style="font-size:11px">'+esc(d.vendor)+'</div></td>'+
+      '<td class="mono">'+esc(d.version)+'</td>'+
+      '<td>'+(d.behind
+        ? '<span class="st st-warn"><i></i><b>Behind</b></span>'+
+          '<div class="sub" style="font-size:11px">'+esc(d.approved)+' approved</div>'
+        : '<span class="sub">Current</span>')+'</td>'+
+      '<td>'+(d.drift
+        ? '<span class="st st-warn"><i></i><b>Drifted</b></span>'
+        : '<span class="sub">Compliant</span>')+'</td>'+
+      '<td class="sub">'+esc(d.shape)+'</td>'+
+      '<td class="sub">'+esc(d.region)+'</td>'+
+      '<td>'+(d.exposure==="Internal"
+        ? '<span class="sub">Internal</span>'
+        : '<b>'+esc(d.exposure)+'</b>')+'</td>'+
+      '<td>'+(d.stale
+        ? '<span class="stale">'+esc(seenText(d))+'</span>'
+        : '<span class="sub">'+esc(seenText(d))+'</span>')+'</td>'+
+      '<td class="r">'+(flight.has(d.name)?'<span class="tag hard">in a plan</span>':'<span class="sub">—</span>')+'</td>'+
+    '</tr>';
+  }).join("");
+
+  return '<div class="vhead"><div>'+
+      '<h1>Devices</h1>'+
+      '<p class="sub"><b>'+DEVICES.length+'</b> in the fleet · <b>'+rows.length+'</b> shown · '+
+        DEVICES.filter(d=>d.behind).length+' behind the approved version · '+
+        DEVICES.filter(d=>d.drift).length+' drifted</p>'+
+    '</div><div class="vhead-r">'+
+      '<button class="btn'+(rows.length?"":" ")+'" id="carry"'+(rows.length?"":" disabled")+'>'+
+        'Start a plan item from these '+rows.length+'</button>'+
+    '</div></div>'+
+
+    note("")+
+
+    note("")+
+
+    '<section class="card"><div class="tools">'+
+      '<input class="inp grow'+(S.dev.q?" on":"")+'" id="devq" type="search" placeholder="Find a device by name, host or member" value="'+esc(S.dev.q)+'">'+
+      '<button class="btn" id="devclear"'+(devFiltersOn()?"":" disabled")+'>Clear all</button>'+
+    '</div>'+
+    '<div class="card-b" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));gap:11px">'+
+      Object.keys(F_DEV).map(selOpt).join("")+
+    '</div>'+
+
+    note("")+
+
+    '<div class="tscroll"><table class="tbl"><thead><tr>'+
+      th("name","Device",' style="min-width:262px"')+
+      th("platform","What it runs",' style="width:120px"')+
+      th("version","Current",' style="width:112px"')+
+      th("status","Version status",' style="width:132px"')+
+      th("config","Config",' style="width:104px"')+
+      th("shape","Shape",' style="width:94px"')+
+      th("region","Region",' style="width:92px"')+
+      th("exposure","Exposure",' style="width:122px"')+
+      th("seen","Last seen",' style="width:104px"')+
+      '<th class="r" style="width:92px">In flight</th>'+
+    '</tr></thead><tbody>'+ (body || '') +'</tbody></table>'+
+      (rows.length ? "" : '<div class="empty"><b>Nothing matches.</b> Widen a filter, or clear them all.</div>')+
+    '</div></section>'+
+
+    note("")+
+
+    note("")+
+
+    note("")+
+
+    '<p class="hint" style="margin-top:14px">Two things deliberately absent: a single health score, and a selection cap. '+
+      'The existing tool caps selection at two devices and nobody on the team knows why — it is not reproduced here '+
+      'until someone can say what it protects.</p>';
+}
+
+const ROLLOUTS = [
+  ["one",   "All at once",      "One wave. Fastest, and the least room to stop if it goes wrong."],
+  ["exp",   "By exposure",      "Internet-facing first, then perimeter, then internal."],
+  ["region","By region",        "One wave per region, in order."],
+  ["conc",  "In fixed batches", "Equal waves of the concurrency limit."]
+];
+const CHANGE_OPTS = [
+  ["none","Not decided yet",         "Save it as a draft and come back to it."],
+  ["have","I have a change number",  "An approved change already exists."],
+  ["need","Request a change window", "Has to be confirmed "+LEAD_DAYS+" days ahead."]
+];
+
+const itemDevs = () => S.item.devs.map(id=>DEVICES.find(d=>d.id===id)).filter(Boolean);
+
+function tryAdd(names){
+  S.rejected = [];
+  names.forEach(raw=>{
+    const n = raw.trim().toLowerCase();
+    if(!n) return;
+    const d = BYNAME[n];
+    if(!d){ S.rejected.push([raw.trim(),"not in inventory"]); return; }
+    if(S.item.devs.includes(d.id)) return;
+    if(S.item.devs.length){
+      const first = DEVICES.find(x=>x.id===S.item.devs[0]);
+      if(d.platform !== first.platform){
+        S.rejected.push([d.name,"runs "+d.platform+"; this item is "+first.platform]); return; }
+      if(d.version !== first.version){
+        S.rejected.push([d.name,"is on "+d.version+"; this item is on "+first.version]); return; }
+    }
+    S.item.devs.push(d.id);
+  });
+}
+
+function buildWaves(devs){
+  const conc = Math.max(1, parseInt(S.item.conc,10) || 1);
+  let groups = [];
+  if(S.item.rollout==="one") groups = [{label:"Everything",items:devs}];
+  else if(S.item.rollout==="exp")
+    ["Internet-facing","Perimeter","Internal"].forEach(x=>{
+      const g = devs.filter(d=>d.exposure===x);
+      if(g.length) groups.push({label:x,items:g});
+    });
+  else if(S.item.rollout==="region")
+    [...new Set(devs.map(d=>d.region))].sort().forEach(x=>
+      groups.push({label:x,items:devs.filter(d=>d.region===x)}));
+  else
+    for(let i=0;i<devs.length;i+=conc)
+      groups.push({label:"Batch "+(groups.length+1),items:devs.slice(i,i+conc)});
+
+  return groups.map((g,i)=>{
+    const slots   = Math.ceil(g.items.length/conc);
+    const slowest = g.items.reduce((m,d)=>Math.max(m,d.mins),0);
+    const pairs   = g.items.filter(d=>d.shape==="HA pair");
+    return {n:i+1, label:g.label, count:g.items.length, mins:slots*slowest,
+            unprot: pairs.length ? pairs.reduce((m,d)=>Math.max(m,d.mins),0) : 0};
+  });
+}
+
+function effectiveTarget(first){
+  if(!first) return "";
+  return (S.item.override && S.item.overrideVer) ? S.item.overrideVer : APPROVED[first.platform];
+}
+
+function composerState(){
+  const devs = itemDevs(), first = devs[0];
+  const waves = devs.length ? buildWaves(devs) : [];
+  const longest = waves.reduce((m,w)=>Math.max(m,w.mins),0);
+  const unprot  = waves.reduce((m,w)=>Math.max(m,w.unprot),0);
+  const winMins = parseInt(S.item.window,10)*60;
+  const target  = effectiveTarget(first);
+
+  let block = null;
+  if(!devs.length) block = ["Start by adding devices.",false];
+  else if(!S.item.name.trim()) block = ["Give the item a name, so it can be found later.",true];
+  else if(longest > winMins) block = ["The longest wave is "+fmtMins(longest)+
+      ", which does not fit a "+S.item.window+" hour window. Add waves, raise the concurrency, or split the item.",true];
+  else if(S.item.change==="have" && !S.item.crno.trim())
+    block = ["Enter the change number, or switch to requesting a window.",true];
+  else if(S.item.override && !S.item.reason.trim())
+    block = ["Overriding the approved version needs a reason. It is recorded on the item.",true];
+  else if(!S.item.plan)
+    block = ["Choose the plan this belongs to, or create one for it.",true];
+  else if(S.item.plan==="__new" && !(S.item.newPlan||"").trim())
+    block = ["Name the new plan.",true];
+
+  return {devs,first,waves,longest,unprot,winMins,target,block};
+}
+
+function viewComposer(){
+  const c = composerState(), first = c.first;
+  const earliest = workingDaysFrom(LEAD_DAYS);
+  if(!S.item.date) S.item.date = iso(earliest);
+  const plan = PLANS.find(p=>p.id===S.item.plan);
+  const newPlanName = (S.item.newPlan||"").trim();
+
+  const stepH = (n,title,desc,tag) =>
+    '<div class="step-h"><span class="step-n">'+n+'</span><h3>'+esc(title)+'</h3>'+(tag||"")+'</div>'+
+    '<div class="step-d"><span>'+desc+'</span></div>';
+
+  const s1 = '<section class="step">'+stepH(1,"Name it","What this piece of work is, in the words the team already uses. It is what everyone will search for later.")+
+    '<div class="step-b"><div class="field" style="max-width:460px">'+
+      '<span class="lab">What this piece of work is</span>'+
+      '<input class="inp" id="i-name" value="'+esc(S.item.name)+'" placeholder="Cinder perimeter routers, CVE-2026-1841">'+
+    '</div></div></section>';
+
+  const flight = inFlightNames();
+  const dlist = c.devs.length
+    ? c.devs.map(d=>'<div class="dl-r"><span class="dn">'+esc(d.name)+'</span>'+
+        '<span class="dm">'+esc(d.shape+" · "+d.region+" · "+d.exposure)+
+          (flight.has(d.name)?' · already in a plan':'')+'</span>'+
+        '<button class="rm" data-rm="'+esc(d.id)+'" aria-label="Remove '+esc(d.name)+'">×</button></div>').join("")
+    : '<div class="dl-e">No devices yet. Paste the list above and press <b>Add these</b>.</div>';
+
+  const s2 = '<section class="step">'+stepH(2,"Add the devices","Paste the list from the instruction you were given \u2014 new lines, commas or spaces. Search below to add one you missed.")+
+    '<div class="step-b">'+
+      (S.carried ? '<div class="banner" style="margin-bottom:12px"><span><b>Carried over from Devices.</b> '+
+        S.carried+' name'+(S.carried===1?"":"s")+' dropped into the box below. Press <b>Add these</b>; anything that '+
+        'does not fit the item is refused with a reason.</span></div>' : "")+
+      '<div class="field"><span class="lab">Paste the names</span>'+
+        '<textarea class="inp" id="i-paste" rows="4" placeholder="rtr-cin-wan-01&#10;rtr-cin-wan-02&#10;sw-cin-acc-03"></textarea>'+
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:2px">'+
+          '<button class="btn btn-p" id="pasteBtn">Add these</button>'+
+          '<span class="hint">A pair answers to either member name.</span>'+
+        '</div>'+
+      '</div>'+
+      '<hr class="sep">'+
+      '<div class="field" style="max-width:420px"><span class="lab">Or add one at a time</span>'+
+        '<div style="display:flex;gap:8px">'+
+          '<input class="inp grow" id="i-search" list="devlist" placeholder="Start typing a device name">'+
+          '<datalist id="devlist">'+DEVICES.map(d=>'<option value="'+esc(d.name)+'">').join("")+'</datalist>'+
+          '<button class="btn" id="addOne">Add</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="lockrow">'+(first
+        ? '<span class="lock">'+esc(first.platform)+'</span><span class="lock">on '+esc(first.version)+'</span>'+
+          '<span class="lock free">fixed by the first device added</span>'
+        : '<span class="lock free">platform and current version are set by whatever you add first</span>')+
+      '</div>'+
+      '<div class="dlist">'+dlist+'</div>'+
+      (S.rejected.length
+        ? '<div class="rejects"><b>'+S.rejected.length+' not added</b>'+
+            S.rejected.map(r=>'<div>'+esc(r[0])+' — '+esc(r[1])+'</div>').join("")+'</div>'
+        : "")+
+    '</div></section>'+
+
+    note("")+
+
+    note("");
+
+  const s3 = '<section class="step derived">'+stepH(3,"Target version",
+      "Resolved from the approved version registry. You confirm it rather than choose it.",
+      '<span class="tag hard">resolved</span>')+
+    '<div class="step-b">'+
+      '<div class="resolved"><div class="rb">'+
+        '<div class="big">'+esc(c.target || "not yet resolved")+'</div>'+
+        '<div class="sub" style="margin-top:5px">'+(first
+          ? (S.item.override && c.target !== APPROVED[first.platform]
+              ? 'Overriding the approved version, <b>'+esc(APPROVED[first.platform])+'</b>. The reason is recorded on the item.'
+              : 'Approved for '+esc(first.platform)+' on '+esc(APPROVED_ON[first.platform])+', by Network Engineering.')
+          : 'Add a device first.')+'</div>'+
+      '</div>'+
+      (first ? '<button class="linkbtn" id="ovBtn">'+
+        (S.item.override?"Use the approved version":"Use a different version")+'</button>' : "")+
+      '</div>'+
+      (S.item.override && first ? '<div class="frow" style="margin-top:12px">'+
+        '<div class="field" style="min-width:150px"><span class="lab">Version</span>'+
+          '<select class="inp" id="i-ovver"><option value="">Choose</option>'+
+          uniq("version").map(v=>'<option'+(S.item.overrideVer===v?" selected":"")+'>'+esc(v)+'</option>').join("")+
+          '</select></div>'+
+        '<div class="field grow"><span class="lab">Reason — required</span>'+
+          '<input class="inp" id="i-reason" value="'+esc(S.item.reason)+'" placeholder="Recorded on the item and in the audit trail"></div>'+
+      '</div>' : "")+
+    '</div></section>'+
+
+    note("");
+
+  const waveRows = c.waves.length
+    ? c.waves.map(w=>'<div class="wv"><span class="wn">Wave '+w.n+'</span><span>'+esc(w.label)+'</span>'+
+        '<span class="wm">'+w.count+' unit'+(w.count===1?"":"s")+' · '+fmtMins(w.mins)+
+          (w.unprot?' · '+fmtMins(w.unprot)+' unprotected':'')+'</span></div>').join("")
+    : '<div class="wv"><span class="sub">Waves appear once devices are added.</span></div>';
+
+  const s4 = '<section class="step">'+stepH(4,"Order the work inside this item","Decided before the window is requested, because the shape of the rollout is what determines how long the window needs to be.")+
+    '<div class="step-b">'+
+      '<div class="opts">'+ROLLOUTS.map(([id,t,d])=>
+        '<label class="opt'+(S.item.rollout===id?" sel":"")+'">'+
+          '<input type="radio" name="ro" value="'+id+'"'+(S.item.rollout===id?" checked":"")+'>'+
+          '<span><span class="ot">'+esc(t)+'</span><span class="od">'+esc(d)+'</span></span></label>').join("")+
+      '</div>'+
+      '<div class="frow" style="margin-top:13px">'+
+        '<div class="field" style="width:130px"><span class="lab">At once</span>'+
+          '<input class="inp" id="i-conc" type="number" min="1" max="200" value="'+esc(S.item.conc)+'"></div>'+
+        '<div class="field" style="width:150px"><span class="lab">Window length</span>'+
+          '<select class="inp" id="i-window">'+[2,4,6,8].map(h=>
+            '<option value="'+h+'"'+(String(S.item.window)===String(h)?" selected":"")+'>'+h+' hours</option>').join("")+
+          '</select></div>'+
+      '</div>'+
+      '<div style="margin-top:13px">'+waveRows+'</div>'+
+      (c.waves.some(w=>w.unprot) ? '<p class="hint" style="margin-top:9px"><b>Unprotected window</b> is how long an HA '+
+        'pair is running on one member while the other reboots. It is the number that decides whether this is safe, '+
+        'not the total duration.</p>' : "")+
+    '</div></section>'+
+
+    note("")+
+
+    note("");
+
+  const s5 = '<section class="step">'+stepH(5,"Change record and window","Nothing runs without an approved change and a booked window.")+
+    '<div class="step-b">'+
+      '<div class="opts">'+CHANGE_OPTS.map(([id,t,d])=>
+        '<label class="opt'+(S.item.change===id?" sel":"")+'">'+
+          '<input type="radio" name="ch" value="'+id+'"'+(S.item.change===id?" checked":"")+'>'+
+          '<span><span class="ot">'+esc(t)+'</span><span class="od">'+esc(d)+'</span></span></label>').join("")+
+      '</div>'+
+      (S.item.change==="have" ? '<div class="frow" style="margin-top:13px">'+
+        '<div class="field" style="width:220px"><span class="lab">Change number</span>'+
+          '<input class="inp" id="i-crno" value="'+esc(S.item.crno)+'" placeholder="CR-7000"></div>'+
+        '<div class="field" style="width:220px"><span class="lab">Window it was booked for</span>'+
+          '<input class="inp" id="i-date" type="date" value="'+esc(S.item.date)+'"></div>'+
+      '</div>' : "")+
+      (S.item.change==="need" ? '<div style="margin-top:13px">'+
+        '<div class="field" style="max-width:220px"><span class="lab">Window starts</span>'+
+          '<input class="inp" id="i-date" type="date" min="'+iso(earliest)+'" value="'+esc(S.item.date)+'"></div>'+
+        '<p class="hint" style="margin-top:8px"><b>Windows are confirmed '+LEAD_DAYS+' days ahead.</b> '+
+          'The earliest this could run is '+esc(earliest.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}))+
+          '. Until the change is approved the item stays a draft.</p>'+
+      '</div>' : "")+
+      (c.devs.length ? '<div class="banner hard" style="margin-top:14px"><span>'+
+        '<b>Approval is held per device, not per item.</b> This item carries '+c.devs.length+' device'+
+        (c.devs.length===1?"":"s")+', so there will be '+c.devs.length+' approval states before the window opens. '+
+        'Whether one change number can cover them all is unresolved in the record, and it is surfaced here rather '+
+        'than designed around. '+pv()+'</span></div>' : "")+
+    '</div></section>'+
+
+    note("")+
+
+    note("");
+
+  const s6 = '<section class="step">'+stepH(6,"Which plan",
+      "Every item sits in a plan. A plan holding one item is a wrapper and nothing more; a plan holding three puts them in an order.",
+      '<span class="tag hard">required</span>')+
+    '<div class="step-b">'+
+      '<div class="field" style="max-width:360px"><span class="lab">Plan</span>'+
+        '<select class="inp" id="i-plan"><option value="">Choose a plan…</option>'+
+          PLANS.map(p=>'<option value="'+esc(p.id)+'"'+(S.item.plan===p.id?" selected":"")+'>'+
+            esc(p.name)+' ('+esc(p.id)+')</option>').join("")+
+          '<option value="__new"'+(S.item.plan==="__new"?" selected":"")+'>Create a new plan…</option>'+
+        '</select>'+
+        '<span class="hint">'+(plan
+          ? 'Saves into <b>'+esc(plan.name)+'</b>, at the end of its order.'
+          : S.item.plan==="__new"
+            ? 'A new plan holding this item alone. Name it something the team will recognise.'
+            : 'Pick an existing plan, or create one for this item alone.')+'</span>'+
+      '</div>'+
+      (S.item.plan==="__new"
+        ? '<div class="field" style="max-width:360px;margin-top:12px">'+
+            '<span class="lab">Name the new plan</span>'+
+            '<input class="inp" id="i-newplan" value="'+esc(S.item.newPlan||"")+'" '+
+              'placeholder="'+esc(S.item.name.trim() || "Cinder perimeter routers")+'">'+
+          '</div>'
+        : "")+
+    '</div></section>'+
+
+    note("");
+
+  const rail = '<aside class="rail"><section class="card"><div class="card-h"><span class="lab">This item</span></div>'+
+    '<div class="card-b">'+
+      '<p class="hint" style="margin-bottom:9px">Updates as you go. This is the review \u2014 there is no final screen.</p>'+
+      '<div class="kv"><span class="k">Devices</span><span class="v">'+c.devs.length+'</span></div>'+
+      '<div class="kv"><span class="k">Upgrade</span><span class="v">'+(first?esc(first.version+" → "+c.target):"not set")+'</span></div>'+
+      '<div class="kv"><span class="k">Waves</span><span class="v">'+c.waves.length+'</span></div>'+
+      '<div class="kv"><span class="k">Longest wave</span><span class="v'+(c.longest>c.winMins?" warn":"")+'">'+
+        (c.longest?fmtMins(c.longest):"0m")+'</span></div>'+
+      '<div class="kv"><span class="k">Unprotected</span><span class="v">'+(c.unprot?fmtMins(c.unprot):"none")+'</span></div>'+
+      '<div class="kv"><span class="k">Change</span><span class="v">'+
+        (S.item.change==="have" ? esc(S.item.crno||"number needed")
+          : S.item.change==="need" ? "requested" : "draft")+'</span></div>'+
+      '<div class="kv"><span class="k">Plan</span><span class="v">'+
+        (plan ? esc(plan.id) : newPlanName ? "new" : "not chosen")+'</span></div>'+
+      '<div style="display:flex;gap:8px;margin-top:13px">'+
+        '<button class="btn btn-p" id="save"'+(c.block?" disabled":"")+'>Save plan item</button>'+
+        '<button class="btn" id="savedraft"'+(c.devs.length && S.item.name.trim()?"":" disabled")+'>Save draft</button>'+
+      '</div>'+
+      '<p class="railmsg'+(c.block && c.block[1]?" warn":"")+'">'+
+        (c.block ? esc(c.block[0])
+          : plan ? "Saves into "+esc(plan.name)+", at the end of its order."
+                 : "Creates "+esc(newPlanName)+" and saves into it.")+'</p>'+
+    '</div></section>'+
+
+    note("")+
+
+    note("")+
+    '</aside>';
+
+  return '<div class="vhead"><div>'+
+      '<h1>New plan item</h1>'+
+      '<p class="sub">A plan item is the unit of work. It holds one device or many, and it can stand on its own.</p>'+
+    '</div><div class="vhead-r"><button class="btn" data-go="plans">Cancel</button></div></div>'+
+
+    note("")+
+
+    note("")+
+
+    note("")+
+
+    '<div class="cols c-main"><div>'+s1+s2+s3+s4+s5+s6+'</div>'+rail+'</div>';
+}
+
+const PG_CAP = 8;
+
+const itemsOf   = planId => ITEMS.filter(i=>i.plan===planId).sort((a,b)=>(a.seq||0)-(b.seq||0));
+const planned = () => PLANS.filter(p=>itemsOf(p.id).length);
+
+function outOfOrder(its){
+  for(let i=1;i<its.length;i++){
+    if(its[i].date && its[i-1].date && its[i].date < its[i-1].date) return true;
+  }
+  return false;
+}
+function rollup(planId){
+  const its = itemsOf(planId);
+  const n = its.length;
+  const c = {n, devs:its.reduce((a,i)=>a+i.devs.length,0),
+    draft:0, waiting:0, ready:0, run:0, part:0, done:0, ooo:outOfOrder(its)};
+  its.forEach(i=>{ c[i.state]++; });
+  const prog = n ? Math.round(its.reduce((a,i)=>a+(i.state==="done"?100:(i.pct||0)),0)/n) : 0;
+  c.pct = prog;
+  return c;
+}
+
+function bucket(planId){
+  const r = rollup(planId);
+  if(r.part || r.ooo) return "attn";
+  if(r.run) return "run";
+  if(r.draft || r.waiting) return "notready";
+  if(r.n && r.done===r.n) return "done";
+  return "sched";
+}
+const SECS = [
+  ["attn",    "Needs attention"],
+  ["run",     "Running"],
+  ["notready","Not ready to run"],
+  ["sched",   "Scheduled"],
+  ["done",    "Done"]
+];
+function rollChip(r){
+  if(r.part) return '<span class="st st-fail"><i></i><b>'+r.part+' partly failed</b></span>';
+  if(r.ooo)  return '<span class="st st-warn"><i></i><b>Order disagrees</b></span>';
+  if(r.run)  return '<span class="st st-run"><i></i><b>'+r.run+' running</b></span>';
+  if(r.draft||r.waiting) return '<span class="st st-wait"><i></i><b>'+(r.draft+r.waiting)+' not ready</b></span>';
+  if(r.n && r.done===r.n) return '<span class="st st-done"><i></i><b>Done</b></span>';
+  return '<span class="st st-ready"><i></i><b>Scheduled</b></span>';
+}
+function planWindows(its){
+  const ds = its.map(i=>i.date).filter(Boolean).sort();
+  if(!ds.length) return {span:"no windows yet", n:0};
+  const n = new Set(ds).size;
+  return {span: ds.length===1 ? dfmt(ds[0]) : dfmt(ds[0])+" \u2013 "+dfmt(ds[ds.length-1]), n};
+}
+
+function itemProgress(i){
+  if(i.state==="done") return bar(100);
+  if(i.state==="run")  return bar(i.pct||0,true);
+  if(i.state==="part") return bar(i.pct||0);
+  return '<span class="sub">not started</span>';
+}
+
+function itemRow(i,indent){
+  return '<tr data-item="'+esc(i.id)+'">'+
+    '<td class="'+(indent?"pg-ind ":"")+'w"><b class="mono">'+esc(i.id)+'</b> '+esc(i.name)+
+      '<div class="sub" style="font-size:11px">'+i.devs.length+' device'+(i.devs.length===1?"":"s")+
+      (i.dep ? ' · after '+esc(i.dep) : '')+'</div></td>'+
+    '<td class="sub w">'+esc(i.plat)+' '+esc(i.ver)+' → <b>'+esc(i.target)+'</b></td>'+
+    '<td class="mono sub c-chg">'+esc(i.change || "—")+'</td>'+
+    '<td class="sub c-win">'+esc(dfmt(i.date))+'</td>'+
+    '<td style="width:130px">'+itemProgress(i)+'</td>'+
+    '<td class="r">'+stChip(i.state)+'</td></tr>';
+}
+
+function masterRows(p){
+  const open = S.open.has(p.id), r = rollup(p.id), its = itemsOf(p.id);
+  return '<tr class="pg-master" data-tog="'+esc(p.id)+'">'+
+      '<td class="w"><span class="pg-tog" aria-hidden="true">'+(open?"−":"+")+'</span>'+
+        '<b class="mono">'+esc(p.id)+'</b> <b>'+esc(p.name)+'</b>'+
+        '<div class="sub" style="font-size:11px;margin-top:2px">'+r.n+' item'+(r.n===1?"":"s")+
+          ' · '+r.devs+' devices</div></td>'+
+      '<td class="sub w">'+esc([...new Set(its.map(i=>i.plat))].join(", ") || "—")+'</td>'+
+      '<td class="sub c-chg">'+(its.filter(i=>i.change && i.change!=="requested").length)+' of '+r.n+' with a number</td>'+
+      '<td class="sub c-win">'+(w=>esc(w.span)+(w.n>1?'<div class="sub" style="font-size:11px">'+w.n+' windows</div>':""))(planWindows(its))+'</td>'+
+      '<td style="width:130px">'+bar(r.pct, !!r.run)+'</td>'+
+      '<td class="r">'+rollChip(r)+'</td></tr>'+
+    (open
+      ? its.slice(0,PG_CAP).map(i=>itemRow(i,true)).join("")+
+        (its.length>PG_CAP
+          ? '<tr><td class="pg-ind w" colspan="6">'+
+              '<button class="btn btn-sm" data-open="p:'+esc(p.id)+'">See all '+its.length+' items</button>'+
+              '<span class="hint" style="margin-left:9px">Showing the first '+PG_CAP+
+              '. Nesting is a preview — a plan with forty items would push every plan below it off the screen.</span>'+
+            '</td></tr>'
+          : "")
+      : "");
+}
+
+function planTable(bodyHtml,firstCol){
+  return '<section class="card"><div class="card-b flush"><div class="tscroll">'+
+    '<table class="tbl v3g"><thead><tr>'+
+      '<th class="w" style="min-width:260px">'+esc(firstCol)+'</th>'+
+      '<th style="width:190px">Upgrade</th>'+
+      '<th class="c-chg" style="width:132px">Change</th>'+
+      '<th class="c-win" style="width:150px">Window</th>'+
+      '<th style="width:130px">Progress</th>'+
+      '<th class="r" style="width:150px">State</th>'+
+    '</tr></thead><tbody>'+bodyHtml+'</tbody></table></div></div></section>';
+}
+const sec = (label,n) => '<div class="pg-sec"><span class="lab">'+esc(label)+'</span><span class="pg-cnt">'+n+'</span></div>';
+
+const PTABS = [
+  ["all",  "All",               null],
+  ["run",  "Running",           i => i.state==="run"],
+  ["wait", "Awaiting approval", i => i.state==="waiting"],
+  ["done", "Completed",         i => i.state==="done"]
+];
+const ptab = () => S.ptab || "all";
+function ptabCount(k){
+  if(k==="all") return ITEMS.length;
+  return ITEMS.filter(PTABS.find(t=>t[0]===k)[2]).length;
+}
+
+function viewPlans(){
+  const tab = ptab();
+  const filt = (PTABS.find(t=>t[0]===tab) || PTABS[0])[2];
+  const pool = filt ? ITEMS.filter(filt) : ITEMS;
+  let bodyHtml = "", empty = "";
+
+  if(tab==="all"){
+    if(S.group==="plan"){
+      const parts = SECS.map(([k,label])=>{
+        const ps = PLANS.filter(p=>itemsOf(p.id).length && bucket(p.id)===k);
+        if(!ps.length) return "";
+        return sec(label,ps.length)+planTable(ps.map(x=>masterRows(x)).join(""),"Plan and its items");
+      }).join("");
+      bodyHtml = parts;
+    } else if(S.group==="state"){
+      bodyHtml = [["part","Partly failed"],["run","Running"],["ready","Approved, not started"],
+                  ["waiting","Awaiting change"],["draft","Draft"],["done","Done"]].map(([k,label])=>{
+        const its = ITEMS.filter(i=>i.state===k);
+        return its.length ? sec(label,its.length)+planTable(its.map(i=>itemRow(i,false)).join(""),"Item") : "";
+      }).join("");
+    } else {
+      bodyHtml = sec("All items",ITEMS.length)+planTable(ITEMS.map(i=>itemRow(i,false)).join(""),"Item");
+    }
+    empty = "Nothing to show.";
+  } else {
+
+    if(S.group==="plan"){
+      const byPlan = PLANS.map(p=>{
+        const its = pool.filter(i=>i.plan===p.id);
+        return its.length ? sec(p.name, its.length)+
+          planTable(its.map(i=>itemRow(i,false)).join(""),"Item") : "";
+      }).join("");
+      bodyHtml = byPlan;
+    } else {
+      bodyHtml = sec((PTABS.find(t=>t[0]===tab)||["","Items"])[1], pool.length)+
+        planTable(pool.map(i=>itemRow(i,false)).join(""),"Item");
+    }
+    empty = tab==="run"  ? "Nothing is running."
+          : tab==="wait" ? "Nothing is waiting on an approval."
+          : "Nothing has finished yet.";
+  }
+
+  const tabs = '<div class="ptabs">'+PTABS.map(([k,label])=>
+    '<button class="ptab'+(tab===k?" on":"")+'" data-ptab="'+k+'">'+esc(label)+
+      '<span class="ptab-n">'+ptabCount(k)+'</span></button>').join("")+'</div>';
+
+  const subtitle =
+      tab==="run"  ? pool.length+' item'+(pool.length===1?"":"s")+' running now'
+    : tab==="wait" ? pool.length+' item'+(pool.length===1?"":"s")+' sent for a change window and not approved yet'
+    : tab==="done" ? pool.length+' item'+(pool.length===1?"":"s")+' finished'
+    : ITEMS.length+' items in '+planned().length+' plans';
+
+  return '<div class="vhead"><div>'+
+      '<h1>Plans and items</h1>'+
+      '<p class="sub">'+esc(subtitle)+'</p>'+
+    '</div><div class="vhead-r">'+
+      '<button class="btn btn-p" data-go="new">New plan item</button>'+
+    '</div></div>'+
+
+    tabs +
+
+    note("")+
+
+    (tab==="wait"
+      ? '<div class="banner"><span><b>Approval has no live status.</b> These move when someone refreshes them, '+
+        'not when the approver acts — and approval is held per device, so an item with twelve devices carries '+
+        'twelve of them.</span></div>'
+      : "")+
+
+    (tab==="all"
+      ? note("")
+      : "")+
+
+    (bodyHtml || '<section class="card"><div class="card-b"><span class="sub">'+esc(empty)+'</span></div></section>')+
+
+    '<p class="hint" style="margin-top:16px">Ordering runs <b>across</b> windows, not inside one. Each item carries its '+
+      'own change record and its own window, so a plan is a schedule across several nights — which is why a plan '+
+      'reads as a sequence of dates rather than a progress bar.</p>';
+}
+
+function renderSheet(){
+  const host = el("sheet");
+  if(!S.sheet){ host.innerHTML = ""; document.body.style.overflow=""; return; }
+  const kind = S.sheet.slice(0,1), id = S.sheet.slice(2);
+  let title = "", body = "";
+
+  if(kind === "r"){
+
+    const [itemId, taskName] = id.split("|");
+    const it = ITEMS.find(x=>x.id===itemId);
+    if(!it){ S.sheet=null; return renderSheet(); }
+    const run = runOf(it);
+    const t = run.tasks.find(x=>x.n===taskName) || run.tasks[0];
+    const all = run.devRows(t);
+    const q = (S.exec.q||"").toLowerCase(), f = S.exec.f||"";
+    const rows = all.filter(r=>(!q || r.name.toLowerCase().includes(q)) && (!f || r.st===f));
+    const count = k => all.filter(r=>r.st===k).length;
+
+    title = t.n;
+    body =
+      '<p class="sub"><b class="mono">'+esc(it.id)+'</b> · '+all.length+' device'+(all.length===1?"":"s")+'</p>'+
+      '<div class="pills" style="margin-top:11px">'+["done","run","wait","aband","fail"].map(k=>{
+        const c = count(k);
+        return c ? '<span class="opill'+(k==="fail"?" hard":"")+'"><b>'+c+'</b> '+
+          esc(EX_ST[k][1].toLowerCase())+'</span>' : "";
+      }).join("")+'</div>'+
+      '<div class="rp-h" style="border:0;padding:13px 0 11px">'+
+        '<input class="inp grow" id="rq" placeholder="Search devices" value="'+esc(S.exec.q||"")+'">'+
+        '<select class="inp" id="rf">'+
+          [["","All statuses"],["done","Complete"],["run","Running"],["wait","Queued"],
+           ["aband","Abandoned"],["fail","Failed"]].map(([v,l])=>
+            '<option value="'+v+'"'+(f===v?" selected":"")+'>'+l+'</option>').join("")+
+        '</select></div>'+
+      '<div class="dvl">'+(rows.length ? rows.map(r=>
+        '<div class="dv">'+
+          '<b class="mono">'+esc(r.name)+'</b>'+
+          '<span class="sub">'+esc(r.d ? r.d.region+" · "+r.d.shape : "not in inventory")+'</span>'+
+          '<span class="dv-m sub">'+esc(r.ms)+'</span>'+
+          '<span class="dv-s">'+exChip(r.st)+'</span>'+
+        '</div>').join("") : '<div class="empty">Nothing matches.</div>')+'</div>'+
+      '<p class="hint" style="margin-top:10px">Showing '+rows.length+' of '+all.length+'.</p>';
+  } else {
+    const plan = PLANS.find(p=>p.id===id);
+    if(!plan){ S.sheet=null; return renderSheet(); }
+    const its = itemsOf(plan.id), ooo = outOfOrder(its);
+    title = plan.name;
+    body =
+      '<p class="sub"><b class="mono">'+esc(plan.id)+'</b> · '+its.length+' items · '+esc(planWindows(its).span)+' · '+planWindows(its).n+' windows</p>'+
+      '<div style="margin-top:14px">'+
+        its.map(x=>'<div class="seqline"><span class="sn">'+(x.seq||"–")+'</span>'+
+          '<span class="sl"><span class="st2">'+esc(x.name)+'</span>'+
+            '<span class="sd">'+esc(x.plat+" "+x.ver+" → "+x.target)+' · '+x.devs.length+' devices · '+
+              esc(dfmt(x.date))+'</span>'+
+            (x.dep ? '<span class="dep">'+(x.hard?"must not start until":"scheduled after")+' '+
+              esc((ITEMS.find(y=>y.id===x.dep)||{}).name||x.dep)+' has finished</span>' : "")+
+          '</span>'+stChip(x.state)+'</div>').join("")+
+      '</div>'+
+      (ooo
+        ? '<div class="banner hard" style="margin-top:16px"><span><b>The windows disagree with the order.</b> An item is '+
+          'booked before the one it depends on has finished. Move the window, or change the sequence. '+
+          'What happens when a link in the chain breaks — whether item two runs at all if item one partly failed — '+
+          'is not defined anywhere yet. '+pv()+'</span></div>'
+        : '<div class="banner" style="margin-top:16px"><span><b>Ordering runs across windows.</b> Each item carries its '+
+          'own change record and window, so this plan is a schedule across several nights, not a sequence inside one '+
+          'night. '+pv()+'</span></div>');
+  }
+
+  host.innerHTML =
+    '<div class="scrim" data-close="1"></div>'+
+    '<aside class="sheet" role="dialog" aria-modal="true">'+
+      '<div class="sheet-h"><h2>'+esc(title)+'</h2>'+
+        '<button class="btn" data-close="1">Close</button></div>'+
+      '<div class="sheet-b">'+body+'</div>'+
+    '</aside>';
+  document.body.style.overflow = "hidden";
+}
+
+const EXEC = {mx:"TessArc", auto:"Automation", ptr:"Vendor"};
+
+const SPINE = [
+  ["Validate the plan",        EXEC.mx, "Resolve the target set, the change record and the credentials",
+    ["Devices found in inventory","All on one manager","Version path is valid"]],
+  ["Check change approval",    EXEC.mx, "Confirm the change covers every device in this workflow",
+    ["Change record exists","Every device is on the change","Every device approved"]],
+  ["Back up the configuration",EXEC.auto,"Capture what the device is running before anything changes",
+    ["Running configuration captured","Backup verified readable"]],
+  ["Pre-checks",               EXEC.auto,"Baseline health, and the last point at which nothing has changed",
+    ["Reachable","Space for the image","Resilient pair healthy"], {gate:true}],
+  ["Copy the image",           EXEC.auto,"Move the image onto the device without changing what it runs",
+    ["Transfer the image","Verify the checksum","Verify storage"], {src:true}],
+  ["Activate and reboot",      EXEC.ptr,"The only task that interrupts service",
+    ["Set the boot variable","Reboot","Rejoin the pair"], {svc:true, arch:true}],
+  ["Post-checks",              EXEC.auto,"Prove the device came back the way it went in",
+    ["Version confirmed","Pair healthy","Configuration intact"], {arch:true}],
+  ["Close",                    EXEC.mx, "Leave the evidence behind",
+    ["Attach evidence","Update the change record"]]
+];
+
+const PAIR_SEQ = [
+  ["Validate pair targeting",       EXEC.mx, "Confirm both members and their roles",
+    ["Both members resolved","Roles identified","Versions match"], {src:true}],
+  ["Prepare device",                EXEC.auto,"Per member",
+    ["Volume available","Image staged"], {src:true}],
+  ["Pre-upgrade config sync",       EXEC.auto,"Bring the pair into agreement before touching it",
+    ["Sync complete","No pending changes"], {src:true}],
+  ["Pre-checks",                    EXEC.auto,"The last point at which nothing has changed",
+    ["Reachable","Space for the image","Pair healthy"], {gate:true}],
+  ["Upgrade first standby",         EXEC.ptr,"The standby member only",
+    ["Boot into new volume","Member rejoins"], {src:true, svc:true}],
+  ["Failover to upgraded device",   EXEC.ptr,"Traffic moves to the upgraded member",
+    ["Failover issued","Traffic confirmed on new version"], {src:true, svc:true}],
+  ["Upgrade second standby",        EXEC.ptr,"The member that was active",
+    ["Boot into new volume","Member rejoins"], {src:true, svc:true}],
+  ["Restore original roles and sync",EXEC.ptr,"Put the pair back the way it was",
+    ["Roles restored","Config sync complete"], {src:true}],
+  ["Final validation",              EXEC.ptr,"VIP, pool and node counts against the baseline",
+    ["VIP count matches","Pool count matches","Node count matches"], {src:true}],
+  ["HA functionality verification", EXEC.ptr,"Prove the pair still fails over",
+    ["Failover tested","Both members healthy"], {src:true}]
+];
+
+const COMMIT = ["Commit",EXEC.ptr,"Make the activation permanent before the device reverts it",
+  ["Commit issued","Device confirms committed"], {commit:true}];
+
+const PATTERN = {
+  "P1":"single pass, no redundancy",
+  "P2":"rolling failover, both members, in sequence",
+  "P3":"platform before tenants",
+  "P4":"activate then commit, or it reverts itself",
+  "P5":"vendor manager owns the upgrade"
+};
+
+const RECOVERY = {
+  "VectorOS":     ["boot volume, open indefinitely","A previous volume stays bootable. Nothing has to be captured in advance."],
+  "VectorHost":     ["boot volume, open indefinitely","A previous volume stays bootable."],
+  "RelayOS":["ISSU rollback, expires","The rollback window closes when migration completes. After that it is a fresh upgrade."],
+  "SentinelOS":  ["none","The vendor manager owns firewall upgrades, so recovery is separate work rather than anything on this screen."],
+  "BastionOS":      ["none","The vendor manager owns firewall upgrades, so recovery is separate work rather than anything on this screen."],
+  "TransitOS":   ["self-reverting unless committed","An activated image reverts on its own unless it is committed inside the device's own window."],
+  "LatticeOS":    ["self-reverting unless committed","An activated image reverts on its own unless it is committed inside the device's own window."]
+};
+
+function archOf(plat, shape){
+  if(plat==="SentinelOS" || plat==="BastionOS")            return "P5";
+  if(plat==="VectorOS")                               return shape==="Tenant" ? "P3" : "P2";
+  if(plat==="VectorHost")                               return "P3";
+  if(plat==="TransitOS" || plat==="LatticeOS")           return "P4";
+  return shape==="HA pair" ? "P2" : "P1";
+}
+
+function recipeFor(plat, arch){
+  const base = (plat==="VectorOS" || plat==="VectorHost") ? PAIR_SEQ : SPINE;
+  const rows = base.map((t,i)=>({
+    i, n:t[0], by:t[1], d:t[2], ms:t[3],
+    gate:!!(t[4]&&t[4].gate), svc:!!(t[4]&&t[4].svc),
+    src:!!(t[4]&&t[4].src), arch:!!(t[4]&&t[4].arch)
+  }));
+  if(arch==="P4"){
+    const at = rows.findIndex(r=>r.svc);
+    rows.splice(at<0?rows.length-1:at+1, 0,
+      {i:-1, n:COMMIT[0], by:COMMIT[1], d:COMMIT[2], ms:COMMIT[3],
+       gate:false, svc:false, src:false, arch:true, commit:true});
+  }
+  return rows.map((r,i)=>Object.assign({}, r, {i}));
+}
+
+const ROLL_LABEL = {one:"All at once", exp:"By exposure", region:"By region", conc:"In fixed batches"};
+
+function buildWorkflows(devNames, shape, conc){
+  const got = devNames.map(n=>({name:n, d:BYNAME[n.toLowerCase()]||null}));
+  let groups = [];
+  if(shape==="exp"){
+    ["Internet-facing","Perimeter","Internal"].forEach(x=>{
+      const g = got.filter(o=>o.d && usExp(o.d)===x);
+      if(g.length) groups.push({label:x, devs:g.map(o=>o.name)});
+    });
+  } else if(shape==="region"){
+    [...new Set(got.filter(o=>o.d).map(o=>o.d.region))].sort().forEach(x=>{
+      groups.push({label:x, devs:got.filter(o=>o.d && o.d.region===x).map(o=>o.name)});
+    });
+  } else if(shape==="conc"){
+    const k = Math.max(1, parseInt(conc,10)||10);
+    for(let i=0;i<devNames.length;i+=k)
+      groups.push({label:"Batch "+(groups.length+1), devs:devNames.slice(i,i+k)});
+  } else {
+    groups = [{label:"All at once", devs:devNames.slice()}];
+  }
+
+  const placed = new Set(); groups.forEach(g=>g.devs.forEach(n=>placed.add(n)));
+  const orphan = devNames.filter(n=>!placed.has(n));
+  if(orphan.length) groups.push({label:"Not resolved in inventory", devs:orphan, unres:true});
+
+  return groups.map((g,i)=>({
+    id:"WRK-"+String(i+1).padStart(2,"0"), n:i+1, label:g.label,
+    devs:g.devs, unres:!!g.unres, conc:conc
+  }));
+}
+const usExp = d => d.exposure;
+
+function workflowsOf(it){
+  if(it.wf && it.wf.length) return it.wf;
+  return buildWorkflows(it.devs, it.rollout || "one", it.conc || 10);
+}
+
+const EX_ST = {
+  done:  ["done", "Complete"],
+  run:   ["run",  "Running"],
+  fail:  ["fail", "Failed"],
+  part:  ["part", "Part done"],
+  aband: ["aband","Abandoned"],
+  na:    ["na",   "Not in this pattern"],
+  wait:  ["wait", "Queued"]
+};
+const GLY = {done:"●", run:"◐", fail:"×", part:"◑",
+             aband:"⊘", na:"–", wait:"○"};
+function exChip(st){
+  const m = EX_ST[st] || EX_ST.wait;
+  return '<span class="st st-'+m[0]+'"><i></i><b>'+esc(m[1])+'</b></span>';
+}
+
+function hash(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+
+function runOf(it){
+  const wfs   = workflowsOf(it);
+  const live  = it.state==="run" || it.state==="part" || it.state==="done";
+  const pct   = it.state==="done" ? 100 : (live ? (it.pct||0) : 0);
+
+  wfs.forEach(w=>{
+    const first = w.devs.map(n=>BYNAME[n.toLowerCase()]).find(Boolean);
+    w.arch   = archOf(it.plat, first ? first.shape : "Standalone");
+    w.recipe = recipeFor(it.plat, w.arch);
+    w.byName = {};
+    w.recipe.forEach(t=>{ w.byName[t.n] = t; });
+  });
+  const union = [];
+  wfs.forEach(w=>w.recipe.forEach(t=>{ if(!union.some(u=>u.n===t.n)) union.push(t); }));
+  const tasks = union.map((t,i)=>Object.assign({}, t, {i}));
+
+  const total = tasks.length;
+  wfs.forEach(w=>{
+    w.dev = w.devs.map(name=>{
+      const h = hash(it.id+name);
+      const d = BYNAME[name.toLowerCase()] || null;
+      if(!live)                    return {name, d, reach:0, st:"wait"};
+      if(pct===100)                return {name, d, reach:total, st:"done"};
+      const at = pct/100*total;
+      const jitter = (h % 5) / 4 - 0.5;
+      const r = Math.max(0, Math.min(total, at + jitter*1.6));
+      if(it.state==="part" && (h % 4)===0) return {name, d, reach:Math.floor(r), st:"fail"};
+      return {name, d, reach:r, st: r>=total ? "done" : "run"};
+    });
+  });
+
+  function cell(w, t){
+    const own = w.byName[t.n];
+    if(!own) return {st:"na", done:0, total:w.devs.length};
+    const idx = w.recipe.indexOf(own);
+    const stopped = w.dev.some(x=>x.st==="fail" && Math.floor(x.reach)<=idx);
+    let done=0, fail=0, run=0, aband=0;
+    w.dev.forEach(x=>{
+      if(x.st==="fail"){
+        if(Math.floor(x.reach) > idx) done++;
+        else if(Math.floor(x.reach) === idx) fail++;
+        else aband++;
+      } else if(x.reach >= idx+1) done++;
+      else if(x.reach > idx) run++;
+      else if(stopped) aband++;
+      else {  }
+    });
+    const n = w.devs.length;
+    const st = fail ? "fail" : done===n ? "done" : run ? "run"
+             : done ? "part" : aband ? "aband" : "wait";
+    return {st, done, fail, run, aband, total:n, idx};
+  }
+
+  function msCell(w, t, mi){
+    const own = w.byName[t.n];
+    if(!own) return {st:"na", done:0, total:w.devs.length};
+    const idx = w.recipe.indexOf(own), L = own.ms.length;
+    const at = i => idx + (i+1)/L;
+    const stopped = w.dev.some(x=>x.st==="fail" && x.reach < at(mi));
+    let done=0, fail=0, run=0, aband=0;
+    w.dev.forEach(x=>{
+      if(x.st==="fail"){
+        if(x.reach >= at(mi)) done++;
+        else if(x.reach >= at(mi)-1/L) fail++;
+        else aband++;
+      } else if(x.reach >= at(mi)) done++;
+      else if(x.reach >= at(mi)-1/L) run++;
+      else if(stopped) aband++;
+    });
+    const n = w.devs.length;
+    const st = fail ? "fail" : done===n ? "done" : run ? "run"
+             : done ? "part" : aband ? "aband" : "wait";
+    return {st, done, fail, run, aband, total:n};
+  }
+
+  const rollTask = t => {
+    let done=0, fail=0, run=0, n=0, na=0;
+    wfs.forEach(w=>{
+      const c = cell(w,t);
+      if(c.st==="na"){ na += w.devs.length; return; }
+      n += c.total; done += c.done; fail += (c.fail||0); run += (c.run||0);
+    });
+    const st = fail ? "fail" : n && done===n ? "done" : (run||done) ? "run" : "wait";
+    return {st, done, fail, run, n, na};
+  };
+  tasks.forEach(t=>{ t.roll = rollTask(t); });
+
+  const liveTask = tasks.find(t=>t.roll.st==="fail") || tasks.find(t=>t.roll.st==="run") || null;
+
+  const exceptions = [], laggards = [];
+  wfs.forEach(w=>{
+    const front = w.dev.reduce((m,x)=>Math.max(m, x.reach), 0);
+    w.dev.forEach(x=>{
+      if(x.st==="fail"){
+        exceptions.push({w, x, task: w.recipe[Math.min(w.recipe.length-1, Math.floor(x.reach))]});
+      } else if(x.st!=="done" && front - x.reach >= 1){
+        laggards.push({w, x, behind: front - x.reach,
+                       task: w.recipe[Math.min(w.recipe.length-1, Math.floor(x.reach))]});
+      }
+    });
+  });
+
+  const holding = [];
+  wfs.forEach(w=>{
+    if(w.arch !== "P4") return;
+    const ci = w.recipe.findIndex(t=>t.commit);
+    if(ci < 0) return;
+    w.dev.forEach(x=>{
+      if(x.st==="run" && x.reach >= ci && x.reach < ci+1)
+        holding.push({name:x.name, d:x.d, left: 20 + (hash(x.name) % 70)});
+    });
+  });
+
+  const n = wfs.reduce((a,w)=>a+w.devs.length, 0);
+
+  function devRows(t){
+    const out = [];
+    wfs.forEach(w=>{
+      const own = w.byName[t.n];
+      w.dev.forEach(x=>{
+        if(!own){ out.push({name:x.name, w, st:"na", ms:"not in this pattern", d:x.d}); return; }
+        const idx = w.recipe.indexOf(own), L = own.ms.length;
+        let st, ms;
+        const stopped = w.dev.some(y=>y.st==="fail" && Math.floor(y.reach)<=idx);
+        if(x.st==="fail" && Math.floor(x.reach)===idx){
+          st="fail"; ms = own.ms[Math.min(L-1, Math.floor((x.reach-idx)*L))];
+        } else if(x.reach >= idx+1){ st="done"; ms="all "+L+" complete"; }
+        else if(x.reach > idx){ st="run"; ms = own.ms[Math.min(L-1, Math.floor((x.reach-idx)*L))]; }
+        else if(x.st==="fail" || stopped){ st="aband"; ms="will not run"; }
+        else { st="wait"; ms="not started"; }
+        out.push({name:x.name, w, st, ms, d:x.d});
+      });
+    });
+    return out;
+  }
+
+  return {wfs, tasks, live, pct, n, liveTask, cell, msCell, devRows, exceptions, laggards, holding,
+          unresolved: wfs.filter(w=>w.unres).reduce((a,w)=>a+w.devs.length,0)};
+}
+
+const WF_VIS = 5;
+
+function fmtLeft(m){ const h=Math.floor(m/60), r=Math.round(m%60);
+  return h ? h+"h "+String(r).padStart(2,"0")+"m" : r+"m"; }
+
+function viewItem(id){
+  const it = ITEMS.find(x=>x.id===id);
+  if(!it) return '<div class="empty"><b>No such plan item.</b></div>';
+  const plan = PLANS.find(p=>p.id===it.plan);
+  const run  = runOf(it);
+  const wfs  = run.wfs;
+
+  const arch  = wfs.length ? wfs[0].arch : archOf(it.plat,"Standalone");
+  const mixed = new Set(wfs.map(w=>w.arch)).size > 1;
+  const rec   = RECOVERY[it.plat] || ["not established","No source establishes recovery for this family."];
+  const rolls = ROLL_LABEL[it.rollout || "one"];
+
+  const head1 =
+    '<div class="vhead"><div>'+
+      '<span class="lab">'+esc(it.id)+' · Execution</span>'+
+      '<h1 style="margin-top:4px">'+esc(it.name)+'</h1>'+
+      '<p class="sub">'+esc(it.plat+" "+it.ver+" → "+it.target)+' · '+
+        '<span class="sub">'+esc(PATTERN[arch]||"")+'</span> · '+
+        run.n+' device'+(run.n===1?"":"s")+'</p>'+
+      '<p class="sub">'+(plan
+        ? (itemsOf(plan.id).length>1
+            ? esc(ordinal(it.seq||1))+' of '+itemsOf(plan.id).length+' in '
+            : 'the only item in ')+
+          '<a class="ln" href="#" data-crumb="plans:'+esc(plan.id)+'">'+esc(plan.name)+'</a>'+
+          (it.dep?' · runs after '+esc(it.dep):'')
+        : '')+'</p>'+
+
+    '</div><div class="vhead-r">'+stChip(it.state)+
+      '<button class="btn" data-act="export">Export with evidence</button>'+
+    '</div></div>';
+
+  const winBand = () => {
+    if(!it.date) return '<div class="band"><b>No window booked.</b> '+
+      'Nothing runs without an approved change and a booked window.</div>';
+    const est  = run.tasks.length * 6;
+    const gone = Math.round(est * run.pct/100);
+    const left = Math.max(0, 240 - gone);
+    const need = run.tasks.filter(t=>t.roll.st!=="done").length * 6;
+    const rerun = run.exceptions.length ? 38 : 0;
+    const fits = need + rerun <= left;
+    return '<div class="band">'+
+      '<div class="band-h"><span class="lab">Window</span>'+
+        '<span class="mono">'+esc(it.change||"no change record")+'</span>'+
+        '<span class="sub">'+esc(dfmt(it.date))+' 22:00 → 02:00</span></div>'+
+      '<div class="wbar"><i style="width:'+Math.min(100,Math.round(gone/240*100))+'%"></i>'+
+        '<u style="left:'+Math.min(100,Math.round((gone+need+rerun)/240*100))+'%"></u></div>'+
+      '<p class="hint" style="margin-top:7px"><b>'+fmtLeft(left)+' left.</b> '+
+        run.tasks.filter(t=>t.roll.st!=="done").length+' task'+
+        (run.tasks.filter(t=>t.roll.st!=="done").length===1?"":"s")+' remain (~'+fmtLeft(need)+')'+
+        (rerun?' · re-running the failures needs ~'+fmtLeft(rerun):'')+
+        ' — '+(fits?'it fits':'<b>it does not fit</b>')+'.</p>'+
+    '</div>';
+  };
+
+  const deadline = () => {
+    if(!run.holding.length) return "";
+    const soon = run.holding.slice().sort((a,b)=>a.left-b.left)[0];
+    return '<div class="dead">'+
+      '<div class="dead-h"><span class="lab">Device-owned deadline</span>'+
+        '<span class="sub">'+run.holding.length+' device'+(run.holding.length===1?"":"s")+
+        ' hold a state that reverts itself</span></div>'+
+      '<div class="dead-b"><div class="dead-t">'+fmtLeft(soon.left)+'</div><div>'+
+        '<b class="mono">'+esc(soon.name)+'</b>'+
+        (run.holding.length>1?' <span class="sub">and '+(run.holding.length-1)+' more</span>':'')+
+        '<div class="sub" style="margin-top:2px">activated, not committed'+
+          (soon.d ? ' · '+esc(soon.d.region+" · "+soon.d.shape) : '')+'</div>'+
+        '<p class="hint" style="margin-top:6px"><b>At zero the device returns to '+esc(it.ver)+
+          ' by itself and reports success.</b> This clock belongs to the device, not to the window — '+
+          'nothing on the change record stops it.</p>'+
+      '</div></div>'+
+      '<div class="dead-f"><button class="btn btn-p btn-sm" data-act="commit">Commit now</button>'+
+        '<button class="btn btn-sm" data-act="evidence">Open evidence</button></div>'+
+    '</div>';
+  };
+
+  const DEV_INLINE = 8;
+  const devList = t => {
+    const rows = run.devRows(t);
+    if(rows.length > DEV_INLINE) return "";
+    return '<div class="dvl">'+rows.map(r=>
+      '<div class="dv">'+
+        '<b class="mono">'+esc(r.name)+'</b>'+
+        '<span class="sub">'+esc(r.d ? r.d.region+" · "+r.d.shape : "not in inventory")+'</span>'+
+        '<span class="dv-m sub">'+esc(r.ms)+'</span>'+
+        '<span class="dv-s">'+exChip(r.st)+'</span>'+
+      '</div>').join("")+'</div>';
+  };
+
+  const pills = t => {
+    const rows = run.devRows(t);
+    return '<div class="pills">'+["done","run","wait","aband","fail"].map(k=>{
+      const c = rows.filter(r=>r.st===k).length;
+      return c ? '<span class="opill'+(k==="fail"?" hard":"")+'"><b>'+c+'</b> '+
+        esc(EX_ST[k][1].toLowerCase())+'</span>' : "";
+    }).join("")+'</div>';
+  };
+
+  const stopIn = t => {
+    const ex = run.exceptions.filter(e=>e.task && e.task.n===t.n);
+    if(!ex.length) return "";
+    const names = ex.slice(0,3).map(e=>e.x.name);
+    return '<div class="exc">'+
+      '<b>× '+ex.length+' stopped at '+esc(t.n)+'</b>'+
+      '<div class="mono" style="margin-top:4px">'+esc(names.join(" · "))+
+        (ex.length>3?' <span class="sub">+'+(ex.length-3)+' more</span>':'')+'</div>'+
+      '<p class="hint" style="margin-top:5px">'+
+        esc(ex[0].x.d && ex[0].x.d.shape==="HA pair"
+          ? "timed out rejoining the pair · the pair is left mixed-version with config sync broken"
+          : "the task did not complete on this device")+'</p>'+
+      '<p class="hint" style="margin-top:4px"><b>Recovery: '+esc(rec[0])+'.</b> '+esc(rec[1])+'</p>'+
+      '<div class="exc-f">'+
+        '<button class="btn btn-sm" data-act="evidence">Open evidence</button>'+
+        '<button class="btn btn-sm" data-act="rerun">Re-run these '+ex.length+'</button>'+
+        '<button class="btn btn-sm" data-act="history">Device history</button>'+
+      '</div></div>';
+  };
+
+  const lagIn = t => {
+    const lg = run.laggards.filter(e=>e.task && e.task.n===t.n);
+    if(!lg.length) return "";
+    const where = [...new Set(lg.map(e=>e.x.d ? e.x.d.region : null).filter(Boolean))];
+    return '<div class="lag"><b>'+lg.length+' behind the rest of their wave</b>'+
+      '<div class="mono" style="margin-top:4px">'+esc(lg.slice(0,3).map(e=>e.x.name).join(" · "))+
+        (lg.length>3?' <span class="sub">+'+(lg.length-3)+' more</span>':'')+'</div>'+
+      '<p class="hint" style="margin-top:5px">Still on <b>'+esc(t.n)+'</b> while the rest have moved on'+
+        (where.length===1?', all in '+esc(where[0]):'')+'. Nothing has failed — but the run '+
+        'finishes when its last device does.</p></div>';
+  };
+
+  const subLine = t => {
+    const r = t.roll;
+    if(r.st==="done") return "Complete · "+r.n+"/"+r.n+" devices";
+    if(r.st==="fail") return r.fail+" device"+(r.fail===1?"":"s")+" stopped · "+
+      (r.n-r.fail)+" unaffected";
+    if(r.st==="run")  return "Current task · "+r.done+"/"+r.n+" devices at or beyond it";
+    return "Queued · starts after "+(run.tasks[t.i-1] ? run.tasks[t.i-1].n.toLowerCase() : "the task before it");
+  };
+
+  const statusPill = t => {
+    const m = {done:["done","Complete"], fail:["fail","Attention"],
+               run:["run","Running"], wait:["wait","Queued"]}[t.roll.st] || ["wait","Queued"];
+    return '<span class="tp tp-'+m[0]+'">'+m[1]+'</span>';
+  };
+
+  const card = t => {
+    const auto = t.roll.st==="fail" || t.roll.st==="run";
+    const open = auto || S.exec.open.has(t.n);
+    const cls  = t.roll.st==="done" ? "done" : t.roll.st==="fail" ? "failed"
+               : t.roll.st==="run" ? "running" : "";
+    return '<div class="tk '+cls+(open?" open":"")+'">'+
+      '<span class="mkr"></span>'+
+      '<div class="tkc">'+
+        '<div class="tkh" data-task="'+esc(t.n)+'">'+
+          '<div class="tkl">'+
+            '<div class="tkt"><span class="tkn">'+(t.i+1)+'</span>'+esc(t.n)+
+              (t.gate?'<span class="mk">▲ gate</span>':'')+
+              (t.svc?'<span class="mk hard">◆ interrupts service</span>':'')+
+              (t.commit?'<span class="mk hard">◆ or it reverts</span>':'')+
+              '<span class="by">'+esc(t.by)+'</span></div>'+
+            '<div class="tks">'+esc(subLine(t))+'</div>'+
+          '</div>'+
+          '<div class="tkr">'+statusPill(t)+
+            (auto?'':'<span class="chev">›</span>')+'</div>'+
+        '</div>'+
+        (open ? '<div class="tkb">'+
+          '<p class="hint">'+esc(t.d)+
+            (t.gate?' <b>Nothing has changed on any device up to this point.</b>':'')+'</p>'+
+
+          '<div class="slab">Milestones</div>'+
+          '<div class="mls">'+(()=>{
+            let ceiling = Infinity;
+            return t.ms.map((m,mi)=>{
+              const all = wfs.reduce((a,w)=>{ const x=run.msCell(w,t,mi);
+                return {done:a.done+(x.st==="na"?0:x.done), total:a.total+(x.st==="na"?0:x.total),
+                        fail:a.fail+(x.fail||0)}; }, {done:0,total:0,fail:0});
+
+              const through = Math.min(all.done, ceiling); ceiling = through;
+              const st = all.fail ? "fail" : all.total && through===all.total ? "done"
+                       : through ? "run" : "wait";
+              const src = wfs.some(w=>w.byName[t.n] && w.byName[t.n].src);
+              return '<div class="ml ml-'+st+'">'+
+                '<span class="mi-s">'+(mi+1)+'</span>'+
+                '<span class="mi-g">'+GLY[st]+'</span>'+
+                '<span class="mi-n">'+esc(m)+'</span>'+
+                '<span class="ev">\u29c9'+through+'</span>'+
+                '<span class="mi-c">'+through+' of '+all.total+
+                  '<span class="of"> through</span></span></div>';
+            }).join("");
+          })()+'</div>'+
+
+          '<div class="slab">Devices · '+t.roll.n+'</div>'+
+          pills(t)+ devList(t) + stopIn(t)+lagIn(t)+
+          '<button class="btn btn-sm" style="margin-top:11px" data-roster="'+esc(it.id)+'|'+esc(t.n)+'">'+
+            'View all '+t.roll.n+' devices →</button>'+
+        '</div>' : "")+
+      '</div></div>';
+  };
+
+  const summary = () => {
+    const t = run.liveTask || run.tasks[run.tasks.length-1];
+    const rows = t ? run.devRows(t) : [];
+    const c = k => rows.filter(r=>r.st===k).length;
+    return '<div class="sumline">'+
+      '<span class="st st-'+(EX_ST[it.state==="part"?"fail":it.state==="done"?"done":"run"][0])+'">'+
+        '<i></i><b>'+esc(it.state==="part"?"Partly failed":it.state==="done"?"Done":"Running")+'</b></span>'+
+      '<span><b>'+run.pct+'%</b> complete</span>'+
+      '<span><b>'+run.tasks.filter(x=>x.roll.st==="done").length+'</b> of '+run.tasks.length+' tasks done</span>'+
+      (t?'<span class="sub">on <b>'+esc(t.n)+'</b>:</span>'+
+        '<span><b>'+c("done")+'</b> complete</span>'+
+        '<span><b>'+c("run")+'</b> running</span>'+
+        '<span><b>'+(c("wait")+c("aband"))+'</b> not started</span>'+
+        (c("fail")?'<span class="warn"><b>'+c("fail")+'</b> need someone</span>':'') : "")+
+    '</div>';
+  };
+
+  const timeline = '<div class="tl">'+run.tasks.map(card).join("")+'</div>';
+
+  if(!run.live){
+    return head1+
+      '<div class="banner hard"><span><b>This item has not run.</b> '+
+        (it.state==="draft" ? 'It is a draft: no change record, no window, nothing scheduled.'
+         : it.state==="waiting" ? 'The change window is requested and not approved. Approval is held per device and has no live status — this moves when someone refreshes it.'
+         : 'The change is approved and the window has not opened yet.')+
+        '</span></div>'+
+      '<div class="banner" style="margin-top:10px"><span><b>Recovery for this family: '+esc(rec[0])+'.</b> '+
+        esc(rec[1])+'</span></div>'+
+      note("")+
+      '<h2 style="margin:18px 0 9px">What it will do</h2>'+
+      timeline +
+      note("");
+  }
+
+  return head1 + winBand() + deadline() +
+    (run.unresolved
+      ? '<div class="banner hard" style="margin-top:10px"><span><b>'+run.unresolved+
+        ' device reference'+(run.unresolved===1?"":"s")+' not found in inventory.</b></span></div>'
+      : "")+
+    summary() + timeline +
+
+    note("")+
+
+    note("")+
+
+    note("")+
+
+    '';
+}
+
+function ordinal(n){
+  const s = ["th","st","nd","rd"], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+function crx(it){
+  const at = !it.change ? 0 : it.change==="requested" ? 1 : it.state==="done" ? 4 : 3;
+  return '<span class="crx">'+["supplied","verified","approved","closed"].map((l,i)=>
+    '<span class="'+(i<at?"on":i===at?"now":"")+'">'+l+'</span>').join("")+'</span>';
+}
+
+const OPENQ = [];
+
+function viewReading(){ return ''; }
+
+document.addEventListener("click", e=>{
+  const t = e.target;
+
+  const goEl = t.closest("[data-go]");
+  if(goEl){ e.preventDefault(); go(goEl.getAttribute("data-go")); return; }
+
+  const cr = t.closest("[data-crumb]");
+  if(cr){
+    e.preventDefault();
+    const d = cr.getAttribute("data-crumb").split(":");
+    if(d[1]){ S.open.add(d[1]); S.group = "plan"; }
+    go(d[0]);
+    return;
+  }
+
+  if(t.closest("[data-close]")){ S.sheet = null; renderSheet(); return; }
+
+  if(t.id==="notesBtn"){
+    S.notes = !S.notes;
+    document.body.classList.toggle("notes",S.notes);
+    t.setAttribute("aria-pressed",String(S.notes));
+    return;
+  }
+
+  const sortTh = t.closest("th[data-sort]");
+  if(sortTh){
+    const k = sortTh.getAttribute("data-sort");
+    S.dev.dir = (S.dev.sort===k) ? -S.dev.dir : 1;
+    S.dev.sort = k;
+    render(); return;
+  }
+  if(t.id==="devclear"){
+    Object.assign(S.dev,{q:"",plat:"",ver:"",status:"",config:"",shape:"",region:"",exp:""});
+    render(); return;
+  }
+  if(t.id==="carry"){
+    const names = devSorted().map(d=>d.name);
+    S.carried = names.length;
+    S.item.devs = []; S.rejected = [];
+    go("new");
+    const box = el("i-paste");
+    if(box){ box.value = names.join("\n"); box.focus(); }
+    return;
+  }
+
+  if(t.id==="pasteBtn"){
+    const box = el("i-paste");
+    if(box && box.value.trim()){ tryAdd(box.value.split(/[\n,;]+/)); S.carried = 0; render(); }
+    return;
+  }
+  if(t.id==="addOne"){
+    const box = el("i-search");
+    if(box && box.value.trim()){ tryAdd([box.value]); render(); }
+    return;
+  }
+  const rm = t.closest("[data-rm]");
+  if(rm){
+    S.item.devs = S.item.devs.filter(x=>x!==rm.getAttribute("data-rm"));
+    render(); return;
+  }
+  if(t.id==="ovBtn"){
+    S.item.override = !S.item.override;
+    if(!S.item.override){ S.item.overrideVer = ""; S.item.reason = ""; }
+    render(); return;
+  }
+  if(t.id==="save" || t.id==="savedraft"){ saveItem(t.id==="savedraft"); return; }
+
+  const tog = t.closest("[data-tog]");
+  if(tog){
+    const id = tog.getAttribute("data-tog");
+    S.open.has(id) ? S.open.delete(id) : S.open.add(id);
+    render(); return;
+  }
+  const itm = t.closest("[data-item]");
+  if(itm){ go("item/"+itm.getAttribute("data-item")); return; }
+
+  const pt = t.closest("[data-ptab]");
+  if(pt){
+    S.ptab = pt.getAttribute("data-ptab");
+    render();
+    return;
+  }
+
+  const rs = t.closest("[data-roster]");
+  if(rs){
+    S.sheet = "r:"+rs.getAttribute("data-roster");
+    S.exec.q = ""; S.exec.f = "";
+    renderSheet();
+    return;
+  }
+
+  if(t.closest("[data-act]")) return;
+
+  const tk = t.closest("[data-task]");
+  if(tk){
+    const k = tk.getAttribute("data-task");
+    S.exec.open.has(k) ? S.exec.open.delete(k) : S.exec.open.add(k);
+    render();
+    return;
+  }
+
+  const open = t.closest("[data-open]");
+  if(open){ S.sheet = open.getAttribute("data-open"); renderSheet(); return; }
+});
+
+document.addEventListener("change", e=>{
+  const t = e.target;
+
+  const df = t.getAttribute && t.getAttribute("data-df");
+  if(df){ S.dev[df] = t.value; render(); return; }
+
+  if(t.id==="rf"){ S.exec.f = t.value; renderSheet(); return; }
+
+  if(t.name==="ro"){ S.item.rollout = t.value; render(); return; }
+  if(t.name==="ch"){ S.item.change  = t.value; render(); return; }
+  if(t.id==="i-conc"){   S.item.conc   = t.value; render(); return; }
+  if(t.id==="i-window"){ S.item.window = t.value; render(); return; }
+  if(t.id==="i-ovver"){  S.item.overrideVer = t.value; render(); return; }
+  if(t.id==="i-date"){   S.item.date = t.value; return; }
+  if(t.id==="i-plan"){ S.item.plan = t.value; render(); return; }
+});
+
+document.addEventListener("input", e=>{
+  const t = e.target;
+  if(t.id==="rq"){
+    S.exec.q = t.value; const p=t.selectionStart; renderSheet();
+    const n=el("rq"); if(n){ n.focus(); try{ n.setSelectionRange(p,p); }catch(err){} }
+    return;
+  }
+  if(t.id==="devq"){ S.dev.q = t.value.trim().toLowerCase(); const p=t.selectionStart; render();
+    const n=el("devq"); if(n){ n.focus(); try{ n.setSelectionRange(p,p); }catch(err){} } return; }
+
+  if(t.id==="i-name" || t.id==="i-crno" || t.id==="i-reason" || t.id==="i-newplan"){
+    const key = t.id==="i-name" ? "name" : t.id==="i-crno" ? "crno"
+              : t.id==="i-newplan" ? "newPlan" : "reason";
+    S.item[key] = t.value;
+    const p = t.selectionStart, id = t.id;
+    render();
+    const n = el(id);
+    if(n){ n.focus(); try{ n.setSelectionRange(p,p); }catch(err){} }
+    return;
+  }
+});
+
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter" && e.target.id==="i-search"){
+    e.preventDefault();
+    const box = el("i-search");
+    if(box.value.trim()){ tryAdd([box.value]); render(); }
+  }
+  if(e.key==="Escape" && S.sheet){ S.sheet = null; renderSheet(); }
+});
+
+function saveItem(asDraft){
+  const c = composerState();
+  if(!c.devs.length || !S.item.name.trim()) return;
+  if(!asDraft && c.block) return;
+
+  let planId = S.item.plan;
+  if(planId === "__new"){
+    planId = "PL-"+String(40+PLANS.length*7).padStart(4,"0");
+    PLANS.push({id:planId, name:(S.item.newPlan||"").trim(), owner:"Operations"});
+  }
+  const siblings = planId ? itemsOf(planId) : [];
+  const seq = planId ? siblings.length+1 : null;
+  const id  = "IT-0"+(170+ITEMS.length);
+
+  const state = asDraft || S.item.change==="none" ? "draft"
+    : S.item.change==="have" ? "ready" : "waiting";
+
+  ITEMS.push({
+    id, name:S.item.name.trim(), plat:c.first.platform, ver:c.first.version, target:c.target,
+    devs:c.devs.map(d=>d.name), plan:planId, seq,
+    date: (!asDraft && S.item.change!=="none") ? S.item.date : "",
+    change: (!asDraft && S.item.change==="have") ? S.item.crno.trim()
+          : (!asDraft && S.item.change==="need") ? "requested" : "",
+    state, dep: seq && seq>1 ? siblings[siblings.length-1].id : null,
+
+    rollout: S.item.rollout, conc: S.item.conc, win: S.item.window,
+    wf: buildWorkflows(c.devs.map(d=>d.name), S.item.rollout, S.item.conc)
+  });
+
+  S.item = {devs:[],rollout:"one",change:"none",override:false,conc:10,window:4,
+            name:"",crno:"",date:"",reason:"",overrideVer:"",plan:"",newPlan:""};
+  S.rejected = []; S.carried = 0;
+  if(planId) S.open.add(planId);
+  S.group = "plan";
+  go("item/"+id);
+}
+
+S.route = (location.hash||"").replace(/^#\//,"") || "devices";
+render();
+</script>
+</body>
+</html>
