@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animated Flow Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* White only: client preference for the story page (ledger 2026-11-04). */
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --canvas: #ffffff;
+    --canvas-dot: #e4e4ec;
+    --ink: #1d2130;
+    --ink-2: #4a5063;
+    --ink-3: #8a90a2;
+    --line: #e7e8ef;
+    --badge: #eef0f5;
+    --tag-bg: #ffffff;
+    --tag-border: #e2e4ec;
+    --focus: #5b4bff;
+
+    --c-coral: #f0614f;
+    --c-coral-2: #ff8a6e;
+    --c-blue: #2f9bf0;
+    --c-blue-2: #6cc2ff;
+    --c-violet: #8a3ff0;
+    --c-violet-2: #b06cff;
+    --c-green: #7bc63a;
+    --c-green-2: #a6e05a;
+    --c-amber: #f0a13a;
+    --c-amber-2: #ffc46b;
+    --c-teal: #17b3a3;
+    --c-teal-2: #4fd8c6;
+    --c-slate: #5a6b8c;
+    --c-slate-2: #8798ba;
+    --c-rose: #e2487f;
+    --c-rose-2: #ff7aa8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 15px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1180px; margin: 0 auto; padding: 48px 24px 80px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .eyebrow .pill {
+    text-transform: none; letter-spacing: 0; font-weight: 600;
+    background: #f1ecff; color: #6b3fd6; border-radius: 999px; padding: 2px 10px;
+  }
+  h1 { font-size: 32px; line-height: 1.2; font-weight: 700; margin: 12px 0 8px; letter-spacing: -.01em; }
+  .lede { color: var(--ink-2); max-width: 70ch; margin: 0 0 40px; }
+
+  section { margin-top: 56px; }
+  section:first-child { margin-top: 0; }
+  .sec-num { font-size: 13px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  h2 { font-size: 24px; line-height: 1.25; font-weight: 700; margin: 4px 0 20px; letter-spacing: -.01em; }
+  .sec-lede { color: var(--ink-2); max-width: 72ch; margin: 0 0 20px; }
+
+  .canvas {
+    position: relative;
+    background-color: var(--canvas);
+    background-image: radial-gradient(var(--canvas-dot) 1.2px, transparent 1.2px);
+    background-size: 22px 22px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .canvas svg { display: block; width: 100%; height: auto; min-width: 880px; }
+  .caption { font-size: 13px; color: var(--ink-3); margin-top: 10px; }
+
+  /* Nodes */
+  .node { cursor: default; outline: none; }
+  .node .body { transition: transform .25s cubic-bezier(.2,.8,.2,1); transform-box: fill-box; transform-origin: center; }
+  .node:hover .body, .node:focus-visible .body { transform: translateY(-4px); }
+  .node:focus-visible .ring { stroke: var(--focus); stroke-width: 3; stroke-dasharray: 5 5; }
+  .node .ring { fill: none; stroke: transparent; }
+  .lbl { font: 600 15px Inter, sans-serif; fill: var(--ink); }
+  .sub { font: 400 12px Inter, sans-serif; fill: var(--ink-3); }
+  .num-bg { fill: var(--badge); }
+  .num { font: 600 10px Inter, sans-serif; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* Connectors: round-capped dashes read as dots */
+  .flow {
+    fill: none; stroke-width: 9; stroke-linecap: round;
+    stroke-dasharray: 0.1 17;
+    animation: flow 1.6s linear infinite;
+  }
+  @keyframes flow { to { stroke-dashoffset: -17.1; } }
+  .tag rect { fill: var(--tag-bg); stroke: var(--tag-border); }
+  .tag text { font: 500 11px Inter, sans-serif; fill: var(--ink-2); }
+  .layer { font: 500 12px Inter, sans-serif; fill: var(--ink-3); }
+  .sys-head { font: 600 22px Inter, sans-serif; fill: #000; }
+  /* Return path (rollback): thinner dots, same motion */
+  .flow.back { stroke-width: 6; stroke-dasharray: 0.1 12; opacity: .8; animation-name: flow-back; }
+  @keyframes flow-back { to { stroke-dashoffset: -12.1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow { animation: none; }
+    .node .body { transition: none; }
+  }
+  @media (max-width: 640px) {
+    .page { padding: 32px 16px 56px; }
+    h1 { font-size: 26px; }
+    h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <!-- ============ Landing: lifecycle ============ -->
+  <section aria-labelledby="s1">
+    <div class="sec-num">Landing</div>
+    <h2 id="s1">Network service orchestration platform</h2>
+    <div class="canvas">
+      <svg viewBox="0 0 1180 240" role="img" aria-labelledby="d1t">
+        <title id="d1t">Lifecycle: Intent, then Workflow, Orchestration, Execution, Validation and Observe</title>
+        <defs id="defs1"></defs>
+        <g id="d1"></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ 02 Platform ============ -->
+  <section aria-labelledby="s2">
+    <div class="sec-num">02 · The Platform</div>
+    <h2 id="s2">One control plane for all network operations</h2>
+    <div class="canvas">
+      <svg viewBox="0 0 1180 660" role="img" aria-labelledby="d2t">
+        <title id="d2t">Platform, from the vision statement: Model-X governs requests, approvals, workflows and automation plans, and orchestrates across inventory, execution, observability and enterprise systems.</title>
+        <defs id="defs2"></defs>
+        <g id="d2"></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ 03 Architecture ============ -->
+  <section aria-labelledby="s3">
+    <div class="sec-num">03 · The Architecture</div>
+    <h2 id="s3">Designed for separation of concerns</h2>
+    <div class="canvas">
+      <svg viewBox="0 0 1180 1250" role="img" aria-labelledby="d3t">
+        <title id="d3t">Architecture, top to bottom: Input (Intent &amp; Request), Governance (Approval &amp; Policy), Core (Model-X Orchestration Layer), Execution (Execution Engine), Validation (Pre / Post Checks &amp; Automated Test Suites), Observability (Observe / AIOps). Integrated systems: network inventory system, execution engine, change-management system, credential vault.</title>
+        <defs id="defs3"></defs>
+        <g id="d3"></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ 04 Workflows ============ -->
+  <section aria-labelledby="s4">
+    <div class="sec-num">04 · The Workflows</div>
+    <h2 id="s4">How Model-X orchestrates change</h2>
+    <div class="canvas">
+      <svg viewBox="0 0 1180 280" role="img" aria-labelledby="d4t">
+        <title id="d4t">Workflow: I Intent Capture, II Governance &amp; Approval, III Plan Generation, IV Execution, V Validation, VI Observe &amp; Report.</title>
+        <defs id="defs4"></defs>
+        <g id="d4"></g>
+      </svg>
+    </div>
+  </section>
+</main>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// 24-grid stroke icons
+const ICONS = {
+  send:     'M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z',
+  branch:   'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9',
+  hub:      'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  bolt:     'M13 2 3 14h9l-1 8 10-12h-9l1-8z',
+  shield:   'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4',
+  pulse:    'M22 12h-4l-3 9L9 3l-3 9H2',
+  monitor:  'M3 4h18v12H3zM8 20h8M12 16v4',
+  code:     'M16 18l6-6-6-6M8 6l-6 6 6 6',
+  clip:     'M9 2h6v4H9zM8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2M9 14l2 2 4-4',
+  approve:  'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 11l2 2 4-4',
+  lock:     'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4M12 15v2',
+  database: 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+  grid:     'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+};
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function setupDefs(defs, id) {
+  const f = el('filter', { id: `sh-${id}`, x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs);
+  el('feDropShadow', { dx: 0, dy: 8, stdDeviation: 9, 'flood-color': '#1d2130', 'flood-opacity': .16 }, f);
+}
+
+function gradient(defs, gid, c1, c2, x1, y1, x2, y2, user) {
+  const g = el('linearGradient', user
+    ? { id: gid, gradientUnits: 'userSpaceOnUse', x1, y1, x2, y2 }
+    : { id: gid, x1: 0, y1: 0, x2: 1, y2: 1 }, defs);
+  el('stop', { offset: '0%', 'stop-color': c1 }, g);
+  el('stop', { offset: '100%', 'stop-color': c2 }, g);
+  return `url(#${gid})`;
+}
+
+const R = 46;       // node radius
+const EAR = 24;     // side tab radius
+const EAR_X = 36;   // side tab offset
+
+// Hexagon with soft corners for the Model-X core
+function hexPath(r) {
+  const pts = [...Array(6)].map((_, i) => {
+    const a = Math.PI / 180 * (60 * i - 90);
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  });
+  const k = 0.2;
+  let d = '';
+  pts.forEach((p, i) => {
+    const prev = pts[(i + 5) % 6], next = pts[(i + 1) % 6];
+    const a = [p[0] + (prev[0] - p[0]) * k, p[1] + (prev[1] - p[1]) * k];
+    const b = [p[0] + (next[0] - p[0]) * k, p[1] + (next[1] - p[1]) * k];
+    d += (i ? 'L' : 'M') + a.join(',') + 'Q' + p.join(',') + ' ' + b.join(',');
+  });
+  return d + 'Z';
+}
+
+function node(svg, defs, id, n) {
+  const c1 = css(`--c-${n.color}`), c2 = css(`--c-${n.color}-2`);
+  const g = el('g', {
+    class: 'node', transform: `translate(${n.x},${n.y})`, tabindex: 0, role: 'img',
+    'aria-label': `${n.label}. ${n.sub || ''}${n.info ? '. ' + n.info : ''}`,
+  }, svg);
+  if (n.info) el('title', {}, g).textContent = n.info;
+  const body = el('g', { class: 'body' }, g);
+
+  const big = n.core ? 1.18 : 1;
+  const ears = n.ears ?? ['l', 'r'];
+  for (const s of ears) {
+    el('circle', { cx: (s === 'l' ? -1 : 1) * EAR_X * big, cy: 0, r: EAR, fill: c2, opacity: .45 }, body);
+  }
+  const fill = gradient(defs, `g-${id}-${n.key}`, c2, c1);
+  if (n.core) {
+    el('path', { d: hexPath(R * big + 4), fill, filter: `url(#sh-${id})` }, body);
+    el('path', { class: 'ring', d: hexPath(R * big + 10) }, body);
+  } else {
+    el('circle', { r: R, fill, filter: `url(#sh-${id})` }, body);
+    el('circle', { class: 'ring', r: R + 6 }, body);
+  }
+  // Inner highlight ring, as on the reference
+  el('circle', { r: R * big - 12, fill: 'none', stroke: '#fff', 'stroke-opacity': .18, 'stroke-width': 2 }, body);
+  const s = n.core ? 2.0 : 1.6;
+  el('path', {
+    d: ICONS[n.icon], transform: `translate(${-12 * s},${-12 * s}) scale(${s})`,
+    fill: 'none', stroke: '#fff', 'stroke-width': 2 / s * 1.25, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+  }, body);
+
+  // Label with number badge: below the node, or to its right when n.side is set
+  const ly = n.side ? -6 : R * big + 30;
+  const lx = n.side ? R * big + 22 : 0;
+  const t = el('text', { class: 'lbl', x: lx, y: ly, 'text-anchor': n.side ? 'start' : 'middle' }, g);
+  t.textContent = n.label;
+  if (n.num != null) {
+    const w = t.getComputedTextLength();
+    const nt = el('text', { class: 'num', y: ly - 1, 'text-anchor': 'middle' }, g);
+    nt.textContent = n.num;
+    const bw = Math.max(16, nt.getComputedTextLength() + 8);
+    // 8px between label and badge; under a node the pair is centred as one unit
+    const GAP = 8;
+    let bx;
+    if (n.side) bx = lx + w + GAP;
+    else {
+      const left = -(w + GAP + bw) / 2;
+      t.setAttribute('x', left + w / 2);
+      bx = left + w + GAP;
+    }
+    nt.setAttribute('x', bx + bw / 2);
+    g.insertBefore(el('rect', { class: 'num-bg', x: bx, y: ly - 12, width: bw, height: 15, rx: 4 }), nt);
+  }
+  if (n.sub && !n.side) {
+    const st = el('text', { class: 'sub', y: ly + 19, 'text-anchor': 'middle' }, g);
+    st.textContent = n.sub;
+  }
+  return n;
+}
+
+// Connector between two nodes, leaving from the right side tab and entering the left one
+function link(svg, defs, id, a, b, opts = {}) {
+  const ca = css(`--c-${a.color}-2`), cb = css(`--c-${b.color}-2`);
+  const ra = (a.core ? 1.18 : 1) * EAR_X + EAR + 10;
+  const rb = (b.core ? 1.18 : 1) * EAR_X + EAR + 10;
+  let x1 = a.x + ra, y1 = a.y, x2 = b.x - rb, y2 = b.y;
+  // Vertical: bottom edge of a to top edge of b (nodes without side tabs)
+  if (opts.v) {
+    x1 = a.x; x2 = b.x;
+    y1 = a.y + (a.core ? R * 1.18 + 4 : R) + 10;
+    y2 = b.y - (b.core ? R * 1.18 + 4 : R) - 10;
+  }
+  const stroke = gradient(defs, `l-${id}-${a.key}-${b.key}`, ca, cb, x1, y1, x2, y2, true);
+  let d;
+  if (Math.abs(y1 - y2) < 1) d = `M${x1},${y1} L${x2},${y2}`;
+  else {
+    const mx = (x1 + x2) / 2;
+    d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+  }
+  const p = el('path', { class: 'flow', d, stroke }, svg);
+  if (opts.delay) p.style.animationDelay = opts.delay;
+  if (opts.tag) {
+    const len = p.getTotalLength();
+    const pt = p.getPointAtLength(len * (opts.at ?? .5));
+    const tg = el('g', { class: 'tag', transform: `translate(${pt.x},${pt.y - (opts.lift ?? 18)})` }, svg);
+    const tx = el('text', { 'text-anchor': 'middle', y: 4 }, tg);
+    tx.textContent = opts.tag;
+    const w = tx.getComputedTextLength() + 16;
+    const r = el('rect', { x: -w / 2, y: -10, width: w, height: 20, rx: 10 });
+    tg.insertBefore(r, tx);
+  }
+}
+
+// Pill chip; anchor 'start' or 'middle'. Returns its width.
+function chip(svg, x, y, text, anchor = 'middle') {
+  const tg = el('g', { class: 'tag' }, svg);
+  const tx = el('text', { 'text-anchor': 'middle', y: 4 }, tg);
+  tx.textContent = text;
+  const w = tx.getComputedTextLength() + 16;
+  tg.insertBefore(el('rect', { x: -w / 2, y: -10, width: w, height: 20, rx: 10 }), tx);
+  tg.setAttribute('transform', `translate(${anchor === 'start' ? x + w / 2 : x},${y})`);
+  return w;
+}
+
+// ---------- 01 Lifecycle (overview site §1) ----------
+(() => {
+  const svg = document.getElementById('d1'), defs = document.getElementById('defs1');
+  setupDefs(defs, 1);
+  const y = 100, x0 = 92, step = 206;
+  const steps = [
+    { key: 'intent', label: 'Intent',        icon: 'send',   color: 'coral',  ears: ['r'] },
+    { key: 'wf',     label: 'Workflow',      icon: 'branch', color: 'blue' },
+    { key: 'orch',   label: 'Orchestration', icon: 'hub',    color: 'violet', core: true },
+    { key: 'exec',   label: 'Execution',     icon: 'bolt',   color: 'green' },
+    { key: 'val',    label: 'Validation',    icon: 'shield', color: 'amber' },
+    { key: 'obs',    label: 'Observe',       icon: 'pulse',  color: 'teal',   ears: ['l'] },
+  ].map((s, i) => ({ ...s, x: x0 + i * step, y, num: i + 1 }));
+  const links = el('g', {}, svg);
+  steps.forEach(s => node(svg, defs, 1, s));
+  steps.slice(1).forEach((s, i) => link(links, defs, 1, steps[i], s, { delay: `${-i * .25}s` }));
+})();
+
+// ---------- 02 Platform (overview site §3, vision statement only) ----------
+(() => {
+  const svg = document.getElementById('d2'), defs = document.getElementById('defs2');
+  setupDefs(defs, 2);
+  const GOV = 'Model-X governs requests, approvals, workflows, and automation plans.';
+  const ORCH = 'Model-X orchestrates seamlessly across inventory, execution, observability, and enterprise systems.';
+  const ys = [100, 245, 390, 535];
+  const left = [
+    { key: 'req',  label: 'Requests',         icon: 'send',    color: 'coral' },
+    { key: 'appr', label: 'Approvals',        icon: 'approve', color: 'rose' },
+    { key: 'wf',   label: 'Workflows',        icon: 'branch',  color: 'blue' },
+    { key: 'plan', label: 'Automation plans', icon: 'clip',    color: 'amber' },
+  ].map((n, i) => ({ ...n, x: 170, y: ys[i], ears: ['r'], info: GOV }));
+  const right = [
+    { key: 'inv',  label: 'Inventory',          icon: 'database', color: 'blue' },
+    { key: 'exec', label: 'Execution',          icon: 'bolt',     color: 'green' },
+    { key: 'obs',  label: 'Observability',      icon: 'pulse',    color: 'teal' },
+    { key: 'ent',  label: 'Enterprise systems', icon: 'grid',     color: 'slate' },
+  ].map((n, i) => ({ ...n, x: 1010, y: ys[i], ears: ['l'], info: ORCH }));
+  const core = { key: 'core', x: 590, y: 318, label: 'Model-X', icon: 'hub', color: 'violet', core: true,
+    // The vision statement's three means, stacked under the label
+    info: 'A unified orchestration platform that serves as the central control plane for network service lifecycle management.' };
+
+  for (const [tx, text] of [[170, 'Governs'], [1010, 'Orchestrates across']]) {
+    el('text', { class: 'layer', x: tx, y: 36, 'text-anchor': 'middle' }, svg).textContent = text;
+  }
+  const links = el('g', {}, svg);
+  [...left, core, ...right].forEach(n => node(svg, defs, 2, n));
+  ['Common framework', 'Plug-in architecture', 'Single operational interface'].forEach((t, i) => {
+    el('text', { class: 'sub', x: core.x, y: core.y + R * 1.18 + 53 + i * 17, 'text-anchor': 'middle' }, svg).textContent = t;
+  });
+  left.forEach((n, i) => link(links, defs, 2, n, core, { delay: `${-i * .3}s` }));
+  right.forEach((n, i) => link(links, defs, 2, core, n, { delay: `${-i * .3}s` }));
+})();
+
+// ---------- 03 Architecture (overview site §4) ----------
+(() => {
+  const svg = document.getElementById('d3'), defs = document.getElementById('defs3');
+  setupDefs(defs, 3);
+  const x = 500, y0 = 80, step = 160;
+  const layers = [
+    { key: 'in',   layer: 'Input',         label: 'Intent & Request',  icon: 'send',    color: 'coral',
+      parts: ['UI', 'API', 'Change-management system'] },
+    { key: 'gov',  layer: 'Governance',    label: 'Approval & Policy', icon: 'approve', color: 'rose',
+      parts: ['Credential vault', 'Change-management system', 'AAA'] },
+    { key: 'core', layer: 'Core',          label: 'Model-X Orchestration Layer', icon: 'hub', color: 'violet', core: true,
+      parts: ['Workflow Engine', 'Plan Manager', 'Plug-in Framework'] },
+    { key: 'exec', layer: 'Execution',     label: 'Execution Engine',  icon: 'bolt',    color: 'green',
+      parts: ['Multi-vendor', 'Parallel', 'Controlled'] },
+    { key: 'val',  layer: 'Validation',    label: 'Pre / Post Checks & Automated Test Suites', icon: 'shield', color: 'amber',
+      parts: ['Automated', 'Embedded', 'Auditable'] },
+    { key: 'obs',  layer: 'Observability', label: 'Observe / AIOps', icon: 'pulse', color: 'teal',
+      parts: ['Real-time', 'Alerting', 'Reporting'] },
+  ].map((l, i) => ({ ...l, x, y: y0 + i * step, num: i + 1, ears: [], side: true, sub: l.parts.join(' · ') }));
+
+  // Integrated systems: four cards on the page, no connections drawn; text is the cards' own
+  const sys = [
+    { key: 's-inv',  label: 'Network inventory system', sub: 'Inventory',  icon: 'database', color: 'blue',
+      info: 'Single centralised system of record for network inventory, instantiated and kept live by Model-X workflows.' },
+    { key: 's-exec', label: 'Execution engine',         sub: 'Execution',  icon: 'bolt',     color: 'green',
+      info: 'The execution engine. Receives the plan from Model-X, executes multi-vendor config changes at scale in parallel.' },
+    { key: 's-chg',  label: 'Change-management system', sub: 'Governance', icon: 'clip',     color: 'rose',
+      info: 'Integrated change management and approval workflows, automated and parallel — no manual handoffs.' },
+    { key: 's-vault', label: 'Credential vault',        sub: 'Security',   icon: 'lock',     color: 'slate',
+      info: 'Centralised credential management. Every device interaction is authenticated without embedding credentials.' },
+  ].map((s, i) => ({ ...s, x: 230 + i * 240, y: 1110 }));
+  el('text', { class: 'sys-head', x: 590, y: 1010, 'text-anchor': 'middle' }, svg).textContent = 'Integrated systems';
+  sys.forEach(s => node(svg, defs, 3, s));
+
+  const links = el('g', {}, svg);
+  layers.forEach(l => {
+    const ey = el('text', { class: 'layer', x: x - R - 24, y: l.y + 4, 'text-anchor': 'end' }, svg);
+    ey.textContent = l.layer;
+    node(svg, defs, 3, l);
+    let cx = x + R * (l.core ? 1.18 : 1) + 22;
+    l.parts.forEach(p => { cx += chip(svg, cx, l.y + 18, p, 'start') + 8; });
+  });
+  layers.slice(1).forEach((l, i) => link(links, defs, 3, layers[i], l, { v: true, delay: `${-i * .25}s` }));
+})();
+
+// ---------- 04 Workflows (overview site §5) ----------
+(() => {
+  const svg = document.getElementById('d4'), defs = document.getElementById('defs4');
+  setupDefs(defs, 4);
+  const y = 90, x0 = 104, step = 194;
+  // The page lists the stages in order with their tags; no return paths are drawn
+  const stages = [
+    { key: 'cap',  num: 'I',   label: 'Intent Capture',          icon: 'send',    color: 'coral',  ears: ['r'],
+      tags: ['UI', 'REST API', 'Change-management system'],
+      info: 'The operator or automated system submits an intent — a desired state or change request — through the Model-X UI, API, or change-management integration.' },
+    { key: 'gov',  num: 'II',  label: 'Governance & Approval',   icon: 'approve', color: 'rose',
+      tags: ['Change request', 'Credential vault', 'Policy Engine'],
+      info: 'Model-X raises automated change requests, routes for parallel approval, validates credentials via the credential vault, and enforces policy gates before any execution is permitted.' },
+    { key: 'plan', num: 'III', label: 'Plan Generation',         icon: 'branch',  color: 'violet', core: true,
+      tags: ['Workflow Engine', 'Inventory system', 'Config Templates'],
+      info: "Model-X's workflow engine generates an execution plan — platform-specific configuration intent, device targeting, sequencing, HA considerations, and rollback steps." },
+    { key: 'exec', num: 'IV',  label: 'Execution',               icon: 'bolt',    color: 'green',
+      tags: ['Execution engine', 'Multi-vendor SSH/API', 'Bulk Execution'],
+      info: 'The plan is dispatched to the execution engine, which executes multi-vendor device changes in parallel with controlled blast radius, retry logic, and real-time progress tracking.' },
+    { key: 'val',  num: 'V',   label: 'Validation',              icon: 'shield',  color: 'amber',
+      tags: ['Pre/Post Checks', 'Automated test suites', 'Auto-rollback'],
+      info: 'Post-change checks and automated test suites execute automatically. Failed validations trigger automated rollback to the last known good state.' },
+    { key: 'obs',  num: 'VI',  label: 'Observe & Report',        icon: 'pulse',   color: 'teal',   ears: ['l'],
+      tags: ['Observe/AIOps', 'Inventory sync', 'Audit Trail'],
+      info: 'All workflow outcomes, audit trails, and operational metrics flow into the Observe/AIOps platform. Inventory in the inventory system is updated. Stakeholders receive automated reports.' },
+  ].map((s, i) => ({ ...s, x: x0 + i * step, y }));
+
+  const links = el('g', {}, svg);
+  stages.forEach(s => {
+    node(svg, defs, 4, s);
+    s.tags.forEach((t, j) => chip(svg, s.x, y + R + 66 + j * 26, t));
+  });
+  stages.slice(1).forEach((s, i) => link(links, defs, 4, stages[i], s, { delay: `${-i * .25}s` }));
+})();
+</script>
+</body>
+</html>
