@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model-X · Tenable Integration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Model-X colour tokens, Alias mode "Tweaked" */
+:root{
+  --surface-default:#FFFFFF; --surface-canvas:#F7F9FA; --surface-muted:#F0F3F5;
+  --surface-brand:#00395D; --surface-brand-subtle:#F3F8FC; --surface-brand-interactive:#0A75B8;
+  --content-primary:#18232A; --content-secondary:#414E57; --content-tertiary:#5D6B75; --content-disabled:#7B8993;
+  --content-brand:#0A75B8; --content-brand-strong:#00395D;
+  --border-subtle:#F0F3F5; --border-default:#E1E6E9; --border-strong:#C9D1D6; --border-hover:#7B8993; --border-focus:#0A75B8;
+  --action-primary:#00395D; --action-primary-hover:#002C47;
+  --nav-bg:#0C151B; --nav-hover:#18232A; --nav-selected:#00395D;
+  --nav-content:#C9D1D6; --nav-icon:#A2ADB5; --nav-muted:#7B8993;
+  --success-surface:#F1FDF6; --success-border:#CFE7D7; --success-content:#107E3E;
+  --warning-surface:#FFF9EB; --warning-border:#FBDB8D; --warning-content:#A06500;
+  --danger-surface:#FCEDEC;  --danger-border:#FFC1C0;  --danger-content:#D1242F;
+  --info-surface:#F5FAFF;    --info-border:#D6E6F7;    --info-content:#0A6ED1;
+  --neutral-border:#C9D1D6;  --neutral-content:#414E57;
+
+  --ui:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r-sm:6px; --r:10px;
+  --shadow:0 1px 2px rgba(12,21,27,.04),0 1px 3px rgba(12,21,27,.03);
+  --gutter:32px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--ui);font-size:13px;line-height:20px;color:var(--content-primary);background:var(--surface-canvas);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+svg{flex:none}
+.ico{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ico.s{width:14px;height:14px}
+.ico.xs{width:12px;height:12px;stroke-width:2}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- Shell ---------- */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);height:100vh}
+.side{background:var(--nav-bg);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:10px;height:64px;padding:0 24px}
+.brand-mark{width:28px;height:28px;border-radius:7px;background:#fff;color:var(--surface-brand);display:grid;place-items:center;font-weight:700;font-size:13px;letter-spacing:-.3px}
+.brand-name{color:#fff;font-weight:600;font-size:15px;letter-spacing:-.1px}
+.nav{flex:1;overflow:auto;padding:8px 12px 16px}
+.nav-label{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--nav-muted);padding:20px 12px 8px}
+.nav a{display:flex;align-items:center;gap:12px;height:36px;padding:0 12px;margin-bottom:2px;border-radius:var(--r-sm);color:var(--nav-content);text-decoration:none;font-size:13px;font-weight:500}
+.nav a .ico{color:var(--nav-icon)}
+.nav a:hover{background:var(--nav-hover);color:#fff}
+.nav a.on{background:var(--nav-selected);color:#fff}
+.nav a.on .ico{color:#fff}
+.nav .count{margin-left:auto;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--nav-hover);color:var(--nav-content);font-size:11px;font-weight:600;display:grid;place-items:center}
+.nav a.on .count{background:var(--surface-brand-interactive);color:#fff}
+.side-foot{padding:16px 24px;font-size:11px;line-height:16px;color:var(--nav-muted);border-top:1px solid var(--nav-hover)}
+
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 var(--gutter);background:var(--surface-canvas);border-bottom:1px solid var(--border-default)}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--content-tertiary)}
+.crumb .sep{color:var(--border-strong)}
+.crumb b{color:var(--content-primary);font-weight:500}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:4px}
+.gsearch{display:flex;align-items:center;gap:8px;width:300px;height:36px;padding:0 12px;margin-right:8px;border:1px solid var(--border-default);border-radius:var(--r-sm);background:#fff;color:var(--content-disabled);font-size:13px}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-sm);border:0;background:transparent;display:grid;place-items:center;color:var(--content-tertiary);cursor:pointer}
+.icon-btn:hover{background:var(--surface-muted);color:var(--content-primary)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--surface-brand);color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center;margin-left:8px}
+
+.content{flex:1;overflow:auto}
+.screen{display:none;max-width:1400px;margin:0 auto;padding:32px var(--gutter) 40px}
+.screen.on{display:block}
+.statusbar{height:32px;flex:none;display:flex;align-items:center;gap:24px;padding:0 var(--gutter);border-top:1px solid var(--border-default);background:var(--surface-default);font-size:12px;color:var(--content-tertiary)}
+.statusbar .r{margin-left:auto;display:flex;gap:24px}
+.statusbar .ok{color:var(--success-content);font-weight:500}
+.live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--success-content);margin:0 6px 1px 6px;vertical-align:middle}
+
+/* ---------- Page header ---------- */
+.ph{display:flex;align-items:flex-start;gap:32px;margin-bottom:24px}
+.ph h1{margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-.02em}
+.ph p{margin:6px 0 0;max-width:760px;color:var(--content-tertiary);font-size:14px;line-height:22px}
+.ph-actions{margin-left:auto;display:flex;gap:8px;padding-top:2px}
+.chips{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--content-secondary)}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip .d{width:6px;height:6px;border-radius:50%}
+.d.g{background:var(--success-content)} .d.b{background:var(--info-content)}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:32px;padding:0 12px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:#fff;color:#29353D;font-weight:500;font-size:13px;white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface-canvas);border-color:var(--border-hover)}
+.btn .ico{color:var(--content-tertiary)}
+.btn.primary{background:var(--action-primary);border-color:var(--action-primary);color:#fff}
+.btn.primary .ico{color:#fff}
+.btn.primary:hover{background:var(--action-primary-hover)}
+.btn.tint{background:var(--surface-brand-subtle);border-color:transparent;color:var(--content-brand)}
+.btn.tint .ico{color:var(--content-brand)}
+.btn.tint:hover{background:var(--info-border)}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--content-secondary)}
+.btn.quiet:hover{background:var(--surface-muted)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn.icon{width:28px;padding:0}
+.btn.lg{height:36px;padding:0 16px}
+.btn[disabled]{cursor:default;color:var(--content-disabled);background:transparent;border-color:transparent}
+
+/* ---------- Status ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;border:1px solid;font-size:12px;font-weight:500;white-space:nowrap}
+.p-success{background:var(--success-surface);border-color:var(--success-border);color:var(--success-content)}
+.p-warning{background:var(--warning-surface);border-color:var(--warning-border);color:var(--warning-content)}
+.p-danger{background:var(--danger-surface);border-color:var(--danger-border);color:var(--danger-content)}
+.p-info{background:var(--info-surface);border-color:var(--info-border);color:var(--info-content)}
+.p-neutral{background:transparent;border-color:var(--neutral-border);color:var(--neutral-content)}
+.sev{display:inline-flex;align-items:center;gap:8px;font-weight:500;white-space:nowrap;font-size:13px}
+.sev::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.sev.crit{color:var(--danger-content)} .sev.high{color:var(--warning-content)} .sev.med{color:var(--content-tertiary)}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface-default);border:1px solid var(--border-default);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border-bottom:1px solid var(--border-subtle)}
+.card-h h2{margin:0;font-size:14px;line-height:20px;font-weight:600;letter-spacing:-.005em}
+.card-h .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.card-b{padding:20px}
+.card-f{display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;border-top:1px solid var(--border-subtle);font-size:12px;color:var(--content-tertiary)}
+.card-f .pager{margin-left:auto;display:flex;gap:4px}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.sticky{position:sticky;top:24px}
+
+/* ---------- Inputs ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.field label,.flabel{font-size:12px;font-weight:500;color:var(--content-secondary)}
+.inp,.sel,textarea.inp{height:36px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:#fff;font-size:13px;width:100%;transition:border-color .12s}
+.sel{appearance:none;padding-right:32px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235D6B75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.sel.sm{height:32px;width:auto;min-width:136px}
+textarea.inp{height:80px;padding:8px 12px;resize:vertical;line-height:20px}
+.inp:hover,.sel:hover{border-color:var(--border-hover)}
+.inp:focus,.sel:focus{outline:3px solid var(--info-border);outline-offset:0;border-color:var(--border-focus)}
+.inp::placeholder{color:var(--content-disabled)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.withbtn{display:flex;gap:8px}
+.search{position:relative}
+.search .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--content-disabled)}
+.search .inp{padding-left:34px;height:32px}
+.checklist{border:1px solid var(--border-strong);border-radius:var(--r-sm);padding:4px}
+.checklist label{display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:4px;font-size:13px;font-weight:400;color:var(--content-primary);cursor:pointer}
+.checklist label:hover{background:var(--surface-canvas)}
+input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--surface-brand-interactive);cursor:pointer}
+.switch{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--content-secondary);cursor:pointer}
+.switch input{display:none}
+.switch .t{width:32px;height:18px;border-radius:9px;background:var(--border-strong);position:relative;transition:background .15s;flex:none}
+.switch .t::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15);transition:left .15s}
+.switch input:checked + .t{background:var(--surface-brand-interactive)}
+.switch input:checked + .t::after{left:16px}
+.note{display:flex;gap:10px;padding:10px 12px;background:var(--info-surface);border:1px solid var(--info-border);border-radius:var(--r-sm);color:var(--content-secondary);font-size:12px;line-height:18px;margin-bottom:20px}
+.note .ico{color:var(--info-content);margin-top:2px}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--surface-canvas);color:var(--content-tertiary);font-size:12px;font-weight:500;text-align:left;height:40px;padding:0 12px;border-bottom:1px solid var(--border-default);white-space:nowrap}
+tbody td{height:52px;padding:0 12px;border-bottom:1px solid var(--border-subtle);vertical-align:middle;white-space:nowrap;color:var(--content-secondary)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--surface-canvas)}
+th:first-child,td:first-child{padding-left:20px}
+th:last-child,td:last-child{padding-right:20px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.pri{color:var(--content-primary);font-weight:500}
+.hash{font-family:var(--data);font-size:12px;color:var(--content-tertiary)}
+.act{display:flex;gap:4px;justify-content:flex-end}
+
+/* ---------- Overview ---------- */
+/* Validation alert, matched to Figma "Validation alert" (1102:89791) */
+.attn{display:flex;flex-direction:column;gap:8px;padding:8px 2px 2px;background:#FFEBE9;border:1px solid #FFC1C0;border-radius:12px;margin-bottom:24px;overflow:hidden}
+.attn-h{display:flex;align-items:center;gap:8px;padding:0 14px}
+.attn-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.attn-title{font-size:18px;line-height:24px;font-weight:700;color:var(--content-primary)}
+.attn-sum{display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;font-weight:500;text-transform:uppercase;color:#A3313E;white-space:nowrap}
+.attn-sum .sep{font-weight:400}
+.attn-btn{height:32px;padding:0 12px;border-radius:5px;font-size:13px}
+.attn-body{display:flex;gap:8px;align-items:stretch;background:#fff;border-radius:10px;padding:12px 14px}
+.attn-rule{width:4px;flex:none;border-radius:999px;background:#C43D4B}
+.attn-body p{margin:0;font-size:14px;line-height:20px;color:var(--content-primary)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.kpi,.stat{padding:16px 20px;display:flex;flex-direction:column}
+.kpi .l,.stat .l{font-size:12px;line-height:16px;font-weight:500;color:var(--content-tertiary)}
+.kv{display:flex;align-items:baseline;gap:10px;margin-top:6px;min-width:0}
+.kpi .v,.stat .v{font-size:24px;line-height:32px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.v small{font-size:14px;line-height:1;font-weight:500;color:var(--content-tertiary);margin-left:1px;letter-spacing:0}
+.kpi .v,.stat .v{height:32px}
+.kpi .h,.stat .s{font-size:12px;line-height:16px;color:var(--content-tertiary);min-width:0}
+.kpi .bar{height:3px;margin-top:auto;flex:none}
+.kpi .kv{flex-direction:column;align-items:flex-start;gap:2px;margin:4px 0 12px}
+.kpi .h{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bar{height:4px;border-radius:2px;background:var(--surface-muted);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px;background:var(--surface-brand-interactive)}
+.bar i.g{background:var(--success-content)} .bar i.r{background:var(--danger-content)} .bar i.a{background:var(--warning-content)}
+
+.pipe{display:flex;align-items:center;padding:0 24px;height:80px}
+.ps{display:flex;align-items:center;gap:10px;flex:none}
+.ps .c{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;border:1.5px solid var(--border-strong);color:var(--content-tertiary);background:#fff}
+.ps.done .c{background:var(--success-content);border-color:var(--success-content);color:#fff}
+.ps.cur .c{background:var(--surface-brand-interactive);border-color:var(--surface-brand-interactive);color:#fff;box-shadow:0 0 0 4px var(--info-border)}
+.ps .n{font-size:13px;font-weight:500;line-height:18px}
+.ps .s{font-size:12px;line-height:16px;color:var(--content-tertiary)}
+.ps.cur .s{color:var(--content-brand);font-weight:500}
+.ps.pend .n{color:var(--content-secondary)}
+.pl{flex:1;height:1.5px;background:var(--border-default);margin:0 16px;min-width:16px}
+.pl.done{background:var(--success-content)}
+
+.tl{list-style:none;margin:0;padding:12px 20px 16px}
+.tl li{position:relative;display:grid;grid-template-columns:18px 1fr;gap:12px;padding:10px 0}
+.tl li::before{content:"";position:absolute;left:8.25px;top:34px;bottom:-8px;width:1.5px;background:var(--border-default)}
+.tl li:last-child::before{display:none}
+.tl li.done::before{background:var(--success-border)}
+.tl .m{width:18px;height:18px;margin-top:1px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--border-strong);color:var(--content-disabled);background:#fff}
+.tl .m .ico{width:10px;height:10px}
+.tl li.done .m{background:var(--success-content);border-color:var(--success-content);color:#fff}
+.tl li.cur .m{background:var(--surface-brand-interactive);border-color:var(--surface-brand-interactive);color:#fff}
+.tl .t{font-size:13px;font-weight:500;line-height:20px}
+.tl li.pend .t{color:var(--content-secondary)}
+.tl .w{font-size:12px;line-height:16px;color:var(--content-disabled)}
+.tl li.cur .w{color:var(--content-brand)}
+.tl .x{font-size:12px;line-height:18px;color:var(--content-tertiary);margin-top:4px}
+
+/* ---------- Groups ---------- */
+.tabs{display:flex;align-items:center;gap:24px;border-bottom:1px solid var(--border-default)}
+.tabs .search{margin-left:auto;width:240px;min-width:160px;flex:0 1 240px}
+.tab{display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none;height:44px;padding:0 2px;border:0;background:none;color:var(--content-tertiary);font-weight:500;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--content-primary)}
+.tab.on{color:var(--content-primary);border-bottom-color:var(--content-brand)}
+.tab .k{min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--surface-muted);font-size:11px;font-weight:600;display:grid;place-items:center;color:var(--content-tertiary)}
+.tab.on .k{background:var(--surface-brand-interactive);color:#fff}
+
+/* Device group list (Option A, refined) */
+.dg-head,.dg-row{display:grid;grid-template-columns:minmax(200px,1.6fr) 72px 60px minmax(112px,.8fr) minmax(164px,1fr);column-gap:24px;align-items:center}
+.dg-head{height:40px;padding:0 20px;margin-top:8px;font-size:12px;font-weight:500;color:var(--content-tertiary)}
+.dg-head .h-id{padding-left:15px}
+.dg-n{text-align:right;font-variant-numeric:tabular-nums}
+.dg-list{display:flex;flex-direction:column;gap:8px}
+.dg{background:var(--surface-default);border:1px solid var(--border-default);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.dg:hover{border-color:var(--border-strong);box-shadow:0 2px 6px rgba(12,21,27,.06),0 1px 2px rgba(12,21,27,.04)}
+.dg-row{padding:14px 20px}
+.dg-id{display:flex;align-items:stretch;gap:12px;min-width:0}
+.dg-rule{width:3px;flex:none;border-radius:999px}
+.dg.crit .dg-rule{background:var(--danger-content)} .dg.high .dg-rule{background:var(--warning-content)}
+.dg-name{min-width:0}
+.dg-title{display:flex;align-items:center;gap:10px;min-width:0}
+.dg-title b{font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dg-meta{display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;color:var(--content-tertiary);margin-top:3px;white-space:nowrap}
+.dg-meta .sev{font-size:12px;gap:6px}
+.dg-meta .sev::before{width:6px;height:6px;border-radius:50%}
+.dg-meta .dot{color:var(--content-disabled)}
+.dg-row .dg-n{font-size:14px;line-height:20px;font-weight:500;color:var(--content-primary)}
+.dg-ver{display:flex;align-items:baseline;gap:6px;white-space:nowrap;font-size:13px;line-height:20px}
+.dg-ver .from{color:var(--content-tertiary)}
+.dg-ver .arr{color:var(--content-disabled);font-size:12px}
+.dg-ver .to{color:var(--content-primary);font-weight:600}
+.dg-img{min-width:0}
+.dg-file{display:inline-flex;align-items:center;gap:8px;max-width:100%;font-size:13px;font-weight:500;color:var(--content-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dg-ok{width:16px;height:16px;flex:none;border-radius:50%;background:var(--success-surface);border:1px solid var(--success-border);color:var(--success-content);display:grid;place-items:center}
+.dg-ok .ico{width:9px;height:9px}
+.dg-foot{display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 20px 6px 35px;background:var(--surface-canvas);border-top:1px solid var(--border-subtle)}
+.dg-foot .bar{width:88px;flex:none;height:3px;background:var(--border-default)}
+.dg-detail{font-size:12px;line-height:16px;color:var(--content-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dg-acts{margin-left:auto;display:flex;align-items:center;gap:4px;flex:none}
+
+/* Pipeline activity: third column of the shell */
+.app.with-activity{grid-template-columns:240px minmax(0,1fr) 360px}
+.activity{display:flex;flex-direction:column;min-height:0;z-index:30;background:var(--surface-default);border-left:1px solid var(--border-default);animation:actIn .22s cubic-bezier(.2,.8,.2,1)}
+.activity[hidden]{display:none}
+@keyframes actIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.act-h{height:64px;flex:none;display:flex;align-items:center;padding:0 16px 0 24px;border-bottom:1px solid var(--border-default)}
+.act-h h2{margin:0;font-size:14px;line-height:20px;font-weight:600}
+.act-h .icon-btn{margin-left:auto}
+.act-b{flex:1;overflow:auto}
+.act-b .tl{padding:16px 24px 24px}
+.statusbar,.statusbar .r{white-space:nowrap}
+@media (max-width:1439px){
+  .app.with-activity{grid-template-columns:240px minmax(0,1fr)}
+  .activity{position:fixed;top:0;right:0;bottom:0;width:360px;box-shadow:-8px 0 32px rgba(12,21,27,.14)}
+}
+#act-toggle[aria-expanded="true"]{background:var(--surface-brand-subtle);border-color:var(--info-border);color:var(--content-brand)}
+#act-toggle[aria-expanded="true"] .ico{color:var(--content-brand)}
+.content{container-type:inline-size}
+@container (max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pipe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:auto;padding:16px 24px;row-gap:16px}
+  .pipe .pl{display:none}
+}
+
+/* Create / edit drawer */
+.scrim{position:fixed;inset:0;background:rgba(12,21,27,.5);opacity:0;transition:opacity .2s;z-index:40}
+.scrim.on{opacity:1}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;background:var(--surface-default);display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),visibility 0s linear .25s;z-index:50}
+.drawer.on{transform:none;visibility:visible;box-shadow:-8px 0 32px rgba(12,21,27,.16);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.dr-h{display:flex;align-items:flex-start;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border-default)}
+.dr-h h2{margin:0;font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.01em}
+.dr-sub{font-size:12px;line-height:16px;color:var(--content-tertiary);margin-top:2px}
+.dr-h .icon-btn{margin-left:auto;margin-top:-6px;margin-right:-8px}
+.dr-b{flex:1;overflow:auto;padding:20px 24px 24px}
+.dr-sec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--content-tertiary);margin:4px 0 12px}
+.dr-sec ~ .dr-sec{margin-top:24px;padding-top:20px;border-top:1px solid var(--border-subtle)}
+.dr-f{display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-default);background:var(--surface-default)}
+.tab:focus-visible,.btn:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.tab:focus:not(:focus-visible){outline:none}
+.form-actions{display:flex;gap:8px;margin-top:24px}
+.form-actions .primary{flex:1}
+
+/* ---------- Images ---------- */
+.stack{display:flex;flex-direction:column;gap:24px}
+.stats3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.stat .stat-top{display:flex;align-items:center;justify-content:space-between;height:16px}
+.stat .lnk{font-size:12px;font-weight:500;color:var(--content-brand);background:none;border:0;padding:0;cursor:pointer}
+.stat .lnk:hover{color:var(--content-brand-strong)}
+.linkgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:end}
+.linkact{display:flex;flex-direction:column;gap:16px}
+
+@media (max-width:1439px){
+}
+@media (max-width:1280px){
+  .split{grid-template-columns:minmax(0,1fr)}
+  .sticky{position:static}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pipe{overflow-x:auto}
+}
+@media (max-width:900px){
+  :root{--gutter:16px}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side,.gsearch,.statusbar{display:none}
+  .screen{padding-top:20px}
+  .ph{flex-direction:column;gap:16px}
+  .ph-actions{margin-left:0;flex-wrap:wrap}
+  .stats3,.linkgrid{grid-template-columns:1fr}
+  .tabs{flex-wrap:wrap;gap:16px}
+  .tabs .search{width:100%;margin:8px 0}
+  .dg-head{display:none}
+  .dg-row{grid-template-columns:1fr 1fr;row-gap:8px}
+  .dg-id{grid-column:1/-1}
+  .dg-n{text-align:left}
+  .dg-foot{flex-wrap:wrap;padding-left:20px}
+}
+@media (max-width:560px){ .kpis{grid-template-columns:1fr} .row2{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+    <symbol id="i-track" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-devices" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/><path d="M6.5 9v3a3 3 0 0 0 3 3H14"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V8M6 13l6-6 6 6M5 4h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-badge" viewBox="0 0 24 24"><path d="M12 3l2.4 1.8 3-.2.9 2.9 2.5 1.7-1 2.8 1 2.8-2.5 1.7-.9 2.9-3-.2L12 21l-2.4-1.8-3 .2-.9-2.9-2.5-1.7 1-2.8-1-2.8 2.5-1.7.9-2.9 3 .2z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M3 21v-5h5M21 3v5h-5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M8 3v5h7M8 21v-7h8v7"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="brand-mark">M</div><div class="brand-name">Model-X</div></div>
+    <nav class="nav" id="nav">
+      <a href="#"><svg class="ico"><use href="#i-home"/></svg>Home</a>
+      <a href="#"><svg class="ico"><use href="#i-track"/></svg>Track Requests</a>
+      <a href="#"><svg class="ico"><use href="#i-devices"/></svg>Devices</a>
+      <div class="nav-label">Tenable integration</div>
+      <a href="#overview" data-screen="overview"><svg class="ico"><use href="#i-shield"/></svg>Tenable Overview<span class="count">12</span></a>
+      <a href="#groups" data-screen="groups"><svg class="ico"><use href="#i-layers"/></svg>Device Groups</a>
+      <a href="#images" data-screen="images"><svg class="ico"><use href="#i-box"/></svg>Nexus Images</a>
+      <a href="#"><svg class="ico"><use href="#i-flow"/></svg>Automation Plan</a>
+      <a href="#"><svg class="ico"><use href="#i-play"/></svg>Workflow Execution</a>
+      <div class="nav-label">Platform</div>
+      <a href="#"><svg class="ico"><use href="#i-gear"/></svg>Config Manager</a>
+    </nav>
+    <div class="side-foot">Model-X v2.4.1<br>Tenable Plugin v1.0</div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb">Model-X <span class="sep">/</span> <b id="crumb">Tenable Overview</b></div>
+      <div class="top-right">
+        <div class="gsearch"><svg class="ico"><use href="#i-search"/></svg>Search devices, CVEs, plans</div>
+        <button class="icon-btn" aria-label="Notifications"><svg class="ico" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>
+        <button class="icon-btn" aria-label="Help"><svg class="ico" style="width:18px;height:18px"><use href="#i-help"/></svg></button>
+        <div class="avatar">EN</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+<!-- ============ TENABLE OVERVIEW ============ -->
+<section class="screen" id="scr-overview">
+  <div class="ph">
+    <div>
+      <h1>Tenable Patching Integration</h1>
+      <p>Model-X connects to Tenable.sc / Tenable.io to ingest live vulnerability data, group affected devices, map certified patch images from Nexus, and orchestrate automated remediation workflows end-to-end.</p>
+      <div class="chips">
+        <span class="chip"><span class="d g"></span>Tenable API Active</span>
+        <span class="chip"><span class="d g"></span>Nexus Linked</span>
+        <span class="chip"><span class="d b"></span>Auto-Plan Enabled</span>
+        <span class="chip"><svg class="ico xs" style="color:var(--content-tertiary)"><use href="#i-sync"/></svg>Sync: Every 15 min</span>
+      </div>
+    </div>
+    <div class="ph-actions">
+      <button class="btn lg"><svg class="ico"><use href="#i-gear"/></svg>Configure</button>
+      <button class="btn lg primary"><svg class="ico"><use href="#i-flow"/></svg>View Plans</button>
+    </div>
+  </div>
+
+  <div class="attn" role="region" aria-label="Action required">
+    <div class="attn-h">
+      <div class="attn-t">
+        <div class="attn-title">Action Required</div>
+        <div class="attn-sum"><span>89 devices</span><span class="sep">•</span><span>Critical severity</span></div>
+      </div>
+      <button class="btn attn-btn">Review now</button>
+    </div>
+    <div class="attn-body">
+      <span class="attn-rule" aria-hidden="true"></span>
+      <p>89 devices have critical severity vulnerabilities requiring immediate patch assignment.</p>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi"><div class="l">Total Devices</div><div class="kv"><div class="v">847</div><div class="h">Discovered via Tenable scan</div></div><div class="bar"><i style="width:100%"></i></div></div>
+    <div class="card kpi"><div class="l">Critical CVEs</div><div class="kv"><div class="v">143</div><div class="h">Across 89 devices · CVSS ≥ 9.0</div></div><div class="bar"><i class="r" style="width:60%"></i></div></div>
+    <div class="card kpi"><div class="l">Patch Coverage</div><div class="kv"><div class="v">68<small>%</small></div><div class="h">576 / 847 devices patched</div></div><div class="bar"><i class="g" style="width:68%"></i></div></div>
+    <div class="card kpi"><div class="l">Automation Plans</div><div class="kv"><div class="v">7</div><div class="h">3 active · 4 scheduled</div></div><div class="bar"><i class="a" style="width:43%"></i></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-h"><h2>End-to-End Patching Pipeline</h2><div class="tools"><button class="btn sm" id="act-toggle" aria-expanded="false" aria-controls="activity"><svg class="ico s"><use href="#i-pulse"/></svg>Pipeline Activity</button></div></div>
+    <div class="pipe">
+      <div class="ps done"><div class="c"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg></div><div><div class="n">Tenable Scan</div><div class="s">Ingest CVEs</div></div></div>
+      <div class="pl done"></div>
+      <div class="ps done"><div class="c"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg></div><div><div class="n">Device Discovery</div><div class="s">847 devices</div></div></div>
+      <div class="pl done"></div>
+      <div class="ps cur"><div class="c">3</div><div><div class="n">Group &amp; Classify</div><div class="s">In Progress</div></div></div>
+      <div class="pl"></div>
+      <div class="ps pend"><div class="c">4</div><div><div class="n">Nexus Images</div><div class="s">Pending</div></div></div>
+      <div class="pl"></div>
+      <div class="ps pend"><div class="c">5</div><div><div class="n">Auto Plan</div><div class="s">Pending</div></div></div>
+      <div class="pl"></div>
+      <div class="ps pend"><div class="c">6</div><div><div class="n">Execute</div><div class="s">Pending</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+      <div class="card-h">
+        <h2>Top Vulnerabilities from Tenable</h2>
+        <div class="tools">
+          <div class="search" style="width:200px"><svg class="ico"><use href="#i-search"/></svg><input class="inp" placeholder="CVE ID…"></div>
+          <button class="btn"><svg class="ico"><use href="#i-sync"/></svg>Sync</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th style="width:36px"><input type="checkbox" aria-label="Select all"></th><th>CVE ID</th><th>Severity</th><th class="num">CVSS</th><th class="num">Affected Devices</th><th>OS Type</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-21762</td><td><span class="sev crit">Critical</span></td><td class="num pri">9.8</td><td class="num">34</td><td>FortiOS</td><td><span class="pill p-neutral">Unpatched</span></td><td><div class="act"><button class="btn sm tint">Assign</button></div></td></tr>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-47575</td><td><span class="sev crit">Critical</span></td><td class="num pri">9.8</td><td class="num">18</td><td>FortiOS</td><td><span class="pill p-neutral">Unpatched</span></td><td><div class="act"><button class="btn sm tint">Assign</button></div></td></tr>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-55591</td><td><span class="sev high">High</span></td><td class="num pri">8.1</td><td class="num">22</td><td>TMOS</td><td><span class="pill p-warning">In Review</span></td><td><div class="act"><button class="btn sm">View</button></div></td></tr>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-45844</td><td><span class="sev high">High</span></td><td class="num pri">7.5</td><td class="num">15</td><td>F5OS</td><td><span class="pill p-success">Patched</span></td><td><div class="act"><button class="btn sm" disabled>Done</button></div></td></tr>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-36401</td><td><span class="sev med">Medium</span></td><td class="num pri">6.3</td><td class="num">41</td><td>TMOS</td><td><span class="pill p-info">Scheduled</span></td><td><div class="act"><button class="btn sm">Track</button></div></td></tr>
+            <tr><td><input type="checkbox"></td><td class="pri">CVE-2024-38094</td><td><span class="sev high">High</span></td><td class="num pri">7.8</td><td class="num">9</td><td>F5OS</td><td><span class="pill p-neutral">Unpatched</span></td><td><div class="act"><button class="btn sm tint">Assign</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-f"><span>Showing <b style="color:var(--content-primary);font-weight:500">6</b> of 143 vulnerabilities</span><div class="pager"><button class="btn sm quiet"><svg class="ico s"><use href="#i-left"/></svg>Prev</button><button class="btn sm quiet">Next<svg class="ico s"><use href="#i-right"/></svg></button></div></div>
+    </div>
+
+</section>
+
+<!-- ============ DEVICE GROUPS ============ -->
+<section class="screen" id="scr-groups">
+  <div class="ph">
+    <div>
+      <h1>Device Groups &amp; Certified Versions</h1>
+      <p>Model-X automatically classifies devices from Tenable by OS type, firmware version, and vulnerability severity. Engineering attaches certified patch images from Nexus to each group.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn lg"><svg class="ico"><use href="#i-down"/></svg>Export Groups</button>
+      <button class="btn lg"><svg class="ico"><use href="#i-link"/></svg>Link Nexus Images</button>
+      <button class="btn lg primary"><svg class="ico"><use href="#i-spark"/></svg>Auto-Classify Devices</button>
+    </div>
+  </div>
+
+  <div>
+      <div class="tabs" id="gtabs">
+        <button class="tab on">All Groups <span class="k">7</span></button>
+        <button class="tab">FortiOS <span class="k">2</span></button>
+        <button class="tab">TMOS <span class="k">2</span></button>
+        <button class="tab">F5OS <span class="k">2</span></button>
+        <button class="tab">Other <span class="k">1</span></button>
+        <div class="search"><svg class="ico"><use href="#i-search"/></svg><input class="inp" placeholder="Search groups…"></div>
+        <button class="btn" data-create><svg class="ico"><use href="#i-plus"/></svg>Create Group</button>
+      </div>
+      <div class="dg-head" aria-hidden="true"><span class="h-id">Group</span><span class="dg-n">Devices</span><span class="dg-n">CVEs</span><span>OS Version</span><span>Nexus Image</span></div>
+      <div class="dg-list">
+        <article class="dg crit">
+          <div class="dg-row">
+            <div class="dg-id"><span class="dg-rule" aria-hidden="true"></span><div class="dg-name"><div class="dg-title"><b>FortiOS-Critical-Group-01</b></div><div class="dg-meta"><span class="sev crit">Critical</span><span class="dot">·</span>FortiOS · Zone: DMZ</div></div></div>
+            <div class="dg-n">34</div>
+            <div class="dg-n">52</div>
+            <div class="dg-ver"><span class="from">7.2.x</span><span class="arr">→</span><span class="to">7.4.x</span></div>
+            <div class="dg-img"><span class="pill p-danger"><svg class="ico xs"><use href="#i-alert"/></svg>Not Linked</span></div>
+          </div>
+          <div class="dg-foot"><div class="bar"><i class="" style="width:0"></i></div><span class="dg-detail">CVEs: CVE-2024-21762, CVE-2024-47575 (+50 more)</span><div class="dg-acts"><button class="btn sm quiet" data-edit='{"name":"FortiOS-Critical-Group-01","os":"FortiOS","sev":"Critical","zone":"DMZ","img":""}'><svg class="ico s"><use href="#i-pen"/></svg>Edit</button><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link Image</button></div></div>
+        </article>
+        <article class="dg high">
+          <div class="dg-row">
+            <div class="dg-id"><span class="dg-rule" aria-hidden="true"></span><div class="dg-name"><div class="dg-title"><b>FortiOS-High-Group-02</b></div><div class="dg-meta"><span class="sev high">High</span><span class="dot">·</span>FortiOS · Zone: Internal</div></div></div>
+            <div class="dg-n">18</div>
+            <div class="dg-n">27</div>
+            <div class="dg-ver"><span class="from">7.0.x</span><span class="arr">→</span><span class="to">7.2.x</span></div>
+            <div class="dg-img"><span class="dg-file"><span class="dg-ok"><svg class="ico xs" style="stroke-width:2.6"><use href="#i-check"/></svg></span>fortios-7.4.3.tar</span></div>
+          </div>
+          <div class="dg-foot"><div class="bar"><i class="a" style="width:45%"></i></div><span class="dg-detail">Image linked by: eng-team · Verified: 2026-11-04</span><div class="dg-acts"><button class="btn sm quiet" data-edit='{"name":"FortiOS-High-Group-02","os":"FortiOS","sev":"High","zone":"Internal","img":"fortios-7.4.3.tar"}'><svg class="ico s"><use href="#i-pen"/></svg>Edit</button><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link Image</button></div></div>
+        </article>
+        <article class="dg high">
+          <div class="dg-row">
+            <div class="dg-id"><span class="dg-rule" aria-hidden="true"></span><div class="dg-name"><div class="dg-title"><b>TMOS-High-Group-01</b></div><div class="dg-meta"><span class="sev high">High</span><span class="dot">·</span>BIG-IP TMOS · Zone: LTM</div></div></div>
+            <div class="dg-n">22</div>
+            <div class="dg-n">31</div>
+            <div class="dg-ver"><span class="from">15.1.x</span><span class="arr">→</span><span class="to">16.1.x</span></div>
+            <div class="dg-img"><span class="dg-file"><span class="dg-ok"><svg class="ico xs" style="stroke-width:2.6"><use href="#i-check"/></svg></span>TMOS-16.1.5.hf2.iso</span></div>
+          </div>
+          <div class="dg-foot"><div class="bar"><i class="g" style="width:80%"></i></div><span class="dg-detail">Plan generated · Execution: Scheduled 2026-11-08</span><div class="dg-acts"><button class="btn sm quiet" data-edit='{"name":"TMOS-High-Group-01","os":"TMOS","sev":"High","zone":"LTM","img":"TMOS-16.1.5.hf2.iso"}'><svg class="ico s"><use href="#i-pen"/></svg>Edit</button><span class="pill p-success"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg>Image Linked</span></div></div>
+        </article>
+      </div>
+  </div>
+</section>
+
+<!-- ============ NEXUS IMAGES ============ -->
+<section class="screen" id="scr-images">
+  <div class="ph">
+    <div>
+      <h1>Nexus Image Registry</h1>
+      <p>Engineering manages certified patch images in Nexus Artifact Repository. Each image is validated, versioned, and linked to specific device groups for controlled rollout.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn lg"><svg class="ico"><use href="#i-badge"/></svg>Validate All</button>
+      <button class="btn lg"><svg class="ico"><use href="#i-link"/></svg>Link to Group</button>
+      <button class="btn lg primary"><svg class="ico"><use href="#i-up"/></svg>Upload Image</button>
+    </div>
+  </div>
+
+  <div class="stats3">
+    <div class="card stat"><div class="stat-top"><span class="l">Total Images</span><span class="pill p-info">Nexus OSS</span></div><div class="kv"><div class="v">5</div><div class="s">images · 10.4 GB</div></div></div>
+    <div class="card stat"><div class="stat-top"><span class="l">Certified</span></div><div class="kv"><div class="v">60<small>%</small></div><div class="s">3 of 5 images</div></div></div>
+    <div class="card stat"><div class="stat-top"><span class="l">Group Linkages</span><button class="lnk">View</button></div><div class="kv"><div class="v">4</div><div class="s">active bindings</div></div></div>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-h">
+        <h2>Certified Patch Images</h2>
+        <div class="tools">
+          <div class="search" style="width:240px"><svg class="ico"><use href="#i-search"/></svg><input class="inp" placeholder="Search images…"></div>
+          <select class="sel sm" id="osf" aria-label="OS type"><option value="">All OS Types</option><option>FortiOS</option><option>TMOS</option><option>F5OS</option></select>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Image Name</th><th>OS Type</th><th>Version</th><th class="num">Size</th><th>SHA256</th><th>Certified By</th><th>Status</th><th class="num">Linked Groups</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="imgrows">
+            <tr data-os="FortiOS"><td class="pri">fortios-7.4.4-build2662.tar</td><td>FortiOS</td><td>7.4.4</td><td class="num">1.2 GB</td><td class="hash">a3f9…c821</td><td>eng-team</td><td><span class="pill p-success"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg>Certified</span></td><td class="num">2</td><td><div class="act"><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link</button><button class="btn sm icon quiet" aria-label="Download"><svg class="ico s"><use href="#i-down"/></svg></button></div></td></tr>
+            <tr data-os="FortiOS"><td class="pri">fortios-7.4.3.tar</td><td>FortiOS</td><td>7.4.3</td><td class="num">1.1 GB</td><td class="hash">b7e2…9f14</td><td>eng-team</td><td><span class="pill p-success"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg>Certified</span></td><td class="num">1</td><td><div class="act"><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link</button><button class="btn sm icon quiet" aria-label="Download"><svg class="ico s"><use href="#i-down"/></svg></button></div></td></tr>
+            <tr data-os="TMOS"><td class="pri">TMOS-16.1.5.hf2.iso</td><td>TMOS</td><td>16.1.5-HF2</td><td class="num">3.4 GB</td><td class="hash">c9d1…7a33</td><td>net-eng</td><td><span class="pill p-success"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg>Certified</span></td><td class="num">1</td><td><div class="act"><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link</button><button class="btn sm icon quiet" aria-label="Download"><svg class="ico s"><use href="#i-down"/></svg></button></div></td></tr>
+            <tr data-os="F5OS"><td class="pri">F5OS-A-1.5.1-8.tgz</td><td>F5OS</td><td>1.5.1-8</td><td class="num">890 MB</td><td class="hash">d4a7…2b19</td><td>net-eng</td><td><span class="pill p-warning"><svg class="ico xs"><use href="#i-clock"/></svg>Pending</span></td><td class="num">0</td><td><div class="act"><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link</button><button class="btn sm icon quiet" aria-label="Download"><svg class="ico s"><use href="#i-down"/></svg></button></div></td></tr>
+            <tr data-os="TMOS"><td class="pri">TMOS-17.1.0.iso</td><td>TMOS</td><td>17.1.0</td><td class="num">3.8 GB</td><td class="hash">e2c3…8f76</td><td style="color:var(--content-disabled)">—</td><td><span class="pill p-danger"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-x"/></svg>Not Certified</span></td><td class="num">0</td><td><div class="act"><button class="btn sm tint"><svg class="ico s"><use href="#i-link"/></svg>Link</button><button class="btn sm icon quiet" aria-label="Download"><svg class="ico s"><use href="#i-down"/></svg></button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>Link Image to Group</h2></div>
+      <div class="card-b linkgrid">
+        <div>
+          <div class="field"><label for="l-img">Select Image</label><select id="l-img" class="sel"><option selected>fortios-7.4.4-build2662.tar</option><option>fortios-7.4.3.tar</option><option>TMOS-16.1.5.hf2.iso</option></select></div>
+          <div class="field"><label for="l-rb">Rollback Image</label><select id="l-rb" class="sel"><option selected>None</option><option>fortios-7.4.3.tar</option></select></div>
+        </div>
+        <div class="field"><span class="flabel">Target Device Group(s)</span>
+          <div class="checklist">
+            <label><input type="checkbox" checked>FortiOS-Critical-Group-01</label>
+            <label><input type="checkbox">FortiOS-High-Group-02</label>
+            <label><input type="checkbox">TMOS-High-Group-01</label>
+          </div>
+        </div>
+        <div class="linkact">
+          <label class="switch"><input type="checkbox" checked><span class="t"></span>Require rollback plan before execution</label>
+          <button class="btn primary lg" style="width:100%"><svg class="ico"><use href="#i-link"/></svg>Save Linkage</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+    </main>
+
+    <footer class="statusbar">
+      <span>Model-X Network Service Orchestration Platform</span>
+      <div class="r">
+        <span>Tenable API<span class="ok"><span class="live"></span>Connected</span></span>
+        <span>Nexus<span class="ok"><span class="live"></span>Connected</span></span>
+        <span>Last Sync: 2 min ago</span>
+      </div>
+    </footer>
+  </div>
+  <aside class="activity" id="activity" aria-label="Pipeline activity" hidden>
+    <header class="act-h"><h2>Pipeline Activity</h2><button class="icon-btn" id="act-close" aria-label="Close activity"><svg class="ico" style="width:18px;height:18px"><use href="#i-x"/></svg></button></header>
+    <div class="act-b">
+      <ul class="tl">
+        <li class="done"><div class="m"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg></div><div><div class="t">Tenable Scan Complete</div><div class="w">2 min ago · System</div><div class="x">847 devices discovered, 143 critical CVEs ingested from Tenable.sc</div></div></li>
+        <li class="done"><div class="m"><svg class="ico xs" style="stroke-width:2.5"><use href="#i-check"/></svg></div><div><div class="t">Device Enrichment Done</div><div class="w">5 min ago · System</div><div class="x">OS types, versions, and network zones mapped to all devices</div></div></li>
+        <li class="cur"><div class="m"><svg class="ico xs"><use href="#i-sync"/></svg></div><div><div class="t">Device Grouping In Progress</div><div class="w">Now · Model-X Engine</div><div class="x">Grouping by OS type, severity, zone · 3 of 7 groups classified</div></div></li>
+        <li class="pend"><div class="m"><svg class="ico xs"><use href="#i-clock"/></svg></div><div><div class="t">Nexus Image Mapping</div><div class="w">Pending</div><div class="x">Waiting for device groups · Engineering to attach certified images</div></div></li>
+        <li class="pend"><div class="m"><svg class="ico xs"><use href="#i-clock"/></svg></div><div><div class="t">Automation Plan Generation</div><div class="w">Pending</div><div class="x">Plan will be auto-generated post image mapping</div></div></li>
+        <li class="pend"><div class="m"><svg class="ico xs"><use href="#i-clock"/></svg></div><div><div class="t">Workflow Execution</div><div class="w">Pending</div><div class="x">Automated rollout pending plan approval</div></div></li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title" aria-hidden="true">
+  <header class="dr-h">
+    <div><h2 id="dr-title">Create Group</h2><div class="dr-sub" id="dr-sub">New device group</div></div>
+    <button class="icon-btn" data-close aria-label="Close"><svg class="ico" style="width:18px;height:18px"><use href="#i-x"/></svg></button>
+  </header>
+  <div class="dr-b">
+    <div class="note"><svg class="ico s"><use href="#i-info"/></svg><div>Groups are auto-suggested by Model-X. You can manually adjust scope.</div></div>
+    <div class="dr-sec">Group</div>
+    <div class="field"><label for="g-name">Group Name</label><input id="g-name" class="inp"></div>
+    <div class="row2">
+      <div class="field"><label for="g-os">OS Type</label><select id="g-os" class="sel"><option>FortiOS</option><option>TMOS</option><option>F5OS</option><option>Cisco IOS</option></select></div>
+      <div class="field"><label for="g-sev">Severity Filter</label><select id="g-sev" class="sel"><option>Critical</option><option>High</option><option>Medium</option><option>All</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="g-zone">Network Zone</label><select id="g-zone" class="sel"><option>DMZ</option><option>Internal</option><option>LTM</option><option>GTM</option><option>Core</option></select></div>
+      <div class="field"><label for="g-ver">Target OS Version</label><input id="g-ver" class="inp"></div>
+    </div>
+    <div class="dr-sec">Scope and image</div>
+    <div class="field"><label for="g-cve">CVE Scope (comma-separated)</label><input id="g-cve" class="inp"></div>
+    <div class="field"><label for="g-img">Linked Nexus Image</label><div class="withbtn"><input id="g-img" class="inp"><button class="btn" style="height:36px">Browse</button></div></div>
+    <div class="field"><label for="g-notes">Notes for Engineering</label><textarea id="g-notes" class="inp" placeholder="Patch notes, prerequisites, rollback plan…"></textarea></div>
+  </div>
+  <footer class="dr-f"><button class="btn lg quiet" data-close>Cancel</button><button class="btn lg primary" data-close><svg class="ico"><use href="#i-save"/></svg>Save Group</button></footer>
+</aside>
+
+<script>
+(function(){
+  var names={overview:'Tenable Overview',groups:'Device Groups',images:'Nexus Images'};
+  function show(id){
+    if(!names[id]) id='overview';
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id==='scr-'+id)});
+    document.querySelectorAll('#nav a').forEach(function(a){a.classList.toggle('on',a.dataset.screen===id)});
+    document.getElementById('crumb').textContent=names[id];
+    document.querySelector('.content').scrollTop=0;
+    if(id!=='overview') setActivity(false);
+  }
+  var app=document.querySelector('.app'), act=document.getElementById('activity'), actBtn=document.getElementById('act-toggle');
+  function setActivity(on){
+    act.hidden=!on; app.classList.toggle('with-activity',on);
+    actBtn.setAttribute('aria-expanded',on?'true':'false');
+  }
+  actBtn.addEventListener('click',function(){setActivity(act.hidden);});
+  document.getElementById('act-close').addEventListener('click',function(){setActivity(false);actBtn.focus();});
+  window.addEventListener('hashchange',function(){show(location.hash.slice(1))});
+  document.querySelectorAll('#nav a:not([data-screen])').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault()})});
+  show(location.hash.slice(1));
+
+  document.querySelectorAll('#gtabs .tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('#gtabs .tab').forEach(function(x){x.classList.toggle('on',x===t)});
+    });
+  });
+
+  var drawer=document.getElementById('drawer'), scrim=document.getElementById('scrim'), lastFocus=null;
+  var fields={name:'g-name',os:'g-os',sev:'g-sev',zone:'g-zone',ver:'g-ver',cve:'g-cve',img:'g-img',notes:'g-notes'};
+  var createValues={name:'FortiOS-Critical-Group-03',os:'FortiOS',sev:'High',zone:'LTM',ver:'7.4.4',cve:'CVE-2024-21762, CVE-2024-47575',img:'fortios-7.4.4-build2662.tar',notes:''};
+  function fill(v){Object.keys(fields).forEach(function(k){document.getElementById(fields[k]).value=v[k]||'';});}
+  function openDrawer(mode,v){
+    lastFocus=document.activeElement;
+    document.getElementById('dr-title').textContent=mode==='edit'?'Edit Group':'Create Group';
+    document.getElementById('dr-sub').textContent=mode==='edit'?v.name:'New device group';
+    fill(v);
+    scrim.hidden=false; requestAnimationFrame(function(){scrim.classList.add('on');drawer.classList.add('on');});
+    drawer.setAttribute('aria-hidden','false');
+    setTimeout(function(){document.getElementById('g-name').focus();},200);
+  }
+  function closeDrawer(){
+    scrim.classList.remove('on'); drawer.classList.remove('on'); drawer.setAttribute('aria-hidden','true');
+    setTimeout(function(){scrim.hidden=true;},200);
+    if(lastFocus) lastFocus.focus();
+  }
+  document.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(){
+    var d=JSON.parse(b.dataset.edit); d.ver='';d.cve='';d.notes=''; openDrawer('edit',d);});});
+  document.querySelector('[data-create]').addEventListener('click',function(){openDrawer('create',createValues);});
+  document.querySelectorAll('[data-close]').forEach(function(b){b.addEventListener('click',closeDrawer);});
+  scrim.addEventListener('click',closeDrawer);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&drawer.classList.contains('on'))closeDrawer();});
+
+  document.getElementById('osf').addEventListener('change',function(){
+    var v=this.value;
+    document.querySelectorAll('#imgrows tr').forEach(function(r){r.style.display=(!v||r.dataset.os===v)?'':'none'});
+  });
+})();
+</script>
+</body>
+</html>
