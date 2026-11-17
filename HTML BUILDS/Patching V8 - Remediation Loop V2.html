@@ -818,6 +818,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .v6c.solid{background:#000;color:#fff;border-color:#000}
 .v6c.dash{border-style:dashed;color:var(--ink2)}
 .v6c.soft{background:#f3f3f3;border-color:var(--line)}
+.v6-tabs.gd-tabs{margin:20px 0 0}
+.gd-panel{margin-top:0}
 .v6c.warn{border-color:#000;font-weight:650}
 .v6-chips{display:flex;gap:4px;flex-wrap:wrap}
 .v6-empty{padding:40px 16px;text-align:center;color:var(--ink3);font-size:13px}
@@ -6981,7 +6983,7 @@ const h6=esc;
 const v6Sev=s=>`<span class="v6-sev ${h6(s)}"><i aria-hidden="true"></i>${h6(s)}</span>`;
 function v6CertChip(state){
   return state==="Certified" ? `<span class="v6c solid">✓ Certified</span>`
-       : state==="Pending Certification" ? `<span class="v6c">◷ Pending Certification</span>`
+       : state==="Pending Certification" ? `<span class="v6c">Waiting for certification</span>`
        : `<span class="v6c dash">✕ Not Certified</span>`;
 }
 function v6StatusChip(s){
@@ -7233,7 +7235,7 @@ function renderReport(rid,focusPid){
    <div class="v6-facts" style="margin:0 0 16px;padding-top:0;border:0"><div><label>Devices scanned</label><b>${r.scanned}</b></div><div><label>Vulnerabilities detected</label><b>${r.findings.length}</b></div>
     <div><label>Affected devices</label><b>${ids.length}</b></div><div><label>Critical vulnerabilities</label><b>${crit}</b></div></div>
    ${v6ResultsHTML(r,focusPid)}
-   <div class="v6-tabs" role="tablist" aria-label="Filter by OS type">${[["","All Devices"],["FortiOS","FortiOS"],["TMOS","TMOS"],["F5OS","F5OS"]].map(([k,l])=>`<button role="tab" aria-selected="${s.tab===k}" class="${s.tab===k?"on":""}" data-v6="repTab" data-a="${k}">${l}<span>${tabCount(k)}</span></button>`).join("")}</div>
+   <div class="v6-tabs" role="tablist" aria-label="Filter by OS type">${[["","All Devices"],...V6_OS.map(o=>[o,o])].map(([k,l])=>`<button role="tab" aria-selected="${s.tab===k}" class="${s.tab===k?"on":""}" data-v6="repTab" data-a="${k}">${l}<span>${tabCount(k)}</span></button>`).join("")}</div>
    <div class="v6-toolbar v6-reptools"><div class="grow"><input type="search" id="rep-q" placeholder="Search device name or CVE ID" aria-label="Search device name or CVE ID" value="${h6(s.q)}" data-v6in="repQ"></div>
      <select aria-label="Vulnerability" data-v6ch="repF" data-a="cve">${v6Opt(cves,s.cve,"All vulnerabilities")}</select>
      <select aria-label="Severity" data-v6ch="repF" data-a="sev">${v6Opt(["Critical","High","Medium","Low"],s.sev,"All severities")}</select>
@@ -7903,12 +7905,13 @@ function v6OsOpen(os){
   return V6.images.some(i=>i.os===os&&i.state==="Pending Certification");
 }
 /* one quiet line per version: status as text, one action only where there is work, the row opens details */
-const v6StateTxt=st=>st==="Certified"?`<span class="v6-st ok">✓ Certified</span>`:st==="Pending Certification"?`<span class="v6-st pend">◷ Pending</span>`:`<span class="v6-st no">✕ Not certified</span>`;
+/* Nexus Images lists what Nexus holds; certification is Nexus data, read here, never set here */
+const v6StateTxt=st=>st==="Certified"?`<span class="v6-st ok">✓ Certified</span>`:st==="Pending Certification"?`<span class="v6c soft v6-wait">Waiting for certification</span>`:`<span class="v6-st no">✕ Not certified</span>`;
 function v6VerRowHTML(i){
   const eng=v6IsEng(), latest=v6ImgLatest(i.os)===i, m=v6ImgMeta(i), fx=v6ImgFixes(i), crit=fx.filter(v=>v.sev==="Critical").length;
-  const act=i.state!=="Certified"&&eng?`<button class="btn small primary" data-v6="openImage" data-a="${h6(i.id)}">Certify</button>`:`<span class="v6-chev" aria-hidden="true">›</span>`;
+  const act=`<span class="v6-chev" aria-hidden="true">›</span>`;
   return `<tr id="img-${h6(i.id)}" class="v6-click" data-v6="openImage" data-a="${h6(i.id)}">
-    <td><button class="v6-ver" data-v6="openImage" data-a="${h6(i.id)}" aria-label="${h6(i.os+" "+i.version)} details">${h6(i.version)}</button><span class="v6-mut v6-build">build ${h6(v6ImgBuild(i))}</span>${latest?`<span class="v6-latest">Latest</span>`:""}</td>
+    <td><button class="v6-ver" data-v6="openImage" data-a="${h6(i.id)}" aria-label="${h6(i.os+" "+i.version)} details">${h6(i.version)}</button>${/\d/.test(v6ImgBuild(i))?`<span class="v6-mut v6-build">build ${h6(v6ImgBuild(i))}</span>`:""}${latest?`<span class="v6-latest">Latest</span>`:""}</td>
     <td>${h6(m.rel)}</td>
     <td>${v6StateTxt(i.state)}</td>
     <td>${i.by?`<span class="trunc" title="${h6(v6Reviewer(i)+" · "+i.at)}">${h6(v6Reviewer(i))}<span class="v6-mut"> · ${h6(i.at)}</span></span>`:`<span class="v6-mut">—</span>`}</td>
@@ -7925,7 +7928,7 @@ function v6OsBlockHTML(os){
   return `<div class="v6-os ${open?"open":""}">
     <button type="button" class="v6-oshd" data-v6="osToggle" data-a="${h6(os)}" aria-expanded="${open}" aria-controls="os-${h6(os)}">
      <span class="chev" aria-hidden="true">›</span><span class="nm">${h6(os)}</span>
-     <span class="meta"><span>Latest <b class="mono">${lt?h6(lt.version):"—"}</b></span><span>${nC} certified</span>${nP?`<span class="v6c">${nP} pending</span>`:""}<span>${v6Plural(devs,"device")}</span></span></button>
+     <span class="meta"><span>Latest <b class="mono">${lt?h6(lt.version):"—"}</b></span><span>${nC} certified</span>${nP?`<span class="v6c">${nP} waiting for certification</span>`:""}<span>${v6Plural(devs,"device")}</span></span></button>
     <div class="v6-osbody" id="os-${h6(os)}" ${open?"":"hidden"}>
      <div class="v6-tablewrap"><table class="v6-tbl v6-vtbl" style="min-width:880px"><caption class="sr-only">${h6(os)} versions</caption>
       <colgroup><col style="width:24%"><col style="width:13%"><col style="width:15%"><col><col style="width:14%"><col style="width:9%"><col style="width:96px"></colgroup>
@@ -7942,14 +7945,14 @@ function renderImages(){
   v6Crumb(["Nexus Images"]);
   const im=V6.images, n=s=>im.filter(i=>i.state===s).length;
   v6SetApp(`<div class="page">
-   <div class="head"><div><h1>Nexus Images</h1><div class="sub">Certify images before they can be used as a target version.</div></div>
+   <div class="head"><div><h1>Nexus Images</h1><div class="sub">Versions available in Nexus for each OS type. Only a certified version can be a target version.</div></div>
     <div class="actions"><button class="btn" data-v6="syncImg" ${V6S.syncingImg?"disabled":""}>${V6S.syncingImg?"Syncing…":"Sync from Nexus"}</button></div></div>
    <div class="v6-cards three tight">
-    <div class="v6-card"><label>Pending certification</label><div class="v">${n("Pending Certification")}</div></div>
+    <div class="v6-card"><label>Waiting for certification</label><div class="v">${n("Pending Certification")}</div></div>
     <div class="v6-card"><label>Certified</label><div class="v">${n("Certified")}<span class="of"> / ${im.length}</span></div></div>
     <div class="v6-card"><label>Not certified</label><div class="v">${n("Not Certified")}</div></div></div>
    <section class="v6-panel"><div class="v6-toolbar"><div class="grow"><input type="search" id="v6-iq" placeholder="Search version or file name" aria-label="Search version or file name" value="${h6(V6S.iq)}" data-v6in="iq"></div>
-     <select aria-label="Certification status" data-v6ch="ist">${v6Opt(["Pending Certification","Certified","Not Certified"],V6S.ist,"All statuses")}</select>
+     <select aria-label="Certification status" data-v6ch="ist">${v6Opt([["Pending Certification","Waiting for certification"],"Certified","Not Certified"],V6S.ist,"All statuses")}</select>
      <span class="count" id="v6-icount" role="status">${v6Plural(v6VerCount(),"version")}</span></div>
     <div id="v6-ilist">${v6ImageListHTML()}</div></section></div>`);
 }
@@ -7990,8 +7993,7 @@ function v6RenderImageDrawer(id){
      ${kv("Release notes",`<button class="link" type="button" data-v6="notes">Open</button>`)}</div></div>`;
   const inUse=cert&&lg.length, why=!eng?V6_ENG_ONLY:inUse?`Used by ${v6Plural(lg.length,"group")}. Change their target version first.`:"";
   const foot=`<span class="msg"></span><button class="btn" type="button" data-v6="imgClose">Close</button>
-   ${eng&&i.state!=="Not Certified"?`<button class="btn" type="button" data-v6="markNot" data-a="${h6(i.id)}" ${inUse?`aria-disabled="true" data-why="${h6(why)}"`:""}>Mark Not Certified</button>`:""}
-   ${eng&&!cert?`<button class="btn primary" type="button" data-v6="certify" data-a="${h6(i.id)}">Certify</button>`:""}`;
+`;
   v6OpenDrawer("image",i.os+" "+i.version,"",body,foot);
 }
 V6A.notes=()=>showToast("Release notes are not available in this prototype.");
@@ -11923,6 +11925,85 @@ const _swItemRegion=itemRegion;
 itemRegion=function(i){ return journeyOf(i)==="switch"?(i.region||tenantRegion(i.tenant)):_swItemRegion(i); };
 /* DEMO · Scenario T: the seeded state, opened on the large switch group (GRP-SWITCH) */
 function lpScenarioT(){ lpResetAll({tz:lpTz()}); return v6Group("GRP-SWITCH"); }
+
+
+/* ============================================================================
+   NO DUPLICATE PLANS AFTER A RELOAD (UX designer, 17 Nov)
+   V8 plans last one session, but the preparation log is saved. A device in a
+   batch whose plan is gone from the session, and was last seen unfinished,
+   stays held by that plan, so Prepare Plans offers nothing for it and the
+   group's button is off until there is new work.
+   ============================================================================ */
+function vbStaleHold(id){
+  for(const b of vbBatches().slice().reverse()){
+    if(b.state!=="created"||!b.planId||getPlan(b.planId)||!b.deviceIds.includes(id)) continue;
+    if(TERMINAL.has(b.planState||PLAN_STATE.DRAFT)) return null;
+    return {k:"active",stale:true,plan:{id:b.planId,displayRef:b.planRef,stale:true},t:"Prepared earlier in "+b.planRef+" · last observed "+(b.planState||"Draft")};
+  }
+  return null;
+}
+const _vbStaleWork=v6DeviceWork;
+v6DeviceWork=function(id){ return _vbStaleWork(id)||vbStaleHold(id); };
+const _vbStaleOpen=V6A.openPlan;
+V6A.openPlan=function(id){ if(getPlan(id)) return _vbStaleOpen.apply(this,arguments);
+  const b=vbBatches().find(x=>x.planId===id); showToast((b?b.planRef:"This plan")+" is not in this session (plans in this prototype last one browser session). Last observed "+((b&&b.planState)||"Draft")+"."); };
+/* progress after a reload: devices of earlier plans count by the plan's last observed state, and those plans count as plans */
+const _vbStaleProgress=vbProgress;
+vbProgress=function(g){
+  const c=_vbStaleProgress(g), live=new Set(v6CtxsOfGroup(g.id).flatMap(x=>x.deviceIds));
+  g.devices.forEach(id=>{ if(live.has(id)) return; const h=vbStaleHold(id); if(!h) return;
+    const b=vbBatches(g.id).find(x=>x.planId===h.plan.id); if(!b) return;
+    c.blocked--; if((b.planState||PLAN_STATE.DRAFT)===PLAN_STATE.DRAFT) c.draft++; else c.submitted++; });
+  const stale=vbBatches(g.id).filter(b=>b.state==="created"&&b.planId&&!getPlan(b.planId)&&!TERMINAL.has(b.planState||PLAN_STATE.DRAFT));
+  c.plans+=stale.length; c.items+=stale.reduce((n,b)=>n+b.itemIds.length,0);
+  c.done=c.total>0&&c.unplanned===0&&c.draft+c.submitted+c.executing===0&&c.plans>0;
+  return c;
+};
+/* the group's Prepare Plans is on only while there is work to prepare */
+function vbButtonState(g){ const pr=vbPrepare(g); if(pr.ok) return {on:true};
+  const had=v6CtxsOfGroup(g.id).length||vbBatches(g.id).some(b=>b.state==="created");
+  return {on:false,label:had?"Plans prepared":"Prepare Plans",why:had?"Every eligible device in this group is already in a plan.":pr.reason}; }
+
+/* the Device Groups row after a reload: the earlier plans, and View Plans instead of a new preparation */
+V6A.gdPlans=gid=>{ (V6S.gdTabs=V6S.gdTabs||{})[gid]="plans"; go({v:"groupdetail",g:gid}); };
+const _vbStaleRow=v6GroupRowHTML;
+v6GroupRowHTML=function(g){
+  const html=_vbStaleRow(g); if(v6CtxsOfGroup(g.id).length) return html;
+  const held=vbBatches(g.id).filter(b=>b.state==="created"&&b.planId&&!getPlan(b.planId)&&!TERMINAL.has(b.planState||PLAN_STATE.DRAFT));
+  if(!held.length||vbPrepare(g).ok) return html;
+  const cell=`<td><span class="mono">${h6(held[0].planRef)}</span>${held.length>1?` <span class="v6-mut">+${held.length-1}</span>`:""}</td>$1<td><div class="v6-gacts"><button class="btn small" data-v6="gdPlans" data-a="${h6(g.id)}">View Plans</button>`;
+  return html.replace(/<td><span class="v6-mut">—<\/span><\/td>(\s*)<td><div class="v6-gacts">[\s\S]*?(?=<span class="v6-menu">)/,cell);
+};
+
+/* ============================================================================
+   GROUP DETAILS · Devices and Plans as tabs (UX designer, 17 Nov)
+   The device list and the group's plans sit in one tabbed area so a large
+   group does not need a long scroll. Devices is the first tab. The choice
+   is remembered per group for the session; Create Draft Plans opens Plans.
+   ============================================================================ */
+const _gdTabsDetail=renderGroupDetail;
+renderGroupDetail=function(gid){
+  _gdTabsDetail(gid); const g=v6Group(gid); if(!g) return;
+  const secs=[...document.querySelectorAll("#app section.v6-panel")], ttl=s=>{ const t=s.querySelector(".ph .t"); return t?t.textContent:""; };
+  const dev=secs.find(s=>/Devices in this group/.test(ttl(s))), pl=secs.find(s=>/Associated plans/.test(ttl(s)));
+  if(!dev||!pl) return;
+  const tab=(V6S.gdTabs||{})[gid]||"devices", nPlans=pl.querySelectorAll(".vb-ptbl tbody tr").length;
+  const btn=(k,l,n)=>`<button type="button" role="tab" id="gdt-${k}" aria-controls="gdp-${k}" aria-selected="${tab===k}" tabindex="${tab===k?0:-1}" class="${tab===k?"on":""}" data-v6="gdTab" data-a="${k}" data-g="${h6(gid)}">${l}<span>${n}</span></button>`;
+  dev.insertAdjacentHTML("beforebegin",`<div class="v6-tabs gd-tabs" role="tablist" aria-label="Devices and plans of ${h6(g.name)}">${btn("devices","Devices",g.devices.length)}${btn("plans","Plans",nPlans)}</div>`);
+  dev.after(pl);
+  const bs=vbButtonState(g), pb=[...document.querySelectorAll("#app .v6-hd .actions .btn")].find(x=>/^(Prepare Plans|Plans prepared)$/.test(x.textContent.trim()));
+  if(pb&&!bs.on){ pb.textContent=bs.label; pb.disabled=true; pb.removeAttribute("data-v6"); pb.title=bs.why; pb.classList.remove("primary"); }
+  [["devices",dev],["plans",pl]].forEach(([k,s])=>{ s.id="gdp-"+k; s.setAttribute("role","tabpanel"); s.setAttribute("aria-labelledby","gdt-"+k); s.hidden=tab!==k; s.classList.add("gd-panel"); });
+};
+V6A.gdTab=(k,el)=>{ const gid=el&&el.dataset.g; if(!gid) return; (V6S.gdTabs=V6S.gdTabs||{})[gid]=k;
+  document.querySelectorAll('[data-v6="gdTab"]').forEach(b=>{ const on=b.dataset.a===k; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
+  [["devices","gdp-devices"],["plans","gdp-plans"]].forEach(([x,id])=>{ const s=document.getElementById(id); if(s) s.hidden=x!==k; });
+  const b=V6$('[data-v6="gdTab"][data-a="'+k+'"]'); if(b) b.focus(); };
+/* arrow keys move between the two tabs */
+document.addEventListener("keydown",e=>{ const b=e.target.closest&&e.target.closest('[data-v6="gdTab"]'); if(!b||!/^Arrow(Left|Right)$/.test(e.key)) return;
+  e.preventDefault(); const o=b.dataset.a==="devices"?"plans":"devices"; V6A.gdTab(o,V6$('[data-v6="gdTab"][data-a="'+o+'"]')); });
+const _gdTabsCommit=V6A.vbCommit;
+V6A.vbCommit=function(){ const r=_gdTabsCommit.apply(this,arguments); const b=V6$('[data-v6="gdTab"][data-a="plans"]'); if(view==="groupdetail"&&b) V6A.gdTab("plans",b); return r; };
 
 /* ---------- routing: the Remediation Loop replaces the Remediation Overview on the same route ---------- */
 const _lpV6Render=v6Render;
